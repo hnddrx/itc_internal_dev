@@ -1,0 +1,130 @@
+<odoo>
+    <!-- FORM VIEW -->
+    <record id="view_salary_advance_form" model="ir.ui.view">
+        <field name="name">salary.advance.form</field>
+        <field name="model">salary.advance</field>
+        <field name="arch" type="xml">
+            <form string="Salary Advance">
+                <header>
+                    <button string="Submit" type="object" name="action_submit"
+                            class="btn-purple"
+                            invisible="state in ['draft','approved','paid','rejected','cancelled']"/>
+                    <button string="Approve" type="object" name="action_approve"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button string="Reject" type="object" name="action_reject"
+                            class="btn-orange"
+                            invisible="state not in ['draft','approved']"/>
+                    <button string="Pay" type="object" name="action_pay"
+                            class="btn-success"
+                            invisible="state != 'approved'"/>
+
+                    <button string="Cancel" type="object" 
+                            name="action_cancel" 
+                            class="btn-danger" 
+                            invisible="state == 'cancelled' or state != 'approved'"/>
+
+                    <field name="state" widget="statusbar"
+                        statusbar_visible="draft,approved,paid,rejected,cancelled"
+                        statusbar_status="state"/>
+                </header>
+
+                <sheet>
+                    <!-- Title block like purchase.order.form -->
+                    <div class="oe_title">
+                        <h1 class="oe_title_h1" name="name">
+                           <!-- Star when NOT urgent -->
+                            <button name="action_toggle_urgent"
+                                    type="object"
+                                    class="o_urgent_star btn-star"
+                                    icon="fa-star"
+                                    help="Mark as urgent"
+                                    invisible="is_urgent"/>
+
+                            <!-- Star when urgent -->
+                            <button name="action_toggle_urgent"
+                                    type="object"
+                                    class="o_urgent_star btn-star is-urgent"
+                                    icon="fa-star"
+                                    help="Unmark as urgent"
+                                    invisible="not is_urgent"/>
+
+                            <field name="name" placeholder="New"/>
+                        </h1>
+                        
+                    </div>
+
+
+                    <!-- Optional smart buttons box (add if you need related actions)
+                    <div name="button_box" class="oe_button_box" position="inside">
+                        <button name="action_open_related_moves" type="object"
+                                class="oe_stat_button" icon="fa-exchange">
+                            <field string="Journal Entries" name="move_count" widget="statinfo"/>
+                        </button>
+                    </div>
+                    -->
+                    
+
+                    <group>
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="advance_amount"/>
+                            <field name="currency_id"/>
+                        </group>
+                        <group>
+                            <field name="create_date" string="Posting Date"/>
+                            <field name="date"/>
+                            <field name="journal_id"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <field name="reason" string="Purpose" colspan="2"/>
+                    </group>
+                </sheet>
+
+                <!-- Chatter renders follower controls; DO NOT add <widget name="mail_followers"/> -->
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+
+    <!-- LIST (TREE) VIEW -->
+    <record id="view_salary_advance_list" model="ir.ui.view">
+        <field name="name">salary.advance.list</field>
+        <field name="model">salary.advance</field>
+        <field name="arch" type="xml">
+            <list string="Salary Advances">
+                <field name="name"/>
+                <field name="employee_id" />
+                <field name="currency_id"  optional="hide"/>
+                <field name="advance_amount"
+                       widget="monetary"
+                       sum="Total Advance"/>
+                <field name="date" optional="hide"/>
+                <field name="journal_id" optional="hide"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-success="state in ['approved', 'paid']"
+                       decoration-warning="state == 'cancelled'"
+                       decoration-danger="state == 'rejected'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ACTION -->
+    <record id="salary_advance_action" model="ir.actions.act_window">
+        <field name="name">Salary Advances</field>
+        <field name="res_model">salary.advance</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- MENU -->
+    <menuitem id="menu_salary_advance_root"
+              name="Salary Advances"
+              action="salary_advance_action"
+              parent="accountant.menu_accounting"
+              sequence="4"
+              />
+</odoo>

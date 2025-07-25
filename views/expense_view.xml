@@ -1,0 +1,53 @@
+<odoo>
+  <record id="view_expense_form_inherit_custom" model="ir.ui.view">
+    <field name="name">hr.expense.form.inherit.custom</field>
+    <field name="model">hr.expense</field>
+    <field name="inherit_id" ref="hr_expense.hr_expense_view_form"/>
+    <field name="arch" type="xml">
+
+        <xpath expr="//field[@name='employee_id']/.." position="before">
+            <field name="x_voucher" />
+        </xpath>
+
+        <xpath expr="//field[@name='vendor_id']" position="after">
+            <field name="x_vendor_tin" invisible="not vendor_id or payment_mode == 'own_account'"/>
+            <field name="x_voucher_amount" widget="monetary"/>
+            <field name="x_payment_amount" widget="monetary"/>
+        </xpath>
+
+        <!-- Target the group where the payment_mode belogns to and inject the field you wanna add -->
+         
+        <xpath expr="//field[@name='payment_mode']/.." position="after">
+            <field name="x_particulars" string="Particulars" placeholder="Enter particulars here..."/>
+        </xpath>
+
+        <!-- Insert a notebook after the sheet group -->
+        <xpath expr="//sheet/group" position="after">
+            <!-- New Notebook Section -->
+            <notebook>
+            <page string="Regular Remarks">
+                <group>
+                <field name="x_regular_remarks" string="Remarks" placeholder="Enter regular remarks here..."/>
+                </group>
+            </page>
+            <page string="Detailed Remarks">
+                <group>
+                <field name="x_detailed_remarks" string="Remarks" placeholder="Enter detailed remarks here..."/>
+                </group>
+            </page>
+            <page string="Checked Details">
+                <group>
+                    <field name="x_checked_by"/>
+                    <field name="x_checked_by_date"/>
+                </group>
+            </page>
+            </notebook>
+        </xpath>
+
+        <!-- Hide notes -->
+        <xpath expr="//field[@name='description']" position="attributes">
+            <attribute name="invisible">1</attribute>
+        </xpath>
+    </field>
+  </record>
+</odoo>

@@ -1,0 +1,8 @@
+<odoo>
+    <record id="salary_advance_user_rule" model="ir.rule">
+        <field name="name">Salary Advance: User Own Records</field>
+        <field name="model_id" ref="model_salary_advance"/>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+    </record>
+</odoo>

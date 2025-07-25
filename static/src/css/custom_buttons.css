@@ -1,0 +1,69 @@
+/* === Custom Button Styles === */
+.btn-purple {
+    background-color: purple;
+    color: white;
+}
+
+.btn-orange {
+    background-color: orange;
+    color: white;
+}
+
+/* === Urgent Star Button === */
+.btn-star {
+    font-size: 35px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-right: 8px; /* Space from adjacent fields */
+    vertical-align: middle;
+}
+
+/* Star icon style with bold outline */
+/* Default star */
+.btn-star > .fa {
+    color: white;
+    text-shadow: 
+        1px 0 0 #757981,
+        -1px 0 0 #757981,
+        0 1px 0 #757981,
+        0 -1px 0 #757981;
+    transition: color 0.2s ease;
+}
+
+/* Hover effect */
+.btn-star:hover > .fa {
+    color: gold;
+    text-shadow: none;
+}
+
+/* Solid yellow star when urgent */
+.btn-star.is-urgent > .fa {
+    color: gold ;
+    text-shadow: none ;
+}
+
+/* === Header Layout Fix for Title Bar === */
+.oe_title_h1 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* === Optional: Alternative Star Styling (disabled by default) ===
+.o_urgent_star {
+    border: none;
+    background-color: white !important;
+    color: black;
+    font-size: 40px;
+    cursor: pointer;
+    border-radius: 5px;
+    padding: 5px 10px;
+}
+
+.o_urgent_star:hover {
+    background-color: #f0f0f0 !important;
+    color: black;
+}
+*/
