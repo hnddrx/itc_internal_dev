@@ -10,20 +10,16 @@
         'security/salary_advance_security.xml',
         'data/salary_advance.xml',
         'views/salary_advance_views.xml',
-
-        #HR Expense
         'views/expense_view.xml',
-
-        #Purchase Order
         'views/purchase_order.xml',
     ],
+
     'assets': {
         'web.assets_backend': [
             'itc_internal_dev/static/src/css/custom_buttons.css',
         ],
     },
-
     'installable': True,
     'application': True,
-    'icon': '/itc_internal_dev/static/description/ITCLOGO.jpg'
+    'icon': '/itc_internal_dev/static/description/ITCLOGO.jpg',
 }
