@@ -1,7 +1,7 @@
 {
     'name': 'ITC Development',
     'version': '1.0',
-    'category': 'Human Resources',
+    'category': 'Accounting',
     'summary': 'Manage Employee Salary Advances with Accounting Integration',
     'author': 'ITC Odoo Team',
     'depends': ['hr', 'hr_payroll', 'account', 'mail'],
@@ -12,6 +12,9 @@
         'views/salary_advance_views.xml',
         'views/expense_view.xml',
         'views/purchase_order.xml',
+
+        #account_account
+        'views/account_account_views.xml',
     ],
 
     'assets': {
