@@ -22,13 +22,13 @@
         'views/purchase_order.xml',
         'views/account_account_views.xml',
     ],
+
     'assets': {
         'web.assets_backend': [
             'itc_internal_dev/static/src/css/custom_buttons.css',
         ],
     },
-
     'installable': True,
     'application': True,
-    'icon': '/itc_internal_dev/static/description/ITCLOGO.jpg'
+    'icon': '/itc_internal_dev/static/description/ITCLOGO.jpg',
 }
