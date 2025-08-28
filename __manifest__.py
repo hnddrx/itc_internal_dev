@@ -6,18 +6,20 @@
     'author': 'ITC - Odoo Team',
     'depends': ['hr', 'hr_payroll', 'account', 'mail'],
     'data': [
+        #Security
         'security/ir.model.access.csv',
         'security/salary_advance_security.xml',
+
+        #Data
         'data/salary_advance.xml',
+
+        #Report
+        'report/sales_invoice_report.xml',
+
+        #Views
         'views/salary_advance_views.xml',
-
-        #HR Expense
         'views/expense_view.xml',
-
-        #Purchase Order
         'views/purchase_order.xml',
-
-        #account_account
         'views/account_account_views.xml',
     ],
     'assets': {
