@@ -3,7 +3,7 @@
     'version': '1.0',
     'category': 'Accounting',
     'summary': 'Manage Employee Salary Advances with Accounting Integration',
-    'author': 'ITC Odoo Team',
+    'author': 'ITC - Odoo Team',
     'depends': ['hr', 'hr_payroll', 'account', 'mail'],
     'data': [
         'security/ir.model.access.csv',
