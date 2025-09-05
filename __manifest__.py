@@ -1,29 +1,37 @@
 {
     'name': 'ITC Development',
     'version': '1.0',
-    'category': 'Human Resources',
+    'category': 'Accounting',
     'summary': 'Manage Employee Salary Advances with Accounting Integration',
-    'author': 'ITC Odoo Team',
+    'author': 'ITC - Odoo Team',
     'depends': ['hr', 'hr_payroll', 'account', 'mail'],
     'data': [
+        #Security
         'security/ir.model.access.csv',
         'security/salary_advance_security.xml',
+
+        #Data
         'data/salary_advance.xml',
+
+        #Report
+        'report/sales_invoice_report.xml',
+        'report/sales_order_report.xml',
+        'report/purchase_order_report.xml',
+        'report/official_receipt_report.xml',
+
+        #Views
         'views/salary_advance_views.xml',
-
-        #HR Expense
         'views/expense_view.xml',
-
-        #Purchase Order
         'views/purchase_order.xml',
+        'views/account_account_views.xml',
     ],
+
     'assets': {
         'web.assets_backend': [
             'itc_internal_dev/static/src/css/custom_buttons.css',
         ],
     },
-
     'installable': True,
     'application': True,
-    'icon': '/itc_internal_dev/static/description/ITCLOGO.jpg'
+    'icon': '/itc_internal_dev/static/description/ITCLOGO.jpg',
 }

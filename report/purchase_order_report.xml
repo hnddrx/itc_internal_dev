@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  <template id="custom_report_purchase_order">
+    <t t-call="web.external_layout">
+      <t t-foreach="docs" t-as="doc">
+        <div class="page" style="font-family: Arial, sans-serif; font-size: 13px; line-height:1.4;">
+          <main>
+
+            <!-- Company Header -->
+            <!-- <div style="text-align:center; margin-bottom:5px;">
+              <p style="font-size:16px; font-weight:bold; margin:0;">INNOVATHINK CORPORATION</p>
+              <p style="margin:2px 0; font-size:12px;">
+                4/F, VISTA MALL IT HUB ALABANG-ZAPOTE ROAD CORNER C. V. STARR AVE.<br/>
+                PHILAMLIFE VILLAGE PAMPLONA 2 LAS PINAS CITY<br/>
+                VAT REG TIN: 008-168-070-00000<br/>
+                Telephone No.: 8840-4821
+              </p>
+            </div>
+ -->
+            <!-- Document Header -->
+            <div style="text-align:center; margin-bottom:10px; font-size:14px; font-weight:bold;">
+              IMPORT PURCHASE ORDER
+            </div>
+
+            <!-- IPO Info -->
+            <table style="width:100%; border-collapse:collapse; font-size:12px; margin-bottom:10px;">
+              <tr>
+                <td style="width:50%; padding:3px;"><strong>IPO NO.:</strong> <t t-esc="doc.name"/></td>
+                <td style="width:25%; padding:3px;"><strong>IPO Date:</strong> <t t-esc="doc.date_order"/></td>
+              </tr>
+              <tr>
+                <td style="padding:3px;"><strong>BR:</strong> BR-00000-MAIN</td>
+                <td style="padding:3px;"><strong>Term:</strong> <t t-esc="doc.payment_term_id.name or 'Not Applicable'"/></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td style="padding:3px;"><strong>Expected Delivery Date:</strong> <t t-esc="doc.date_planned"/></td>
+              </tr>
+            </table>
+
+            <!-- Supplier Information -->
+            <table style="width:100%; border:1px solid black; border-collapse:collapse; font-size:12px; margin-bottom:15px;">
+              <tr>
+                <td style="border:1px solid black; padding:5px; width:25%;"><strong>Supplier:</strong></td>
+                <td style="border:1px solid black; padding:5px;"><t t-esc="doc.partner_id.name"/></td>
+              </tr>
+              <tr>
+                <td style="border:1px solid black; padding:5px;"><strong>Address:</strong></td>
+                <td style="border:1px solid black; padding:5px;"><t t-esc="doc.partner_id.street or ''"/></td>
+              </tr>
+              <tr>
+                <td style="border:1px solid black; padding:5px;"><strong>TIN:</strong></td>
+                <td style="border:1px solid black; padding:5px;"><t t-esc="doc.partner_id.vat or ''"/></td>
+              </tr>
+              <tr>
+                <td style="border:1px solid black; padding:5px;"><strong>Delivery/Shipped To:</strong></td>
+                <td style="border:1px solid black; padding:5px;"><t t-esc="doc.dest_address_id.name or doc.partner_id.name"/></td>
+              </tr>
+              <tr>
+                <td style="border:1px solid black; padding:5px;"><strong>Reference:</strong></td>
+                <td style="border:1px solid black; padding:5px;"><t t-esc="doc.partner_ref or ''"/></td>
+              </tr>
+            </table>
+
+            <!-- Order Lines -->
+            <table style="width:100%; border:1px solid black; border-collapse:collapse; font-size:12px; margin-bottom:15px;">
+              <thead>
+                <tr style="background:#f0f0f0;">
+                  <th style="border:1px solid black; padding:5px; text-align:left;">Description</th>
+                  <th style="border:1px solid black; padding:5px; text-align:center; width:50px;">Qty</th>
+                  <th style="border:1px solid black; padding:5px; text-align:center; width:50px;">Unit</th>
+                  <th style="border:1px solid black; padding:5px; text-align:right; width:80px;">Unit Price</th>
+                  <th style="border:1px solid black; padding:5px; text-align:right; width:100px;">Total</th>
+                  <th style="border:1px solid black; padding:5px; text-align:right; width:80px;">Discount</th>
+                  <th style="border:1px solid black; padding:5px; text-align:right; width:100px;">Net Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr t-foreach="doc.order_line" t-as="line">
+                  <td style="border:1px solid black; padding:5px;"><t t-esc="line.name"/></td>
+                  <td style="border:1px solid black; padding:5px; text-align:center;"><t t-esc="line.product_qty"/></td>
+                  <td style="border:1px solid black; padding:5px; text-align:center;"><t t-esc="line.product_uom.name"/></td>
+                  <td style="border:1px solid black; padding:5px; text-align:right;"><t t-esc="line.price_unit"/></td>
+                  <td style="border:1px solid black; padding:5px; text-align:right;"><t t-esc="line.price_unit * line.product_qty"/></td>
+                  <td style="border:1px solid black; padding:5px; text-align:right;">0.00</td>
+                  <td style="border:1px solid black; padding:5px; text-align:right;"><t t-esc="line.price_subtotal"/></td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="6" style="border:1px solid black; padding:5px; text-align:right; font-weight:bold;">TOTAL</td>
+                  <td style="border:1px solid black; padding:5px; text-align:right; font-weight:bold;"><t t-esc="doc.amount_total"/></td>
+                </tr>
+                <tr>
+                  <td colspan="7" style="border:1px solid black; padding:5px;">
+                    <p style="font-size:12px; margin:5px 0;">
+                      <strong>Amount in Words:</strong>
+                      <span t-esc="doc.currency_id.amount_to_text(doc.amount_total)"/>
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="7" style="border:1px solid black;">
+                    <p style="font-size:14px; margin-top:10px; text-align:center; font-weight:bold;">
+                      NOTES
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="7" style="border:1px solid black; padding:5px;">
+                    <p style="font-size:11px; margin-top:10px; text-align:center; font-style:italic;">
+                      Please issue Delivery Receipt. Sales Invoice attached to this Import Purchase Order (IPO) upon delivery.
+                    </p>
+                  </td>
+                </tr>
+                
+              </tfoot>
+            </table>
+
+            <table style="width:100%; font-size:12px; text-align:center; margin-top:20px; border-collapse:collapse;">
+              <tr>
+                <td style="border-bottom:1px solid black; height:40px;">Prepared By:</td>
+                <td style="border-bottom:1px solid black; height:40px;">Checked/Approved By:</td>
+                <td style="border-bottom:1px solid black; height:40px;">Received By:</td>
+              </tr>
+              <tr>
+                <td style="font-size:11px;">Signature over Printed Name</td>
+                <td style="font-size:11px;">Signature over Printed Name</td>
+                <td style="font-size:11px;">Signature over Printed Name</td>
+              </tr>
+            </table>
+
+            <!-- Footer -->
+            <p style="font-size:10px; margin-top:20px; text-align:left;">
+              Printed By: E-taxpoint Software Solutions Corp. (Open Edition - Tax Based Accounting System)<br/>
+              Acknowledgment Certificate No: ___________<br/>
+              Acknowledgment Certificate Date Issued: ___________<br/>
+              Permitted Series Range: IPO-000000000001 - IPO-999999999999
+            </p>
+
+            <p style="font-size:11px; font-weight:bold; text-align:center; margin-top:10px;">
+              THIS DOCUMENT IS NOT VALID FOR CLAIM OF INPUT TAX
+            </p>
+
+          </main>
+        </div>
+      </t>
+    </t>
+  </template>
+
+  <!-- REPORT ACTION -->
+  <record id="report_purchase_order_custom" model="ir.actions.report">
+    <field name="name">Import Purchase Order</field>
+    <field name="model">purchase.order</field>
+    <field name="report_type">qweb-pdf</field>
+    <field name="report_name">itc_internal_dev.custom_report_purchase_order</field>
+    <field name="print_report_name">'Purchase Order %s' % (object.name)</field>
+    <field name="binding_model_id" ref="purchase.model_purchase_order"/>
+    <field name="binding_type">report</field>
+  </record>
+</odoo>
