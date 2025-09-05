@@ -43,6 +43,17 @@ class Purchase(models.Model):
         help="Remarks related to this purchase order."
     )
 
+    x_purchase_type = fields.Selection(
+        [
+            ('import', 'Import'),
+            ('local', 'Local'),
+        ],
+        string="Purchase Type",
+        default='local',
+        help="Indicates whether the purchase order is for Import or Local purposes."
+    )
+
+
     # Show date in UI immediately
     @api.onchange('x_checked_by')
     def _onchange_checked_by(self):

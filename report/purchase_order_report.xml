@@ -91,21 +91,32 @@
                   <td colspan="6" style="border:1px solid black; padding:5px; text-align:right; font-weight:bold;">TOTAL</td>
                   <td style="border:1px solid black; padding:5px; text-align:right; font-weight:bold;"><t t-esc="doc.amount_total"/></td>
                 </tr>
+                <tr>
+                  <td colspan="7" style="border:1px solid black; padding:5px;">
+                    <p style="font-size:12px; margin:5px 0;">
+                      <strong>Amount in Words:</strong>
+                      <span t-esc="doc.currency_id.amount_to_text(doc.amount_total)"/>
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="7" style="border:1px solid black;">
+                    <p style="font-size:14px; margin-top:10px; text-align:center; font-weight:bold;">
+                      NOTES
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan="7" style="border:1px solid black; padding:5px;">
+                    <p style="font-size:11px; margin-top:10px; text-align:center; font-style:italic;">
+                      Please issue Delivery Receipt. Sales Invoice attached to this Import Purchase Order (IPO) upon delivery.
+                    </p>
+                  </td>
+                </tr>
+                
               </tfoot>
             </table>
 
-            <!-- Amount in Words -->
-            <p style="font-size:12px; margin:5px 0;">
-              <strong>Amount in Words:</strong>
-              <span t-esc="doc.currency_id.amount_to_text(doc.amount_total)"/>
-            </p>
-
-            <!-- Notes -->
-            <p style="font-size:11px; margin-top:10px; border-top:1px solid black; padding-top:5px;">
-              NOTES: Please issue Delivery Receipt. Sales Invoice attached to this Import Purchase Order (IPO) upon delivery.
-            </p>
-
-            <!-- Signatories -->
             <table style="width:100%; font-size:12px; text-align:center; margin-top:20px; border-collapse:collapse;">
               <tr>
                 <td style="border-bottom:1px solid black; height:40px;">Prepared By:</td>
