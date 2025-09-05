@@ -66,15 +66,25 @@
                     
 
                     <group>
-                        <group>
-                            <field name="employee_id"/>
-                            <field name="advance_amount"/>
-                            <field name="currency_id"/>
+                        <group> 
+                            <field name="employee_id" 
+                            readonly="state in ['approved', 'rejected', 'cancelled']"
+                            />
+                            <field name="advance_amount"
+                            readonly="state in [approved', 'rejected', 'cancelled']"
+                            />
+                            <field name="currency_id"
+                            readonly="state in ['approved', 'rejected', 'cancelled']"
+                            />
                         </group>
                         <group>
                             <field name="create_date" string="Posting Date"/>
-                            <field name="date"/>
-                            <field name="journal_id"/>
+                            <field name="date"
+                            readonly="state in ['approved', 'rejected', 'cancelled']"
+                            />
+                            <field name="journal_id"
+                            readonly="state in ['approved', 'rejected', 'cancelled']"
+                            />
                         </group>
                     </group>
 
