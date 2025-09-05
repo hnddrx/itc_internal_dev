@@ -17,6 +17,7 @@
         'report/sales_invoice_report.xml',
         'report/sales_order_report.xml',
         'report/purchase_order_report.xml',
+        'report/official_receipt_report.xml',
 
         #Views
         'views/salary_advance_views.xml',
