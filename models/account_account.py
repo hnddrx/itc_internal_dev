@@ -17,6 +17,7 @@ class AccountAccount(models.Model):
             ('income_revenue', 'Revenue'),
             ('income_sales_contra', 'Sales (Contra)'),
             ('income_sales', 'Sales'),
+            ('expenses', 'Expenses'),
         ],
         ondelete={
             'expense_manufacturing_oh': 'cascade',
@@ -31,6 +32,7 @@ class AccountAccount(models.Model):
             'income_revenue': 'cascade',
             'income_sales_contra': 'cascade',
             'income_sales': 'cascade',
+            'expenses': 'cascade',
         },
         tracking=True,
     )
