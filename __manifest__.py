@@ -24,6 +24,7 @@
         'views/expense_view.xml',
         'views/purchase_order.xml',
         'views/account_account_views.xml',
+        'views/sales_order.xml',
     ],
 
     'assets': {
