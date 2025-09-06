@@ -21,3 +21,8 @@ class SaleOrder(models.Model):
         store=True,
         help="Tax Identification Number of the customer associated with this sales order."
     )       
+
+    x_remarks = fields.Text(
+        string="Remarks",
+        help="Remarks related to this sales order."
+    )
