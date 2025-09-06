@@ -16,6 +16,10 @@
                 <field name="x_partner_tin" readonly="1"/>
             </xpath>
 
+            <xpath expr="//field[@name='payment_term_id']" position="after">
+                <field name="x_remarks"/>
+            </xpath>
+
         </field>
     </record>
 </odoo>

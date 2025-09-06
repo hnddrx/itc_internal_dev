@@ -19,6 +19,7 @@
         'report/purchase_order_report.xml',
         'report/official_receipt_report.xml',
         'report/service_invoice_report.xml',
+        'report/credit_memo_report.xml',
 
         #Views
         'views/salary_advance_views.xml',
