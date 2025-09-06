@@ -18,6 +18,7 @@
         'report/sales_order_report.xml',
         'report/purchase_order_report.xml',
         'report/official_receipt_report.xml',
+        'report/service_invoice_report.xml',
 
         #Views
         'views/salary_advance_views.xml',
@@ -25,6 +26,7 @@
         'views/purchase_order.xml',
         'views/account_account_views.xml',
         'views/sales_order.xml',
+        'views/account_move_views.xml',
     ],
 
     'assets': {

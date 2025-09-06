@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_move_form_inherit_custom" model="ir.ui.view">
+        <field name="name">account.move.form.inherit.custom</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Add a new group aligned with partner_id group -->
+            <xpath expr="//sheet/group" position="inside">
+                <group>
+                    <field name="x_reference_number"/>
+                    <field name="x_partner_tin"/>
+                </group>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>
