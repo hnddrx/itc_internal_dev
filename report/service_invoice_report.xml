@@ -46,7 +46,7 @@
               </tr>
               <tr>
                 <td style="border:1px solid black; padding:5px;"><strong>Reference:</strong></td>
-                <td style="border:1px solid black; padding:5px;" colspan="3"><t t-esc="doc.ref or ''"/></td>
+                <td style="border:1px solid black; padding:5px;" colspan="3"><t t-esc="doc.x_reference_number or ''"/></td>
               </tr>
             </table>
 
