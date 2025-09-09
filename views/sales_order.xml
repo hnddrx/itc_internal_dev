@@ -7,6 +7,7 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
 
+
             <!-- Add after customer field -->
             <xpath expr="//field[@name='partner_id']" position="before">
                 <field name="x_invoice_type" widget="selection"/>
@@ -16,10 +17,30 @@
                 <field name="x_partner_tin" readonly="1"/>
             </xpath>
 
+            <xpath expr="//field[@name='currency_id']" position="after">
+                <field name="x_conversion_rate"/>
+            </xpath>
+
             <xpath expr="//field[@name='payment_term_id']" position="after">
                 <field name="x_remarks"/>
             </xpath>
+           
+            <!-- Add USD field in Order Line tree -->
+            <xpath expr="//field[@name='order_line']/list/field[@name='price_unit']" position="after">
+                <field name="x_unit_price_usd"/>
+                <field name="planned_rate" />
+                <field name="actual_rate" />
+                <field name="x_gain_loss"/>
+            </xpath>
 
+            <!-- Add USD field in Order Line form -->
+            <xpath expr="//field[@name='order_line']/form//field[@name='price_unit']" position="after">
+                <field name="x_unit_price_usd"/>
+                <field name="planned_rate" />
+                <field name="actual_rate" />
+                <field name="x_gain_loss"/>
+            </xpath>
+            
         </field>
     </record>
 </odoo>
