@@ -28,6 +28,7 @@
         'views/account_account_views.xml',
         'views/sales_order.xml',
         'views/account_move_views.xml',
+        #'views/sales_order_line.xml',
     ],
 
     'assets': {
