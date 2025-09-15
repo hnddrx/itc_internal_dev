@@ -20,7 +20,7 @@
         'report/official_receipt_report.xml',
         'report/service_invoice_report.xml',
         'report/credit_memo_report.xml',
-
+        'report/report_statement_of_account_template.xml',
         #Views
         'views/salary_advance_views.xml',
         'views/expense_view.xml',
@@ -28,6 +28,7 @@
         'views/account_account_views.xml',
         'views/sales_order.xml',
         'views/account_move_views.xml',
+        #'views/sales_order_line.xml',
     ],
 
     'assets': {

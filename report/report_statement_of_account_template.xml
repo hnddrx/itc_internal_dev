@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  <!-- QWeb Template: Statement of Account -->
+  <template id="report_statement_of_account_template">
+    <t t-call="web.external_layout">
+      <t t-foreach="docs" t-as="doc">
+        <div class="page" style="font-family: Arial, sans-serif; font-size: 14px; line-height:1.4;">
+          <main>
+            <!-- SOA Header -->
+            <table style="width:100%; margin-bottom:15px; font-size:13px; border-collapse:collapse;">
+              <tr>
+                <td style="width:60%; vertical-align:top; padding:5px; border:1px solid black;">
+                  <strong style="font-size:18px;">STATEMENT OF ACCOUNT</strong><br/>
+                  <strong>SOA NO.:</strong> <span t-esc="doc.name"/><br/>
+                  <strong>BR:</strong> BR-00000-MAIN
+                </td>
+                <td style="width:40%; vertical-align:bottom; padding:5px; text-align:right; border:1px solid black;">
+                  <strong>SOA Date:</strong> <span t-esc="doc.date"/><br/>
+                  <strong>Term:</strong> 15 Days
+                </td>
+              </tr>
+            </table>
+
+            <!-- Customer Information -->
+            <table style="width:100%; border:1px solid black; border-collapse:collapse; font-size:12px; margin-bottom:15px;">
+              <tr>
+                <td style="border:1px solid black; padding:5px; width:25%;"><strong>Customer:</strong></td>
+                <td style="border:1px solid black; padding:5px;" colspan="3"><span t-field="doc.partner_id.name"/></td>
+              </tr>
+              <tr>
+                <td style="border:1px solid black; padding:5px;"><strong>Address:</strong></td>
+                <td style="border:1px solid black; padding:5px;" colspan="3"><span t-field="doc.partner_id.contact_address"/></td>
+              </tr>
+              <tr>
+                <td style="border:1px solid black; padding:5px;"><strong>TIN:</strong></td>
+                <td style="border:1px solid black; padding:5px;" colspan="3"><span t-field="doc.partner_id.vat"/></td>
+              </tr>
+              <tr>
+                <td style="border:1px solid black; padding:5px;"><strong>Particulars:</strong></td>
+                <td style="border:1px solid black; padding:5px;" colspan="3">
+                  Billing Date <span t-esc="doc.date"/> 
+                </td>
+              </tr>
+            </table>
+
+            <!-- Reference Details -->
+            <table style="width:100%; border:1px solid black; border-collapse:collapse; font-size:12px; margin-bottom:15px;">
+              <thead style="background:#f0f0f0;">
+                <tr>
+                  <th style="border:1px solid black; padding:5px;">Reference Date</th>
+                  <th style="border:1px solid black; padding:5px;">Reference No.</th>
+                  <th style="border:1px solid black; padding:5px;">Due Date</th>
+                  <th style="border:1px solid black; padding:5px; text-align:right;">Ref Amount</th>
+                  <th style="border:1px solid black; padding:5px; text-align:right;">Output VAT</th>
+                  <th style="border:1px solid black; padding:5px; text-align:right;">Tax Base</th>
+                  <th style="border:1px solid black; padding:5px; text-align:right;">CWT</th>
+                  <th style="border:1px solid black; padding:5px; text-align:right;">Net Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <t t-foreach="doc.line_ids" t-as="line">
+                  <tr>
+                    <td style="border:1px solid black; padding:5px;"><span t-field="line.reference_date"/></td>
+                    <td style="border:1px solid black; padding:5px;"><span t-field="line.reference_no"/></td>
+                    <td style="border:1px solid black; padding:5px;"><span t-field="line.due_date"/></td>
+                    <td style="border:1px solid black; padding:5px; text-align:right;"><span t-field="line.ref_amount"/></td>
+                    <td style="border:1px solid black; padding:5px; text-align:right;"><span t-field="line.output_vat"/></td>
+                    <td style="border:1px solid black; padding:5px; text-align:right;"><span t-field="line.tax_base"/></td>
+                    <td style="border:1px solid black; padding:5px; text-align:right;"><span t-field="line.cwt"/></td>
+                    <td style="border:1px solid black; padding:5px; text-align:right;"><span t-field="line.net_amount"/></td>
+                  </tr>
+                </t>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3" style="border:1px solid black; padding:5px; text-align:right; font-weight:bold;">Total</td>
+                  <td style="border:1px solid black; padding:5px; text-align:right; font-weight:bold;" colspan="5"><span t-field="doc.total_amount"/></td>
+                </tr>
+              </tfoot>
+            </table>
+
+            <!-- Amount in Words -->
+            <p style="margin-bottom:15px;"><strong>Amount in Words:</strong> ***<span t-esc="doc.amount_in_words"/>***</p>
+
+            <!-- Aging Schedule -->
+            <table style="width:100%; border:1px solid black; border-collapse:collapse; font-size:12px; margin-bottom:15px;">
+              <thead style="background:#f0f0f0;">
+                <tr>
+                  <th style="border:1px solid black; padding:5px;">Current</th>
+                  <th style="border:1px solid black; padding:5px;">1-30 Days</th>
+                  <th style="border:1px solid black; padding:5px;">31-60 Days</th>
+                  <th style="border:1px solid black; padding:5px;">61-90 Days</th>
+                  <th style="border:1px solid black; padding:5px;">91-120 Days</th>
+                  <th style="border:1px solid black; padding:5px;">Over 120 Days</th>
+                  <th style="border:1px solid black; padding:5px;">Total Amount Due</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="border:1px solid black; padding:5px; text-align:right;"><span t-field="doc.current_amount"/></td>
+                  <td style="border:1px solid black; padding:5px; text-align:right;"><span t-field="doc.days_1_30"/></td>
+                  <td style="border:1px solid black; padding:5px; text-align:right;"><span t-field="doc.days_31_60"/></td>
+                  <td style="border:1px solid black; padding:5px; text-align:right;"><span t-field="doc.days_61_90"/></td>
+                  <td style="border:1px solid black; padding:5px; text-align:right;"><span t-field="doc.days_91_120"/></td>
+                  <td style="border:1px solid black; padding:5px; text-align:right;"><span t-field="doc.days_over_120"/></td>
+                  <td style="border:1px solid black; padding:5px; text-align:right;"><span t-field="doc.total_amount"/></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Signatories -->
+            <table style="width:100%; font-size:12px; text-align:center; margin-top:20px; border-collapse:collapse;">
+              <tr>
+                <td style="border:1px solid black; width:33%;">Prepared By:<br/><br/>Signature Over Printed Name</td>
+                <td style="border:1px solid black; width:33%;">Checked/Approved By:<br/><br/>Signature Over Printed Name</td>
+                <td style="border:1px solid black; width:33%;">Received By:<br/><br/>Signature Over Printed Name</td>
+              </tr>
+            </table>
+
+            <!-- Footer -->
+            <p style="font-size:10px; margin-top:20px; text-align:center;">
+              Page 1 of 1<br/>
+              THIS DOCUMENT IS NOT VALID FOR CLAIM OF INPUT TAX
+            </p>
+          </main>
+        </div>
+      </t>
+    </t>
+  </template>
+
+  <!-- REPORT ACTION for Statement of Account -->
+  <record id="action_report_statement_of_account" model="ir.actions.report">
+    <field name="name">Statement of Account</field>
+    <field name="model">account.payment</field>
+    <field name="report_type">qweb-pdf</field>
+    <field name="report_name">itc_internal_dev.report_statement_of_account_template</field>
+    <field name="print_report_name">'SOA - %s' % (object.partner_id.name)</field>
+    <field name="binding_model_id" ref="account.model_account_payment"/>
+    <field name="binding_type">report</field>
+  </record>
+</odoo>
