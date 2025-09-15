@@ -18,15 +18,37 @@
             </div>
  -->
             <!-- Document Header -->
-            <div style="text-align:center; margin-bottom:10px; font-size:14px; font-weight:bold;">
-              IMPORT PURCHASE ORDER
-            </div>
+            <t t-if="doc.x_purchase_type == 'import'">
+              <div style="text-align:center; margin-bottom:10px; font-size:14px; font-weight:bold;">
+                IMPORT PURCHASE ORDER
+              </div>
+            </t>
+            <t t-else="">
+              <div style="text-align:center; margin-bottom:10px; font-size:14px; font-weight:bold;">
+                LOCAL PURCHASE ORDER
+              </div>
+            </t>
 
             <!-- IPO Info -->
             <table style="width:100%; border-collapse:collapse; font-size:12px; margin-bottom:10px;">
               <tr>
-                <td style="width:50%; padding:3px;"><strong>IPO NO.:</strong> <t t-esc="doc.name"/></td>
-                <td style="width:25%; padding:3px;"><strong>IPO Date:</strong> <t t-esc="doc.date_order"/></td>
+                <td style="width:50%; padding:3px;">
+                  <t t-if="doc.x_purchase_type == 'import'">
+                    <strong>IPO NO.:</strong>
+                  </t>
+                  <t t-else="">
+                    <strong>LPO NO.:</strong>
+                  </t>
+                  <t t-esc="doc.name"/>
+                </td>
+                <td style="width:25%; padding:3px;">
+                  <t t-if="doc.x_purchase_type == 'import'">
+                    <strong>IPO Date:</strong> <t t-esc="doc.date_order"/>
+                  </t>
+                  <t t-else="">
+                    <strong>LPO Date:</strong> <t t-esc="doc.date_order"/>
+                  </t>
+                </td>
               </tr>
               <tr>
                 <td style="padding:3px;"><strong>BR:</strong> BR-00000-MAIN</td>
@@ -101,14 +123,14 @@
                 </tr>
                 <tr>
                   <td colspan="7" style="border:1px solid black;">
-                    <p style="font-size:14px; margin-top:10px; text-align:center; font-weight:bold;">
+                    <p style="font-size:14px; text-align:center; font-weight:bold;">
                       NOTES
                     </p>
                   </td>
                 </tr>
                 <tr>
-                  <td colspan="7" style="border:1px solid black; padding:5px;">
-                    <p style="font-size:11px; margin-top:10px; text-align:center; font-style:italic;">
+                  <td colspan="7" style="border:1px solid black; padding:3px;">
+                    <p style="font-size:11px;; text-align:center; font-style:italic;">
                       Please issue Delivery Receipt. Sales Invoice attached to this Import Purchase Order (IPO) upon delivery.
                     </p>
                   </td>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Inherit the Sale Order Form View -->
+    <record id="view_order_form_inherit_custom" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.custom</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Add after customer field -->
+            <xpath expr="//field[@name='partner_id']" position="before">
+                <field name="x_invoice_type" widget="selection"/>
+            </xpath>
+
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="x_partner_tin" readonly="1"/>
+            </xpath>
+
+            <xpath expr="//field[@name='payment_term_id']" position="after">
+                <field name="x_remarks"/>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

@@ -1,33 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-  <template id="custom_report_sales_order">
+  <!-- ===========================
+       QWeb Template: Sales Invoice
+  ============================ -->
+  <template id="custom_report_service_invoice">
     <t t-call="web.external_layout">
       <t t-foreach="docs" t-as="doc">
         <div class="page" style="font-family: Arial, sans-serif; font-size: 14px; line-height:1.4;">
           <main>
 
-            <!-- Company Header -->
-            <!-- <div style="text-align:center; margin-top:10px; margin-bottom:15px;">
-              <p style="font-size:16px; font-weight:bold; margin:0;">INNOVATHINK CORPORATION</p>
-              <p style="margin:2px 0;">
-                4/F, VISTA MALL IT HUB ALABANG-ZAPOTE ROAD CORNER C. V. STARR AVE.<br/>
-                PHILAMLIFE VILLAGE PAMPLONA 2 LAS PINAS CITY<br/>
-                VAT REG TIN: 008-168-070-00000<br/>
-                Telephone No.: 8840-4821
-              </p>
-            </div> -->
-
             <!-- Invoice Header -->
             <table style="width:100%; margin-bottom:15px; font-size:13px; border-collapse:collapse;">
               <tr>
                 <td style="width:60%; vertical-align:top; padding:5px; border:1px solid black;">
-                  <strong style="font-size:18px;">SALES ORDER</strong><br/>
+                  <strong style="font-size:18px;">SERVICE INVOICE</strong><br/>
                   <strong>SI NO.:</strong> <t t-esc="doc.name"/><br/>
                   <strong>BR:</strong> BR-00000-MAIN
                 </td>
                 <td style="width:40%; vertical-align:bottom; padding:5px; text-align:right; border:1px solid black;">
-                  <strong>SI Date:</strong> <t t-esc="doc.date_order"/><br/>
-                  <strong>Term:</strong> <t t-esc="doc.payment_term_id.name or ''"/><br/>
+                  <strong>SI Date:</strong> <t t-esc="doc.invoice_date"/><br/>
+                  <strong>Term:</strong> <t t-esc="doc.invoice_payment_term_id.name or ''"/><br/>
                 </td>
               </tr>
             </table>
@@ -44,7 +36,7 @@
               </tr>
               <tr>
                 <td style="border:1px solid black; padding:5px;"><strong>TIN:</strong></td>
-                <td style="border:1px solid black; padding:5px;"><t t-esc="doc.partner_id.vat or ''"/></td>
+                <td style="border:1px solid black; padding:5px;"><t t-esc="doc.x_partner_tin"/></td>
                 <td style="border:1px solid black; padding:5px;"><strong>Business Style/Trade Name:</strong></td>
                 <td style="border:1px solid black; padding:5px;"><t t-esc="doc.partner_id.name"/></td>
               </tr>
@@ -55,11 +47,10 @@
               <tr>
                 <td style="border:1px solid black; padding:5px;"><strong>Reference:</strong></td>
                 <td style="border:1px solid black; padding:5px;" colspan="3"><t t-esc="doc.x_reference_number or ''"/></td>
-
               </tr>
             </table>
 
-            <!-- Order Lines Table -->
+            <!-- Invoice Lines Table -->
             <table style="width:100%; border:1px solid black; border-collapse:collapse; font-size:12px; margin-bottom:15px;">
               <thead style="background:#f0f0f0;">
                 <tr>
@@ -73,12 +64,12 @@
                 </tr>
               </thead>
               <tbody>
-                <tr t-foreach="doc.order_line" t-as="line">
+                <tr t-foreach="doc.invoice_line_ids" t-as="line">
                   <td style="border:1px solid black; padding:5px;"><t t-esc="line.name"/></td>
-                  <td style="border:1px solid black; padding:5px; text-align:center;"><t t-esc="line.product_uom_qty"/></td>
-                  <td style="border:1px solid black; padding:5px; text-align:center;"><t t-esc="line.product_uom.name"/></td>
+                  <td style="border:1px solid black; padding:5px; text-align:center;"><t t-esc="line.quantity"/></td>
+                  <td style="border:1px solid black; padding:5px; text-align:center;"><t t-esc="line.product_uom_id.name"/></td>
                   <td style="border:1px solid black; padding:5px; text-align:right;"><t t-esc="line.price_unit"/></td>
-                  <td style="border:1px solid black; padding:5px; text-align:right;"><t t-esc="line.price_unit * line.product_uom_qty"/></td>
+                  <td style="border:1px solid black; padding:5px; text-align:right;"><t t-esc="line.price_unit * line.quantity"/></td>
                   <td style="border:1px solid black; padding:5px; text-align:right;"><t t-esc="line.discount or 0.0"/>%</td>
                   <td style="border:1px solid black; padding:5px; text-align:right;"><t t-esc="line.price_subtotal"/></td>
                 </tr>
@@ -91,12 +82,11 @@
               </tfoot>
             </table>
 
-            <!-- Breakdown & Terms -->
+            <!-- Totals -->
             <table style="width:100%; border:1px solid black; border-collapse:collapse; font-size:12px; margin-bottom:15px;">
               <tr>
                 <td rowspan="5" style="width:65%; padding:8px; vertical-align:top; border:1px solid black;">
                   <p><strong>Amount in words:</strong> <span t-esc="doc.currency_id.amount_to_text(doc.amount_total)"/></p>
-                  <p style="margin:10px 0; text-align:center; font-weight:bold; border-top:1px solid black; border-bottom:1px solid black;">Terms and Conditions</p>
                   <ol style="margin:0; padding-left:15px; font-size:11px;">
                     <li>Our liability for loss or damage ceases after delivery to the carrier in good order and condition.</li>
                     <li>This invoice is payable on demand, unless otherwise agreed upon.</li>
@@ -145,28 +135,22 @@
               </tr>
             </table>
 
-            <!-- Footer -->
-            <p style="font-size:10px; margin-top:20px; text-align:left;">
-              Printed By: E-taxpoint Software Solutions Corp. (Open Edition - Tax Based Accounting System)<br/>
-              Acknowledgment Certificate No: ___________<br/>
-              Acknowledgment Certificate Date Issued: ___________<br/>
-              Permitted Series Range: SAI-000000000001 - SAI-999999999999
-            </p>
-
           </main>
         </div>
       </t>
     </t>
   </template>
 
-  <!-- REPORT ACTION -->
-  <record id="report_receiving_receipt_custom" model="ir.actions.report">
-    <field name="name">Sales Order</field>
-    <field name="model">sale.order</field>
+  <!-- ===========================
+       REPORT ACTION for account.move
+  ============================ -->
+  <record id="report_service_invoice_account_move" model="ir.actions.report">
+    <field name="name">Service Invoice</field>
+    <field name="model">account.move</field>
     <field name="report_type">qweb-pdf</field>
-    <field name="report_name">itc_internal_dev.custom_report_sales_order</field>
-    <field name="print_report_name">'Sales Order %s' % (object.name)</field>
-    <field name="binding_model_id" ref="sale.model_sale_order"/>
+    <field name="report_name">itc_internal_dev.custom_report_service_invoice</field>
+    <field name="print_report_name">'Service Invoice - %s' % (object.name)</field>
+    <field name="binding_model_id" ref="account.model_account_move"/>
     <field name="binding_type">report</field>
   </record>
 </odoo>
