@@ -11,11 +11,11 @@
               <tr>
                 <td style="width:60%; vertical-align:top; padding:5px; border:1px solid black;">
                   <strong style="font-size:18px;">STATEMENT OF ACCOUNT</strong><br/>
-                  <strong>SOA NO.:</strong> <span t-esc="doc.soa_no or doc.name"/><br/>
+                  <strong>SOA NO.:</strong> <span t-esc="doc.name"/><br/>
                   <strong>BR:</strong> BR-00000-MAIN
                 </td>
                 <td style="width:40%; vertical-align:bottom; padding:5px; text-align:right; border:1px solid black;">
-                  <strong>SOA Date:</strong> <span t-esc="doc.date or doc.date_start" t-options='{"format": "MMMM dd, yyyy"}'/><br/>
+                  <strong>SOA Date:</strong> <span t-esc="doc.date"/><br/>
                   <strong>Term:</strong> 15 Days
                 </td>
               </tr>
@@ -38,7 +38,7 @@
               <tr>
                 <td style="border:1px solid black; padding:5px;"><strong>Particulars:</strong></td>
                 <td style="border:1px solid black; padding:5px;" colspan="3">
-                  Billing from <span t-esc="doc.date_start"/> to <span t-esc="doc.date_end"/>
+                  Billing Date <span t-esc="doc.date"/> 
                 </td>
               </tr>
             </table>
