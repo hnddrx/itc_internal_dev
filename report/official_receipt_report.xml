@@ -28,8 +28,7 @@
               </tr>
               <tr>
                 <td style="border:1px solid black; padding:5px;"><strong>Address:</strong></td>
-                <td style="border:1px solid black; padding:5px;" colspan="3"><span/>, <span t-field="doc.partner_id.street2"/>, <span t-field="doc.partner_id.city
-                "/></td>
+                <td style="border:1px solid black; padding:5px;" colspan="3"><span/>, <span t-field="doc.partner_id.street2"/></td>
               </tr>
               <tr>
                 <td style="border:1px solid black; padding:5px;"><strong>TIN:</strong></td>
