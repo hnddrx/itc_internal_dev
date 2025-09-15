@@ -5,7 +5,21 @@
     <field name="model">purchase.order</field>
     <field name="inherit_id" ref="purchase.purchase_order_form"/>
     <field name="arch" type="xml">
-
+      <header position="inside">
+            <button name="%(report_purchase_order_custom)d"
+                    string="Print IPO"
+                    type="action"
+                    invisible="x_purchase_type != 'import'"
+                    class="btn-primary"/>
+            <button name="%(report_purchase_order_custom)d"
+                    string="Print LPO"
+                    type="action"
+                    invisible="x_purchase_type != 'local'"
+                    class="btn-primary"/>
+      </header>
+      <xpath expr="//field[@name='partner_id']" position="before">
+         <field name="x_purchase_type" />
+      </xpath>
       <xpath expr="//field[@name='partner_id']" position="after">
          <field name="x_vendor_tin" invisible="not partner_id"/>
       </xpath>

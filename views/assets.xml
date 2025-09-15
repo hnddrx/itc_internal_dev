@@ -1,0 +1,9 @@
+<odoo>
+    <template id="assets_backend" inherit_id="web.assets_backend" name="Add Asterisk to Required Fields">
+        <xpath expr="." position="inside">
+            <xpath expr="." position="inside">
+                <script type="text/javascript" src="/asterisk_required_fields/static/src/js/form_label_patch.js"/>
+            </xpath>
+        </xpath>
+    </template>
+</odoo>

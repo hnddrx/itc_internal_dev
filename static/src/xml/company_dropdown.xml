@@ -1,0 +1,14 @@
+<odoo>
+    <template id="asterisk_required_label_patch" inherit_id="web.form_label" name="Asterisk Required Label Patch">
+        <xpath expr="//label" position="attributes">
+            <attribute name="t-attf-class">
+                #{ 'o_required' if field.required else '' } #{ attrs['class'] if 'class' in attrs else '' }
+            </attribute>
+        </xpath>
+        <xpath expr="//label" position="inside">
+            <t t-if="field.required">
+                <span class="text-danger">*</span>
+            </t>
+        </xpath>
+    </template>
+</odoo>

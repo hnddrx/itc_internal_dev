@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  <!-- QWeb Template: Official Receipt -->
+  <template id="report_custom_official_receipt_template">
+    <t t-call="web.external_layout">
+      <t t-foreach="docs" t-as="doc">
+        <div class="page" style="font-family: Arial, sans-serif; font-size: 14px; line-height:1.4;">
+          <main>
+            <!-- Receipt Header -->
+            <table style="width:100%; margin-bottom:15px; font-size:13px; border-collapse:collapse;">
+              <tr>
+                <td style="width:60%; vertical-align:top; padding:5px; border:1px solid black;">
+                  <strong style="font-size:18px;">OFFICIAL RECEIPT</strong><br/>
+                  <strong>OR NO.:</strong> <span t-field="doc.name"/><br/>
+                  <strong>BR:</strong> BR-00000-MAIN
+                </td>
+                <td style="width:40%; vertical-align:bottom; padding:5px; text-align:right; border:1px solid black;">
+                  <strong>OR Date:</strong> <span t-field="doc.date" t-options='{"format": "MMMM dd, yyyy"}'/><br/>
+                </td>
+              </tr>
+            </table>
+
+            <!-- Received From Information -->
+            <table style="width:100%; border:1px solid black; border-collapse:collapse; font-size:12px; margin-bottom:15px;">
+              <tr>
+                <td style="border:1px solid black; padding:5px; width:25%;"><strong>Received From:</strong></td>
+                <td style="border:1px solid black; padding:5px;" colspan="3"><span t-field="doc.partner_id.name"/></td>
+              </tr>
+              <tr>
+                <td style="border:1px solid black; padding:5px;"><strong>Address:</strong></td>
+                <td style="border:1px solid black; padding:5px;" colspan="3"><span/>, <span t-field="doc.partner_id.street2"/>, <span t-field="doc.partner_id.city
+                "/></td>
+              </tr>
+              <tr>
+                <td style="border:1px solid black; padding:5px;"><strong>TIN:</strong></td>
+                <td style="border:1px solid black; padding:5px;" colspan="3"><span t-field="doc.partner_id.vat"/></td>
+              </tr>
+            </table>
+
+            <!-- Reference Details Table -->
+            <table style="width:100%; border:1px solid black; border-collapse:collapse; font-size:12px; margin-bottom:15px;">
+              <thead style="background:#f0f0f0;">
+                <tr>
+                  <th style="border:1px solid black; padding:5px; text-align:left;">Reference Number</th>
+                  <th style="border:1px solid black; padding:5px; text-align:right; width:100px;">Amount</th>
+                  <th style="border:1px solid black; padding:5px; text-align:left;">Reference Number</th>
+                  <th style="border:1px solid black; padding:5px; text-align:right; width:100px;">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <t t-set="reconciled_invoices" t-value="doc.reconciled_invoice_ids"/>
+                <t t-set="num_invs" t-value="len(reconciled_invoices)"/>
+                <t t-set="rows" t-value="(num_invs + 1) // 2"/>
+                <t t-foreach="range(rows)" t-as="row">
+                  <tr>
+                    <td style="border:1px solid black; padding:5px;"><t t-if="row*2 &lt; num_invs"><span t-field="reconciled_invoices[row*2].name"/></t></td>
+                    <td style="border:1px solid black; padding:5px; text-align:right;"><t t-if="row*2 &lt; num_invs"><span t-field="reconciled_invoices[row*2].amount_total" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></t></td>
+                    <td style="border:1px solid black; padding:5px;"><t t-if="row*2 + 1 &lt; num_invs"><span t-field="reconciled_invoices[row*2 + 1].name"/></t></td>
+                    <td style="border:1px solid black; padding:5px; text-align:right;"><t t-if="row*2 + 1 &lt; num_invs"><span t-field="reconciled_invoices[row*2 + 1].amount_total" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></t></td>
+                  </tr>
+                </t>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3" style="border:1px solid black; padding:5px; text-align:right; font-weight:bold;">TOTAL</td>
+                  <td style="border:1px solid black; padding:5px; text-align:right; font-weight:bold;"><span t-field="doc.amount" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></td>
+                </tr>
+              </tfoot>
+            </table>
+
+            <!-- Collection Details and Mode of Payment -->
+            <table style="width:100%; margin-bottom:15px;">
+              <tr>
+                <td style="width:50%; vertical-align:top; padding-right:5px;">
+                  <table style="width:100%; border:1px solid black; border-collapse:collapse; font-size:12px;">
+                    <thead style="background:#f0f0f0;">
+                      <tr>
+                        <th colspan="2" style="border:1px solid black; padding:5px;">COLLECTION DETAILS</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <t t-set="gross_amount" t-value="sum(invoice.amount_total_signed for invoice in doc.reconciled_invoice_ids)"/>
+                      <t t-set="ewt" t-value="gross_amount - doc.amount_signed"/>
+                      <tr>
+                        <td style="border:1px solid black; padding:5px;">Amount For Collection</td>
+                        <td style="border:1px solid black; padding:5px; text-align:right;"><span t-esc="gross_amount" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></td>
+                      </tr>
+                      <tr>
+                        <td style="border:1px solid black; padding:5px;">Less: 2307 - EWT</td>
+                        <td style="border:1px solid black; padding:5px; text-align:right;"><span t-esc="ewt" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></td>
+                      </tr>
+                      <tr>
+                        <td style="border:1px solid black; padding:5px;">Less: Other Deductions</td>
+                        <td style="border:1px solid black; padding:5px; text-align:right;">0.00</td>
+                      </tr>
+                      <tr>
+                        <td style="border:1px solid black; padding:5px;">Add: Customer Deposit</td>
+                        <td style="border:1px solid black; padding:5px; text-align:right;">0.00</td>
+                      </tr>
+                      <tr>
+                        <td style="border:1px solid black; padding:5px; font-weight:bold;">Total</td>
+                        <td style="border:1px solid black; padding:5px; text-align:right; font-weight:bold;"><span t-field="doc.amount" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+                <td style="width:50%; vertical-align:top; padding-left:5px;">
+                  <table style="width:100%; border:1px solid black; border-collapse:collapse; font-size:12px;">
+                    <thead style="background:#f0f0f0;">
+                      <tr>
+                        <th colspan="2" style="border:1px solid black; padding:5px;">MODE OF PAYMENT</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td style="border:1px solid black; padding:5px;">Description</td>
+                        <td style="border:1px solid black; padding:5px; text-align:right;">Amount</td>
+                      </tr>
+                      <tr>
+                        <td style="border:1px solid black; padding:5px;">Cash</td>
+                        <td style="border:1px solid black; padding:5px; text-align:right;"><t t-if="doc.payment_method_line_id.code == 'cash'"><span t-field="doc.amount" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></t><t t-else="">0.00</t></td>
+                      </tr>
+                      <tr>
+                        <td style="border:1px solid black; padding:5px;">Check</td>
+                        <td style="border:1px solid black; padding:5px; text-align:right;"><t t-if="doc.payment_method_line_id.code == 'check'"><span t-field="doc.amount" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></t><t t-else="">0.00</t></td>
+                      </tr>
+                      <tr>
+                        <td style="border:1px solid black; padding:5px;">Others</td>
+                        <td style="border:1px solid black; padding:5px; text-align:right;">0.00</td>
+                      </tr>
+                      <tr>
+                        <td style="border:1px solid black; padding:5px; font-weight:bold;">Total</td>
+                        <td style="border:1px solid black; padding:5px; text-align:right; font-weight:bold;"><span t-field="doc.amount" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </td>
+              </tr>
+            </table>
+
+            <!-- Amount in Words -->
+            <p style="margin-bottom:15px;"><strong>Amount in Words:</strong> ***<span t-esc="doc.currency_id.amount_to_text(doc.amount)"/> ONLY***</p>
+
+            <!-- Payment Details Table -->
+            <table style="width:100%; border:1px solid black; border-collapse:collapse; font-size:12px; margin-bottom:15px;">
+              <thead style="background:#f0f0f0;">
+                <tr>
+                  <th style="border:1px solid black; padding:5px; text-align:left;">BANK NAME</th>
+                  <th style="border:1px solid black; padding:5px; text-align:left;">CHECK DATE</th>
+                  <th style="border:1px solid black; padding:5px; text-align:left;">CHECK NUMBER</th>
+                  <th style="border:1px solid black; padding:5px; text-align:right;">CHECK AMOUNT</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr t-if="doc.payment_method_line_id.code == 'check'">
+                  <td style="border:1px solid black; padding:5px;"><span t-field="doc.journal_id.name"/></td>
+                  <td style="border:1px solid black; padding:5px;"><span t-field="doc.date" t-options='{"format": "MM/dd/yyyy"}'/></td>
+                  <td style="border:1px solid black; padding:5px;"><span t-field="doc.check_number"/></td>
+                  <td style="border:1px solid black; padding:5px; text-align:right;"><span t-field="doc.amount" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3" style="border:1px solid black; padding:5px; text-align:right; font-weight:bold;">Total</td>
+                  <td style="border:1px solid black; padding:5px; text-align:right; font-weight:bold;"><span t-field="doc.amount" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></td>
+                </tr>
+              </tfoot>
+            </table>
+
+            <!-- Account Title Table -->
+            <table style="width:100%; border:1px solid black; border-collapse:collapse; font-size:12px; margin-bottom:15px;">
+              <thead style="background:#f0f0f0;">
+                <tr>
+                  <th style="border:1px solid black; padding:5px; text-align:left;">ACCOUNT TITLE</th>
+                  <th style="border:1px solid black; padding:5px; text-align:right;">DEBIT</th>
+                  <th style="border:1px solid black; padding:5px; text-align:right;">CREDIT</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="border:1px solid black; padding:5px;">Cash (Check Collection)</td>
+                  <td style="border:1px solid black; padding:5px; text-align:right;"><span t-field="doc.amount" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></td>
+                  <td style="border:1px solid black; padding:5px; text-align:right;"></td>
+                </tr>
+                <tr>
+                  <td style="border:1px solid black; padding:5px;">Accounts Receivable</td>
+                  <td style="border:1px solid black; padding:5px; text-align:right;"></td>
+                  <td style="border:1px solid black; padding:5px; text-align:right;"><span t-field="doc.amount" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td style="border:1px solid black; padding:5px; font-weight:bold;">Total</td>
+                  <td style="border:1px solid black; padding:5px; text-align:right; font-weight:bold;"><span t-field="doc.amount" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></td>
+                  <td style="border:1px solid black; padding:5px; text-align:right; font-weight:bold;"><span t-field="doc.amount" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></td>
+                </tr>
+              </tfoot>
+            </table>
+
+            <!-- Signatories -->
+            <table style="width:100%; font-size:12px; text-align:center; margin-top:20px;">
+              <tr>
+                <td style="border:1px solid black; width:50%;">Cashier/Collector's Signature</td>
+                <td style="border:1px solid black; width:50%;">Customer's Signature</td>
+              </tr>
+              <tr style="height:50px;">
+                <td style="border:1px solid black;"></td>
+                <td style="border:1px solid black;"></td>
+              </tr>
+            </table>
+
+            <!-- Footer -->
+            <p style="font-size:10px; margin-top:20px; text-align:center;">
+              Page 1 of 1<br/>
+              THIS DOCUMENT IS NOT VALID FOR CLAIM OF INPUT TAX<br/>
+              Printed By: Etaxpoint Software Solutions Corp. (Open Edition - Tax Based Accounting System)<br/>
+              Acknowledgment Certificate No.: <br/>
+              Acknowledgment Certificate Date Issued: <br/>
+              Permitted Series Range: OR-000000000001 - OR-999999999999
+            </p>
+          </main>
+        </div>
+      </t>
+    </t>
+  </template>
+
+  <!-- REPORT ACTION for account.payment -->
+  <record id="action_report_custom_official_receipt" model="ir.actions.report">
+    <field name="name">Official Receipt</field>
+    <field name="model">account.payment</field>
+    <field name="report_type">qweb-pdf</field>
+    <field name="report_name">itc_internal_dev.report_custom_official_receipt_template</field>
+    <field name="print_report_name">'Official Receipt - %s' % (object.name)</field>
+    <field name="binding_model_id" ref="account.model_account_payment"/>
+    <field name="binding_type">report</field>
+  </record>
+</odoo>
