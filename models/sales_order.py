@@ -53,19 +53,6 @@ class SaleOrder(models.Model):
         help="Remarks related to this sales order."
     )
 
-    
-    planned_rate = fields.Float(
-        string="Planned Rate (PHP per USD)",
-        digits=(12, 6),
-        help="Budgeted or expected conversion rate.",
-    )
-
-    actual_rate = fields.Float(
-        string="Actual Rate (PHP per USD)",
-        digits=(12, 6),
-        help="Actual conversion rate at transaction/payment time.",
-    )
-
 
     @api.depends('currency_id', 'date_order', 'company_id')
     def _compute_conversion_rate(self):

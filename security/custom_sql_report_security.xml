@@ -1,0 +1,14 @@
+<odoo>
+    <!-- User Group for SQL Reports -->
+    <record id="group_sql_report_user" model="res.groups">
+        <field name="name">SQL Report User</field>
+        <field name="category_id" ref="base.module_category_tools"/>
+    </record>
+
+    <!-- Manager Group -->
+    <record id="group_sql_report_manager" model="res.groups">
+        <field name="name">SQL Report Manager</field>
+        <field name="category_id" ref="base.module_category_tools"/>
+        <field name="implied_ids" eval="[(4, ref('itc_internal_dev.group_sql_report_user'))]"/>
+    </record>
+</odoo>

@@ -1,0 +1,68 @@
+<odoo>
+    <!-- Main Menu -->
+    <menuitem id="menu_custom_sql_report_root" name="Custom SQL Reports" sequence="10"/>
+
+    <!-- Action -->
+    <record id="action_custom_sql_report" model="ir.actions.act_window">
+        <field name="name">Custom SQL Reports</field>
+        <field name="res_model">custom.sql.report</field>
+        <field name="view_mode">form,list</field>
+    </record>
+
+    <!-- Menu Item -->
+    <menuitem id="menu_custom_sql_report"
+              name="Reports"
+              parent="menu_custom_sql_report_root"
+              action="action_custom_sql_report"/>
+
+    <!-- SQL Report Form -->
+    <record id="view_sql_report_form" model="ir.ui.view">
+        <field name="name">custom.sql.report.form</field>
+        <field name="model">custom.sql.report</field>
+        <field name="arch" type="xml">
+            <form string="SQL Report">
+                <header>
+                 <button name="action_execute_query"
+                        type="object"
+                        string="Run Query"
+                        class="btn-primary"
+                        icon="fa-play"/>
+                <button string="Discard"
+                        class="btn-secondary"
+                        special="cancel"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="module_id"/>
+                        <field name="sql_query" widget="text"/>
+                    </group>
+                    <footer>
+                        <button name="action_execute_query" type="object" string="Run Query" class="btn-primary"/>
+                    </footer>
+                    <notebook>
+                        <page string="Results">
+                            <field name="result_ids" nolabel="1" context="{'active_test': False}">
+                                <list string="Query Results">
+                                    <field name="data"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- SQL Report List -->
+    <record id="view_sql_report_list" model="ir.ui.view">
+        <field name="name">custom.sql.report.list</field>
+        <field name="model">custom.sql.report</field>
+        <field name="arch" type="xml">
+            <list string="SQL Reports">
+                <field name="name"/>
+                <field name="module_id"/>
+            </list>
+        </field>
+    </record>
+</odoo>
