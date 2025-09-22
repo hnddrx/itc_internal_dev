@@ -1,68 +1,79 @@
 <odoo>
-    <!-- Main Menu -->
-    <menuitem id="menu_custom_sql_report_root" name="Custom SQL Reports" sequence="10"/>
-
-    <!-- Action -->
-    <record id="action_custom_sql_report" model="ir.actions.act_window">
-        <field name="name">Custom SQL Reports</field>
-        <field name="res_model">custom.sql.report</field>
-        <field name="view_mode">form,list</field>
-    </record>
-
-    <!-- Menu Item -->
-    <menuitem id="menu_custom_sql_report"
-              name="Reports"
-              parent="menu_custom_sql_report_root"
-              action="action_custom_sql_report"/>
-
-    <!-- SQL Report Form -->
+    <!-- Form View -->
     <record id="view_sql_report_form" model="ir.ui.view">
         <field name="name">custom.sql.report.form</field>
         <field name="model">custom.sql.report</field>
         <field name="arch" type="xml">
             <form string="SQL Report">
                 <header>
-                 <button name="action_execute_query"
-                        type="object"
-                        string="Run Query"
-                        class="btn-primary"
-                        icon="fa-play"/>
-                <button string="Discard"
-                        class="btn-secondary"
-                        special="cancel"/>
+                    <button string="Generate Report" type="object" name="action_execute_query" class="btn-primary"/>
+                    <button name="action_export_excel" type="object" string="Export to Excel" class="btn-secondary"/>
                 </header>
                 <sheet>
                     <group>
-                        <field name="name"/>
-                        <field name="module_id"/>
-                        <field name="sql_query" widget="text"/>
+                        <group>
+                            <field name="name" widget='selection'/>
+                            <field name="report_category"/>
+                            <field name="description" colspan="2"/>
+                        </group>
+                        <group>
+                            <field name="from_date"/>
+                            <field name="to_date"/>
+                            <field name="generated_on"/>
+                            <field name="generated_by"/>
+                            <field name="sql_query" invisible="1" nolabel="1" class="o_sql_query_field"/>
+
+                        </group>
                     </group>
-                    <footer>
-                        <button name="action_execute_query" type="object" string="Run Query" class="btn-primary"/>
-                    </footer>
                     <notebook>
                         <page string="Results">
-                            <field name="result_ids" nolabel="1" context="{'active_test': False}">
+                            <field name="result_ids" mode="list">
                                 <list string="Query Results">
                                     <field name="data"/>
                                 </list>
                             </field>
                         </page>
+                        
                     </notebook>
                 </sheet>
             </form>
         </field>
     </record>
 
-    <!-- SQL Report List -->
+    <!-- Tree view for line model -->
+    <record id="view_sql_report_line_list" model="ir.ui.view">
+        <field name="name">custom.sql.report.line.list</field>
+        <field name="model">custom.sql.report.line</field>
+        <field name="arch" type="xml">
+            <list string="Query Results">
+                <field name="data"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- List View -->
     <record id="view_sql_report_list" model="ir.ui.view">
         <field name="name">custom.sql.report.list</field>
         <field name="model">custom.sql.report</field>
         <field name="arch" type="xml">
             <list string="SQL Reports">
                 <field name="name"/>
-                <field name="module_id"/>
+                <field name="report_category"/>
+                <field name="generated_on"/>
+                <field name="generated_by"/>
             </list>
         </field>
     </record>
+
+    <!-- Action -->
+    <record id="action_custom_sql_report" model="ir.actions.act_window">
+        <field name="name">BIR CAS Reports</field>
+        <field name="res_model">custom.sql.report</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_custom_sql_report"
+              name="BIR CAS Reports"
+              action="action_custom_sql_report"/>
 </odoo>
