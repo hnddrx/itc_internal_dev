@@ -14,7 +14,7 @@
               <tr>
                 <td style="width:60%; vertical-align:top; padding:5px; border:1px solid black;">
                   <strong style="font-size:18px;">SERVICE INVOICE</strong><br/>
-                  <strong>SI NO.:</strong> <t t-esc="doc.name"/><br/>
+                  <strong>SI NO.:</strong> <t t-esc="doc.invoice_origin"/><br/>
                   <strong>BR:</strong> BR-00000-MAIN
                 </td>
                 <td style="width:40%; vertical-align:bottom; padding:5px; text-align:right; border:1px solid black;">
@@ -134,7 +134,14 @@
                 <td style="font-size:11px; border:1px solid black;">Signature over Printed Name</td>
               </tr>
             </table>
-
+            <div style="font-size:10px; margin-top:20px;">
+              <p>
+              Printed By : Etaxpoint Software Solutions Corp. (Open Edition - Tax Based Accounting System) <br/>
+              Acknowledgment Certificate No.: <br/>
+              Acknowledgment Certificate Date Issued: <br/>
+              Permitted Series Range: SA-000000000001 - SA-999999999999
+              </p>
+            </div>
           </main>
         </div>
       </t>
@@ -149,7 +156,7 @@
     <field name="model">account.move</field>
     <field name="report_type">qweb-pdf</field>
     <field name="report_name">itc_internal_dev.custom_report_service_invoice</field>
-    <field name="print_report_name">'Service Invoice - %s' % (object.name)</field>
+    <field name="print_report_name">'Service Invoice - %s' % (object.invoice_origin)</field>
     <field name="binding_model_id" ref="account.model_account_move"/>
     <field name="binding_type">report</field>
   </record>
