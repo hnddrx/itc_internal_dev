@@ -6,36 +6,69 @@
         <field name="arch" type="xml">
             <form string="SQL Report">
                 <header>
-                    <button string="Generate Report" type="object" name="action_execute_query" class="btn-primary"/>
-                    <button name="action_export_excel" type="object" string="Export to Excel" class="btn-secondary"/>
+                    <field name="name" readonly="1" class="o_field_widget o_text_overflow" />
+
+                    <div class="o_form_buttons" style="margin-left:auto; display:flex; gap:8px; flex-wrap:wrap;">
+                        <button string="Generate Report"
+                                type="object"
+                                name="action_execute_query"
+                                class="btn btn-primary o_btn_icon"
+                             />
+
+                        <button string="Export"
+                                type="object"
+                                name="action_export_excel"
+                                class="btn btn-outline-success o_btn_icon"
+                             />
+
+                    </div>
                 </header>
+
+
                 <sheet>
                     <group>
                         <group>
-                            <field name="name" widget='selection'/>
-                            <field name="report_category"/>
+                            <field name="name" widget="selection" groups="itc_internal_dev.group_sql_report_manager"/>
+                            <field name="report_category" groups="itc_internal_dev.group_sql_report_manager"/>
+
                             <field name="description" colspan="2"/>
                         </group>
                         <group>
-                            <field name="from_date"/>
+                            <field name="from_date" />
                             <field name="to_date"/>
-                            <field name="generated_on"/>
-                            <field name="generated_by"/>
+                            <field name="generated_on" readonly="1" />
+                            <field name="generated_by" readonly="1" />
                             <field name="sql_query" invisible="1" nolabel="1" class="o_sql_query_field"/>
 
                         </group>
                     </group>
                     <notebook>
-                        <page string="Results">
-                            <field name="result_ids" mode="list">
+                       <page string="Result">
+                           <field name="result_ids" create="false" edit="false" delete="false">
+                                <list string="Query Results" edit="false">
+                                    <field name="html_result" readonly="1"/>
+                                </list>
+                                <form string="Query Result Line" edit="false">
+                                    <field name="html_result" readonly="1"/>
+                                </form>
+                            </field>
+
+                        </page>
+
+                        <page string="Raw Data" invisible="1">
+                            <field name="result_ids"  create="false" edit="false" delete="false">
                                 <list string="Query Results">
-                                    <field name="data"/>
+                                    <field name="data" invisible="1" readonly="1"/>
                                 </list>
                             </field>
-                        </page>
-                        
+                        </page>      
                     </notebook>
+                    <group colspan="2" string="Export Info">
+                        <field name="exported_on" readonly="1"/>
+                        <field name="exported_by" readonly="1"/>
+                    </group>
                 </sheet>
+                <chatter/>
             </form>
         </field>
     </record>
@@ -46,7 +79,7 @@
         <field name="model">custom.sql.report.line</field>
         <field name="arch" type="xml">
             <list string="Query Results">
-                <field name="data"/>
+                <field name="html_result" />
             </list>
         </field>
     </record>

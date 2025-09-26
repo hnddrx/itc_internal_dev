@@ -4,7 +4,7 @@
     'category': 'Accounting',
     'summary': 'Manage Employee Salary Advances with Accounting Integration',
     'author': 'ITC - Odoo Team',
-    'depends': ['hr', 'hr_payroll', 'account', 'mail', 'base'],
+    'depends': ['hr', 'hr_payroll', 'account', 'mail', 'base', 'web'],
     'data': [
         #Security
         'security/custom_sql_report_security.xml',
@@ -36,6 +36,7 @@
     'assets': {
         'web.assets_backend': [
             'itc_internal_dev/static/src/css/custom_buttons.css',
+            'itc_internal_dev/static/src/css/required.css',
         ],
     },
     'installable': True,
