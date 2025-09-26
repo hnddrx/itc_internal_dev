@@ -1,0 +1,11 @@
+/* Add a red asterisk for all required fields globally */
+.o_required_modifier label:after {
+    content: " *";
+    color: red;
+    font-weight: bold;
+}
+
+/* (Optional) Make the label text red too */
+.o_required_modifier label {
+    color: red;
+}
