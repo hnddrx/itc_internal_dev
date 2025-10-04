@@ -4,11 +4,12 @@
     'category': 'Accounting',
     'summary': 'Manage Employee Salary Advances with Accounting Integration',
     'author': 'ITC - Odoo Team',
-    'depends': ['hr', 'hr_payroll', 'account', 'mail', 'base', 'web'],
+    'depends': ['hr', 'hr_payroll', 'account', 'mail', 'base', 'web', 'helpdesk'],
     'data': [
         #Security
         'security/custom_sql_report_security.xml',
         'security/salary_advance_security.xml',
+        'security/helpdesk_security.xml',
         'security/ir.model.access.csv',
 
         #Data
@@ -22,6 +23,7 @@
         'report/service_invoice_report.xml',
         'report/credit_memo_report.xml',
         'report/report_statement_of_account_template.xml',
+        'report/acknowledgement_report.xml',
         #Views
         'views/salary_advance_views.xml',
         'views/expense_view.xml',
