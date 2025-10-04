@@ -113,8 +113,8 @@ SQL_QUERIES = {
             '' AS "ZERO RATED",
             '' AS "EXEMPT",
             ABS(s.amount_total - s.amount_tax) AS "TOTAL TAXABLE SALES",
-            s.amount_tax AS "OUTPUT TAX TWELVE PERCENT",
-            s.amount_total AS "SI/OR AMOUNT",
+            a.amount_tax AS "OUTPUT TAX TWELVE PERCENT",
+            a.amount_total AS "SI/OR AMOUNT",
             '' AS "SEVER PERCENT STANDARD INPUT VAT",
             '' AS "BIR FORM VAT 2307",
             '' AS "BIR FORM EWT 2307"
