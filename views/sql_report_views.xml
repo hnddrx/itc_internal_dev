@@ -49,7 +49,7 @@
                                     <field name="html_result" readonly="1"/>
                                 </list>
                                 <form string="Query Result Line" edit="false">
-                                    <field name="html_result" readonly="1"/>
+                                    <field name="html_result" readonly="1" style="width:1000px;"/>
                                 </form>
                             </field>
 

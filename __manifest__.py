@@ -9,7 +9,6 @@
         #Security
         'security/custom_sql_report_security.xml',
         'security/salary_advance_security.xml',
-        'security/helpdesk_security.xml',
         'security/ir.model.access.csv',
 
         #Data
