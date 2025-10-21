@@ -14,9 +14,9 @@ _logger = logging.getLogger(__name__)
 # -------------------------
 REPORT_NAMES = [
     ('sales_subsidiary_journal_rr9', 'Sales Subsidiary Journal RR9'),
-    ('sales_journal', 'Sales Subsidiary Journal'),
+    ('sales_journal', 'Sales Journal'),
     ('purchase_subsidiary_journal_rr9', 'Purchase Subsiday Journal RR9'),
-    ('purchase_journal', 'Purchase Subsidiary Journal'),
+    ('purchase_journal', 'Purchase Journal'),
     ('general_ledger', 'General Ledger'),
     ('general_ledger_rr9', 'General Ledger RR9'),
     ('general_journal', 'General Journal'),
@@ -102,27 +102,74 @@ SQL_QUERIES = {
             '' AS "OTHERS",
             a.amount_total_signed AS "GROSS AMOUNT",
             '' AS "DISCOUNT AMOUNT",
-            s.amount_total AS "SALES AMOUNT",
-            CASE WHEN s.x_invoice_type = 'consu' THEN s.amount_untaxed ELSE 0 END AS "GOODS",
-            CASE WHEN s.x_invoice_type = 'service' THEN s.amount_untaxed ELSE 0 END AS "SERVICE",
-            s.amount_untaxed AS "TOTAL UNTAXED",
-            '' AS "PRIVATE",
-            '' AS "GOVERNMENT",
-            '' AS "TOTAL GOV/PRIVATE",
-            '' AS "VATABLE",
-            '' AS "ZERO RATED",
+            a.amount_total AS "SALES AMOUNT",
+            CASE 
+                WHEN s.x_invoice_type = 'consu' THEN a.amount_untaxed 
+                ELSE 0 
+            END AS "GOODS DOMESTIC SALES",
+            CASE 
+                WHEN s.x_invoice_type = 'service' THEN a.amount_untaxed 
+                ELSE 0 
+            END AS "SERVICE DOMESTIC SALES",
+            s.amount_untaxed AS "TOTAL DOMESTIC SALES",
+            case 
+                when a.amount_tax > 0 then a.amount_untaxed 
+                else 0
+            end AS "PRIVATE",
+            case 
+                when a.amount_tax = 0 then a.amount_untaxed 
+                else 0
+            end AS "GOVERNMENT",
+            ABS(
+                COALESCE(
+                    CASE WHEN s.x_invoice_type = 'service' THEN a.amount_untaxed ELSE 0 END, 
+                    0
+                )
+                -
+                COALESCE(
+                    CASE WHEN s.x_invoice_type = 'consu' THEN a.amount_untaxed ELSE 0 END, 
+                    0
+                )
+            ) AS "TOTAL",
+            case 
+                when a.amount_tax > 0 then a.amount_untaxed 
+                else 0
+            end AS "VATABLE",
+            case 
+                when a.amount_tax = 0 then a.amount_untaxed 
+                else 0
+            end AS "ZERO RATED",
             '' AS "EXEMPT",
-            ABS(s.amount_total - s.amount_tax) AS "TOTAL TAXABLE SALES",
-            a.amount_tax AS "OUTPUT TAX TWELVE PERCENT",
+            ABS(a.amount_total - a.amount_tax) AS "TOTAL TAXABLE SALES",
+            a.amount_tax AS "OUTPUT TAX 12%%",
             a.amount_total AS "SI/OR AMOUNT",
-            '' AS "SEVER PERCENT STANDARD INPUT VAT",
-            '' AS "BIR FORM VAT 2307",
-            '' AS "BIR FORM EWT 2307"
+            0 AS "7%% STANDARD INPUT VAT",
+            0 AS "BIR FORM VAT 2307 AMOUNT",
+            0 AS "BIR FORM EWT 2307 AMOUNT"
         FROM sale_order s
-        INNER JOIN account_move a ON s.name = a.invoice_origin 
-        LEFT JOIN res_partner r ON s.partner_id = r.id
+        INNER JOIN account_move a 
+            ON s.name = a.invoice_origin
+        LEFT JOIN res_partner r 
+            ON s.partner_id = r.id
         WHERE a.invoice_date BETWEEN %s AND %s;
     """,
+    'purchase_subsidiary_journal_rr9': """ 
+    select 
+        am."date" "DATE",
+        rp.vat "TIN",
+        rp."name" "SUPPLIER CODE",
+        rp.complete_name "SUPPLIER NAME",
+        '' "DESCRIPTION",
+        po."name" "REFERENCE",
+        am.amount_untaxed "AMOUNT",
+        '' "DISCOUNT",
+        am.amount_tax "VAT AMOUNT",
+        abs(am.amount_untaxed - am.amount_tax) "NET PURCHASE"
+    from purchase_order po
+    inner join account_move am on po.name = am.invoice_origin
+    left join res_partner rp on po.partner_id = rp.id
+    where am."date" between %s and %s
+     """,
     'purchase_journal': """
         SELECT 
             a.invoice_date "TRANSACTION DATE",
@@ -137,7 +184,7 @@ SQL_QUERIES = {
             '' "SUPPLEMENTARY",
             '' "OTHERS",
             a.amount_total "GROSS AMOUNT",
-            a.amount_tax "ACTUAL INPUT TAX TWELVE PERCENT",
+            a.amount_tax "ACTUAL INPUT TAX 12%%",
             a.amount_untaxed "NET OF VAT",
             '' " CAPITAL GOODS (AGGREGATE NOT EXCEEDING 1M) ",
             '' " CAPITAL GOODS (AGGREGATE EXCEEDING 1M) ",
@@ -175,7 +222,7 @@ SQL_QUERIES = {
             '' "ZERO RATED",
             '' "EXEMP / NON - VAT",
             he.untaxed_amount_currency "VATABLE",
-            he.tax_amount "INPUT TAX TWELVE PERCENT",
+            he.tax_amount "INPUT TAX 12%%",
             he.total_amount "GROSS AMOUNT",
             CASE WHEN he.account_id IS NOT NULL THEN 'Y' ELSE NULL END "INPUT TAX ALLOWED?",
             he.untaxed_amount_currency "TAX BASE",
@@ -239,26 +286,66 @@ class SqlReport(models.Model):
             rows = self.env.cr.fetchall()
 
             serializable_rows, row_html_parts = [], []
+            numeric_totals = {col: 0 for col in columns}
+
             for row in rows:
                 row_dict, cells = {}, []
                 for col, val in zip(columns, row):
                     if isinstance(val, (datetime, date)):
                         val = val.isoformat()
+                    elif isinstance(val, (int, float)):
+                        numeric_totals[col] = numeric_totals.get(col, 0) + (val or 0)
+                        formatted_val = f"{val:,.2f}" if isinstance(val, float) else f"{val:,}"
+                        val = formatted_val
                     row_dict[col] = val
-                    cells.append(f"<td style='width:200px;'>{val or ''}</td>")
+                    align = "right" if isinstance(val, str) and val.replace(",", "").replace(".", "").isdigit() else "left"
+                    cells.append(f"<td style='width:200px; text-align:{align};'>{val or ''}</td>")
                 serializable_rows.append(row_dict)
                 row_html_parts.append(f"<tr>{''.join(cells)}</tr>")
 
+            # --- Compute Totals ---
+            total_cells = []
+            for col in columns:
+                total_val = numeric_totals.get(col)
+                if isinstance(total_val, (int, float)) and total_val != 0:
+                    formatted_total = f"{total_val:,.2f}"
+                    total_cells.append(f"<td style='font-weight:bold; text-align:right;'>{formatted_total}</td>")
+                elif col == columns[0]:
+                    total_cells.append("<td style='font-weight:bold;'>TOTAL</td>")
+                else:
+                    total_cells.append("<td></td>")
+
+            total_row_html = f"<tr style='background-color:#f0f0f0;'>{''.join(total_cells)}</tr>"
+
+            # --- Build Final Table ---
             table_html = f"""
-                <table class="table table-sm table-bordered" style="width:100%; border-collapse: collapse;">
-                    <thead>
-                        <tr>{"".join(f"<th style='width:200px;'>{col}</th>" for col in columns)}</tr>
-                    </thead>
-                    <tbody>
-                        {''.join(row_html_parts)}
-                    </tbody>
-                </table>
+                <div style="
+                    max-height: 600px;
+                    overflow-y: auto;
+                    border: 1px solid #ccc;
+                    border-radius: 6px;
+                    position: relative;
+                ">
+                    <table class="table table-sm table-bordered" 
+                        style="width:100%; border-collapse: collapse; table-layout: fixed;">
+                        <thead style="position: sticky; top: 0; background-color: #f8f9fa; z-index: 2;">
+                            <tr>
+                                {"".join(f"<th style='width:200px; background-color:#f8f9fa; text-align:center; border:1px solid #dee2e6; position: sticky; top: 0;'>{col}</th>" for col in columns)}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {''.join(row_html_parts)}
+                        </tbody>
+                        <tfoot style="position: sticky; bottom: 0; background-color: #f0f0f0; z-index: 2; font-weight: bold;">
+                            <tr>
+                                {"".join(total_cells)}
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
             """
+
+
 
             self.result_columns = json.dumps(columns)
             self.result_ids.unlink()
@@ -273,6 +360,7 @@ class SqlReport(models.Model):
 
         except Exception as e:
             raise UserError(f"Error executing query: {e}")
+
 
     def get_table_data(self):
         columns = json.loads(self.result_columns or "[]")
@@ -291,7 +379,7 @@ class SqlReport(models.Model):
         workbook = xlsxwriter.Workbook(output, {'in_memory': True})
         worksheet = workbook.add_worksheet("Report")
 
-        # Formats
+        # === Formats ===
         bold_format = workbook.add_format({'bold': True})
         header_format = workbook.add_format({
             'bold': True, 'bg_color': '#ADD8E6',
@@ -300,9 +388,12 @@ class SqlReport(models.Model):
         })
         title_format = workbook.add_format({'bold': True, 'align': 'center'})
         small_format = workbook.add_format({'font_size': 9})
-        cell_format = workbook.add_format({'text_wrap': True, 'valign': 'top', 'border': 1})
+        text_format = workbook.add_format({'text_wrap': True, 'valign': 'top', 'border': 1, 'align': 'left'})
+        number_format = workbook.add_format({'num_format': '#,##0.00', 'border': 1, 'align': 'right', 'valign': 'top'})
+        total_format = workbook.add_format({'num_format': '#,##0.00', 'bold': True, 'border': 1, 'align': 'right', 'valign': 'top', 'bg_color': '#f0f0f0'})
+        total_label_format = workbook.add_format({'bold': True, 'border': 1, 'align': 'left', 'valign': 'top', 'bg_color': '#f0f0f0'})
 
-        # Header Info
+        # === Header Info ===
         worksheet.write("A1", "INNOVATHINK CORPORATION", bold_format)
         worksheet.write("A2", "4/F, Vista Mall IT Hub Alabang-Zapote Road corner C. V. Starr Avenue PhilAm Life Village, Pamplona 2 Las Pinas City", small_format)
         worksheet.write("A3", "TIN: 008-168-070-00000", small_format)
@@ -311,20 +402,53 @@ class SqlReport(models.Model):
 
         worksheet.freeze_panes(7, 0)
 
-        # Table Header
+        # === Table Header ===
         start_row = 6
         for col, col_name in enumerate(columns):
             worksheet.write(start_row, col, col_name, header_format)
-            worksheet.set_column(col, col, len(col_name) + 5)
+            worksheet.set_column(col, col, len(col_name) + 10)
 
-        # Table Rows
+        # === Table Rows ===
+        totals = {col: 0 for col in columns}
         for row_idx, row in enumerate(rows, start=start_row + 1):
             for col_idx, col_name in enumerate(columns):
-                worksheet.write(row_idx, col_idx, row.get(col_name, ""), cell_format)
+                val = row.get(col_name, "")
+                
+                # Handle numeric values
+                if isinstance(val, (int, float)):
+                    totals[col_name] += val
+                    if val == 0:
+                        worksheet.write(row_idx, col_idx, "-", text_format)
+                    else:
+                        worksheet.write_number(row_idx, col_idx, val, number_format)
+                else:
+                    # Try parsing numeric strings (e.g., "1234" or "1,234.56")
+                    try:
+                        float_val = float(str(val).replace(",", ""))
+                        totals[col_name] += float_val
+                        if float_val == 0:
+                            worksheet.write(row_idx, col_idx, "-", text_format)
+                        else:
+                            worksheet.write_number(row_idx, col_idx, float_val, number_format)
+                    except Exception:
+                        worksheet.write(row_idx, col_idx, val, text_format)
+
+
+        # === Write Total Row ===
+        total_row_idx = start_row + 1 + len(rows)
+        for col_idx, col_name in enumerate(columns):
+            total_val = totals.get(col_name)
+            if col_idx == 0:
+                worksheet.write(total_row_idx, col_idx, "TOTAL", total_label_format)
+            elif isinstance(total_val, (int, float)) and total_val != 0:
+                worksheet.write_number(total_row_idx, col_idx, total_val, total_format)
+            else:
+                worksheet.write(total_row_idx, col_idx, "", total_label_format)
 
         workbook.close()
         output.seek(0)
 
+        # === Create Attachment ===
         file_data = base64.b64encode(output.read())
         filename = f"{self.name.replace(' ', '_')}.xlsx"
 
@@ -347,10 +471,11 @@ class SqlReport(models.Model):
         }
 
 
+
 class SqlReportLine(models.Model):
     _name = 'custom.sql.report.line'
     _description = 'Custom SQL Report Line'
 
     report_id = fields.Many2one('custom.sql.report', string="Report", ondelete="cascade")
     data = fields.Text("Row Data")  # JSON string
-    html_result = fields.Html("Result")  # HTML table
+    html_result = fields.Html("Details")  # HTML table

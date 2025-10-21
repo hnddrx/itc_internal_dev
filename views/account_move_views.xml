@@ -6,19 +6,19 @@
         <field name="inherit_id" ref="account.view_move_form"/>
         <field name="arch" type="xml">
 
-            <!-- Add a new group aligned with partner_id group -->
-            
-            <header position="inside">
-                    <button name="%(report_service_invoice_account_move)d"
-                            string="Print Service Invoice"
-                            type="action"
-                            class="btn-primary"/>
-                    <button name="%(report_sales_invoice_account_move)d"
-                            string="Print Sales Invoice"
-                            type="action"
-                            class="btn-primary"/>
-            </header>
+            <!-- Add new buttons inside the header -->
+            <xpath expr="//header" position="inside">
+                <button name="%(report_service_invoice_account_move)d"
+                        string="Print Service Invoice"
+                        type="action"
+                        class="oe_highlight"/>
+                <button name="%(report_sales_invoice_account_move)d"
+                        string="Print Sales Invoice"
+                        type="action"
+                        class="oe_highlight"/>
+            </xpath>
 
+            <!-- Add custom fields below existing group -->
             <xpath expr="//sheet/group" position="inside">
                 <group>
                     <field name="x_invoice_type" widget="selection"/>
