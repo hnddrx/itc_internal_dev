@@ -68,16 +68,16 @@
                   <td style="border:1px solid black; padding:5px;"><t t-esc="line.name"/></td>
                   <td style="border:1px solid black; padding:5px; text-align:center;"><t t-esc="line.quantity"/></td>
                   <td style="border:1px solid black; padding:5px; text-align:center;"><t t-esc="line.product_uom_id.name"/></td>
-                  <td style="border:1px solid black; padding:5px; text-align:right;"><t t-esc="line.price_unit"/></td>
-                  <td style="border:1px solid black; padding:5px; text-align:right;"><t t-esc="line.price_unit * line.quantity"/></td>
+                  <td style="border:1px solid black; padding:5px; text-align:right;"><t t-esc="doc.currency_id.symbol"/><t t-esc="'{:,}'.format(line.price_unit)"/></td>
+                  <td style="border:1px solid black; padding:5px; text-align:right;"><t t-esc="doc.currency_id.symbol"/><t t-esc="'{:,}'.format(line.price_unit * line.quantity)"/></td>
                   <td style="border:1px solid black; padding:5px; text-align:right;"><t t-esc="line.discount or 0.0"/>%</td>
-                  <td style="border:1px solid black; padding:5px; text-align:right;"><t t-esc="line.price_subtotal"/></td>
+                  <td style="border:1px solid black; padding:5px; text-align:right;"><t t-esc="doc.currency_id.symbol"/><t t-esc="'{:,}'.format(line.price_subtotal)"/></td>
                 </tr>
               </tbody>
               <tfoot>
                 <tr>
                   <td colspan="6" style="border:1px solid black; padding:5px; text-align:right; font-weight:bold;">TOTAL</td>
-                  <td style="border:1px solid black; padding:5px; text-align:right; font-weight:bold;"><t t-esc="doc.amount_untaxed"/></td>
+                  <td style="border:1px solid black; padding:5px; text-align:right; font-weight:bold;"><t t-esc="doc.currency_id.symbol"/><t t-esc="'{:,}'.format(doc.amount_untaxed)"/></td>
                 </tr>
               </tfoot>
             </table>
@@ -96,23 +96,23 @@
                   </ol>
                 </td>
                 <td style="padding:5px; text-align:right; border:1px solid black;">VATable:</td>
-                <td style="padding:5px; text-align:right; border:1px solid black;"><t t-esc="doc.amount_untaxed"/></td>
+                <td style="padding:5px; text-align:right; border:1px solid black;"><t t-esc="doc.currency_id.symbol"/><t t-esc="'{:,}'.format(doc.amount_untaxed)"/></td>
               </tr>
               <tr>
                 <td style="padding:5px; text-align:right; border:1px solid black;">Zero Rated:</td>
-                <td style="padding:5px; text-align:right; border:1px solid black;">0.00</td>
+                <td style="padding:5px; text-align:right; border:1px solid black;"><t t-esc="doc.currency_id.symbol"/>0.00</td>
               </tr>
               <tr>
                 <td style="padding:5px; text-align:right; border:1px solid black;">Exempt:</td>
-                <td style="padding:5px; text-align:right; border:1px solid black;">0.00</td>
+                <td style="padding:5px; text-align:right; border:1px solid black;"><t t-esc="doc.currency_id.symbol"/>0.00</td>
               </tr>
               <tr>
                 <td style="padding:5px; text-align:right; border:1px solid black;">VAT:</td>
-                <td style="padding:5px; text-align:right; border:1px solid black;"><t t-esc="doc.amount_tax"/></td>
+                <td style="padding:5px; text-align:right; border:1px solid black;"><t t-esc="doc.currency_id.symbol"/><t t-esc="'{:,}'.format(doc.amount_tax)"/></td>
               </tr>
               <tr>
                 <td style="padding:5px; text-align:right; border:1px solid black; font-weight:bold;">Amount Due:</td>
-                <td style="padding:5px; text-align:right; border:1px solid black; font-weight:bold;"><t t-esc="doc.amount_total"/></td>
+                <td style="padding:5px; text-align:right; border:1px solid black; font-weight:bold;"><t t-esc="doc.currency_id.symbol"/><t t-esc="'{:,}'.format(doc.amount_total)"/></td>
               </tr>
             </table>
 

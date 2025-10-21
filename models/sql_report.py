@@ -102,25 +102,55 @@ SQL_QUERIES = {
             '' AS "OTHERS",
             a.amount_total_signed AS "GROSS AMOUNT",
             '' AS "DISCOUNT AMOUNT",
-            s.amount_total AS "SALES AMOUNT",
-            CASE WHEN s.x_invoice_type = 'consu' THEN s.amount_untaxed ELSE 0 END AS "GOODS DOMESTIC SALES",
-            CASE WHEN s.x_invoice_type = 'service' THEN s.amount_untaxed ELSE 0 END AS "SERVICE DOMESTIC SALES",
+            a.amount_total AS "SALES AMOUNT",
+            CASE 
+                WHEN s.x_invoice_type = 'consu' THEN a.amount_untaxed 
+                ELSE 0 
+            END AS "GOODS DOMESTIC SALES",
+            CASE 
+                WHEN s.x_invoice_type = 'service' THEN a.amount_untaxed 
+                ELSE 0 
+            END AS "SERVICE DOMESTIC SALES",
             s.amount_untaxed AS "TOTAL DOMESTIC SALES",
-            0 AS "PRIVATE",
-            0 AS "GOVERNMENT",
-            0 AS "TOTAL",
-            '' AS "VATABLE",
-            '' AS "ZERO RATED",
+            case 
+                when a.amount_tax > 0 then a.amount_untaxed 
+                else 0
+            end AS "PRIVATE",
+            case 
+                when a.amount_tax = 0 then a.amount_untaxed 
+                else 0
+            end AS "GOVERNMENT",
+            ABS(
+                COALESCE(
+                    CASE WHEN s.x_invoice_type = 'service' THEN a.amount_untaxed ELSE 0 END, 
+                    0
+                )
+                -
+                COALESCE(
+                    CASE WHEN s.x_invoice_type = 'consu' THEN a.amount_untaxed ELSE 0 END, 
+                    0
+                )
+            ) AS "TOTAL",
+            case 
+                when a.amount_tax > 0 then a.amount_untaxed 
+                else 0
+            end AS "VATABLE",
+            case 
+                when a.amount_tax = 0 then a.amount_untaxed 
+                else 0
+            end AS "ZERO RATED",
             '' AS "EXEMPT",
-            ABS(s.amount_total - s.amount_tax) AS "TOTAL TAXABLE SALES",
+            ABS(a.amount_total - a.amount_tax) AS "TOTAL TAXABLE SALES",
             a.amount_tax AS "OUTPUT TAX 12%%",
             a.amount_total AS "SI/OR AMOUNT",
-            '' AS "7%% STANDARD INPUT VAT",
+            0 AS "7%% STANDARD INPUT VAT",
             0 AS "BIR FORM VAT 2307 AMOUNT",
             0 AS "BIR FORM EWT 2307 AMOUNT"
         FROM sale_order s
-        INNER JOIN account_move a ON s.name = a.invoice_origin 
-        LEFT JOIN res_partner r ON s.partner_id = r.id
+        INNER JOIN account_move a 
+            ON s.name = a.invoice_origin
+        LEFT JOIN res_partner r 
+            ON s.partner_id = r.id
         WHERE a.invoice_date BETWEEN %s AND %s;
     """,
     'purchase_subsidiary_journal_rr9': """ 
@@ -289,16 +319,33 @@ class SqlReport(models.Model):
 
             # --- Build Final Table ---
             table_html = f"""
-                <table class="table table-sm table-bordered" style="width:100%; border-collapse: collapse;">
-                    <thead>
-                        <tr>{"".join(f"<th style='width:200px;'>{col}</th>" for col in columns)}</tr>
-                    </thead>
-                    <tbody>
-                        {''.join(row_html_parts)}
-                        {total_row_html}
-                    </tbody>
-                </table>
+                <div style="
+                    max-height: 600px;
+                    overflow-y: auto;
+                    border: 1px solid #ccc;
+                    border-radius: 6px;
+                    position: relative;
+                ">
+                    <table class="table table-sm table-bordered" 
+                        style="width:100%; border-collapse: collapse; table-layout: fixed;">
+                        <thead style="position: sticky; top: 0; background-color: #f8f9fa; z-index: 2;">
+                            <tr>
+                                {"".join(f"<th style='width:200px; background-color:#f8f9fa; text-align:center; border:1px solid #dee2e6; position: sticky; top: 0;'>{col}</th>" for col in columns)}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {''.join(row_html_parts)}
+                        </tbody>
+                        <tfoot style="position: sticky; bottom: 0; background-color: #f0f0f0; z-index: 2; font-weight: bold;">
+                            <tr>
+                                {"".join(total_cells)}
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
             """
+
+
 
             self.result_columns = json.dumps(columns)
             self.result_ids.unlink()

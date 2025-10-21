@@ -1,50 +1,46 @@
 <odoo>
-    <!-- Form View -->
+    <!-- =========================
+         Form View
+    ========================= -->
     <record id="view_sql_report_form" model="ir.ui.view">
         <field name="name">custom.sql.report.form</field>
         <field name="model">custom.sql.report</field>
         <field name="arch" type="xml">
             <form string="SQL Report">
                 <header>
-                    <field name="name" readonly="1" class="o_field_widget o_text_overflow" />
+                    <field name="name" readonly="1" class="o_field_widget o_text_overflow"/>
 
                     <div class="o_form_buttons" style="margin-left:auto; display:flex; gap:8px; flex-wrap:wrap;">
                         <button string="Generate Report"
                                 type="object"
                                 name="action_execute_query"
-                                class="btn btn-primary o_btn_icon"
-                             />
-
+                                class="btn btn-primary o_btn_icon"/>
                         <button string="Export"
                                 type="object"
                                 name="action_export_excel"
-                                class="btn btn-outline-success o_btn_icon"
-                             />
-
+                                class="btn btn-outline-success o_btn_icon"/>
                     </div>
                 </header>
-
 
                 <sheet>
                     <group>
                         <group>
                             <field name="name" widget="selection" groups="itc_internal_dev.group_sql_report_manager"/>
                             <field name="report_category" groups="itc_internal_dev.group_sql_report_manager"/>
-
                             <field name="description" colspan="2"/>
                         </group>
                         <group>
-                            <field name="from_date" />
+                            <field name="from_date"/>
                             <field name="to_date"/>
-                            <field name="generated_on" readonly="1" />
-                            <field name="generated_by" readonly="1" />
+                            <field name="generated_on" readonly="1"/>
+                            <field name="generated_by" readonly="1"/>
                             <field name="sql_query" invisible="1" nolabel="1" class="o_sql_query_field"/>
-
                         </group>
                     </group>
+
                     <notebook>
-                       <page string="Result">
-                           <field name="result_ids" create="false" edit="false" delete="false">
+                        <page string="Result">
+                            <field name="result_ids" create="false" edit="false" delete="false">
                                 <list string="Query Results" edit="false">
                                     <field name="html_result" readonly="1"/>
                                 </list>
@@ -52,17 +48,17 @@
                                     <field name="html_result" readonly="1" style="width:1000px;"/>
                                 </form>
                             </field>
-
                         </page>
 
                         <page string="Raw Data" invisible="1">
-                            <field name="result_ids"  create="false" edit="false" delete="false">
+                            <field name="result_ids" create="false" edit="false" delete="false">
                                 <list string="Query Results">
                                     <field name="data" invisible="1" readonly="1"/>
                                 </list>
                             </field>
-                        </page>      
+                        </page>
                     </notebook>
+
                     <group colspan="2" string="Export Info">
                         <field name="exported_on" readonly="1"/>
                         <field name="exported_by" readonly="1"/>
@@ -73,18 +69,19 @@
         </field>
     </record>
 
-    <!-- Tree view for line model -->
+    <!-- =========================
+         Tree Views
+    ========================= -->
     <record id="view_sql_report_line_list" model="ir.ui.view">
         <field name="name">custom.sql.report.line.list</field>
         <field name="model">custom.sql.report.line</field>
         <field name="arch" type="xml">
-            <list string="Query Results">
-                <field name="html_result" />
+            <list string="Query Results" create="false" edit="false" delete="false">
+                <field name="html_result"/>
             </list>
         </field>
     </record>
 
-    <!-- List View -->
     <record id="view_sql_report_list" model="ir.ui.view">
         <field name="name">custom.sql.report.list</field>
         <field name="model">custom.sql.report</field>
@@ -98,15 +95,20 @@
         </field>
     </record>
 
-    <!-- Action -->
+    <!-- =========================
+         Action
+    ========================= -->
     <record id="action_custom_sql_report" model="ir.actions.act_window">
         <field name="name">BIR CAS Reports</field>
         <field name="res_model">custom.sql.report</field>
         <field name="view_mode">list,form</field>
     </record>
 
-    <!-- Menu -->
+    <!-- =========================
+         Menu Item (with icon)
+    ========================= -->
     <menuitem id="menu_custom_sql_report"
               name="BIR CAS Reports"
-              action="action_custom_sql_report"/>
+              action="action_custom_sql_report"
+              web_icon="itc_internal_dev,static/icon/Reports_Flat_Icon.svg.png"/> <!-- or use fa-database / fa-chart-bar -->
 </odoo>

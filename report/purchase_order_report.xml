@@ -6,17 +6,6 @@
         <div class="page" style="font-family: Arial, sans-serif; font-size: 13px; line-height:1.4;">
           <main>
 
-            <!-- Company Header -->
-            <!-- <div style="text-align:center; margin-bottom:5px;">
-              <p style="font-size:16px; font-weight:bold; margin:0;">INNOVATHINK CORPORATION</p>
-              <p style="margin:2px 0; font-size:12px;">
-                4/F, VISTA MALL IT HUB ALABANG-ZAPOTE ROAD CORNER C. V. STARR AVE.<br/>
-                PHILAMLIFE VILLAGE PAMPLONA 2 LAS PINAS CITY<br/>
-                VAT REG TIN: 008-168-070-00000<br/>
-                Telephone No.: 8840-4821
-              </p>
-            </div>
- -->
             <!-- Document Header -->
             <t t-if="doc.x_purchase_type == 'import'">
               <div style="text-align:center; margin-bottom:10px; font-size:14px; font-weight:bold;">
@@ -29,7 +18,7 @@
               </div>
             </t>
 
-            <!-- IPO Info -->
+            <!-- PO Info -->
             <table style="width:100%; border-collapse:collapse; font-size:12px; margin-bottom:10px;">
               <tr>
                 <td style="width:50%; padding:3px;">
@@ -43,11 +32,12 @@
                 </td>
                 <td style="width:25%; padding:3px;">
                   <t t-if="doc.x_purchase_type == 'import'">
-                    <strong>IPO Date:</strong> <t t-esc="doc.date_order"/>
+                    <strong>IPO Date:</strong>
                   </t>
                   <t t-else="">
-                    <strong>LPO Date:</strong> <t t-esc="doc.date_order"/>
+                    <strong>LPO Date:</strong>
                   </t>
+                  <t t-esc="doc.date_order"/>
                 </td>
               </tr>
               <tr>
@@ -102,16 +92,24 @@
                   <td style="border:1px solid black; padding:5px;"><t t-esc="line.name"/></td>
                   <td style="border:1px solid black; padding:5px; text-align:center;"><t t-esc="line.product_qty"/></td>
                   <td style="border:1px solid black; padding:5px; text-align:center;"><t t-esc="line.product_uom.name"/></td>
-                  <td style="border:1px solid black; padding:5px; text-align:right;"><t t-esc="line.price_unit"/></td>
-                  <td style="border:1px solid black; padding:5px; text-align:right;"><t t-esc="line.price_unit * line.product_qty"/></td>
+                  <td style="border:1px solid black; padding:5px; text-align:right;">
+                    <t t-esc="line.currency_id.symbol"/> <t t-esc="'{:,.2f}'.format(line.price_unit)"/>
+                  </td>
+                  <td style="border:1px solid black; padding:5px; text-align:right;">
+                    <t t-esc="line.currency_id.symbol"/> <t t-esc="'{:,.2f}'.format(line.price_unit * line.product_qty)"/>
+                  </td>
                   <td style="border:1px solid black; padding:5px; text-align:right;">0.00</td>
-                  <td style="border:1px solid black; padding:5px; text-align:right;"><t t-esc="line.price_subtotal"/></td>
+                  <td style="border:1px solid black; padding:5px; text-align:right;">
+                    <t t-esc="line.currency_id.symbol"/> <t t-esc="'{:,.2f}'.format(line.price_subtotal)"/>
+                  </td>
                 </tr>
               </tbody>
               <tfoot>
                 <tr>
                   <td colspan="6" style="border:1px solid black; padding:5px; text-align:right; font-weight:bold;">TOTAL</td>
-                  <td style="border:1px solid black; padding:5px; text-align:right; font-weight:bold;"><t t-esc="doc.amount_total"/></td>
+                  <td style="border:1px solid black; padding:5px; text-align:right; font-weight:bold;">
+                    <t t-esc="doc.currency_id.symbol"/> <t t-esc="'{:,.2f}'.format(doc.amount_total)"/>
+                  </td>
                 </tr>
                 <tr>
                   <td colspan="7" style="border:1px solid black; padding:5px;">
@@ -130,15 +128,15 @@
                 </tr>
                 <tr>
                   <td colspan="7" style="border:1px solid black; padding:3px;">
-                    <p style="font-size:11px;; text-align:center; font-style:italic;">
-                      Please issue Delivery Receipt. Sales Invoice attached to this Import Purchase Order (IPO) upon delivery.
+                    <p style="font-size:11px; text-align:center; font-style:italic;">
+                      Please issue Delivery Receipt and Sales Invoice attached to this Purchase Order upon delivery.
                     </p>
                   </td>
                 </tr>
-                
               </tfoot>
             </table>
 
+            <!-- Signature Section -->
             <table style="width:100%; font-size:12px; text-align:center; margin-top:20px; border-collapse:collapse;">
               <tr>
                 <td style="border-bottom:1px solid black; height:40px;">Prepared By:</td>

@@ -22,14 +22,12 @@ class HrExpense(models.Model):
     x_voucher = fields.Many2one(
         'account.payment.term',
         string='Voucher ID',
-        required=True,
         help="Payment terms for the expense voucher.",
     )
 
     x_voucher_amount = fields.Monetary(
         string='Voucher Amount',
         currency_field='currency_id',
-        required=True,
         help="Amount of the voucher associated with this expense.",
     )
 
@@ -45,7 +43,6 @@ class HrExpense(models.Model):
     x_currency_id = fields.Many2one(
         'res.currency',
         string='Currency',
-        required=True,
         default=lambda self: self.env.company.currency_id,
     )
 

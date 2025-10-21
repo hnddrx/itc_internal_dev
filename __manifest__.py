@@ -31,6 +31,7 @@
         'views/sales_order.xml',
         'views/account_move_views.xml',
         'views/sql_report_views.xml',
+        'views/account_statement_menu.xml',
         #'views/sales_order_line.xml',
     ],
 
