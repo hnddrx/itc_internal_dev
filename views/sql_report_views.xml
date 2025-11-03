@@ -41,10 +41,10 @@
                     <notebook>
                         <page string="Result">
                             <field name="result_ids" create="false" edit="false" delete="false">
-                                <list string="Query Results" edit="false">
+                                <list string="Query Results" edit="false" create="false" delete="false">
                                     <field name="html_result" readonly="1"/>
                                 </list>
-                                <form string="Query Result Line" edit="false">
+                                <form string="Query Result Line" edit="false" create="false" delete="false"> 
                                     <field name="html_result" readonly="1" style="width:1000px;"/>
                                 </form>
                             </field>

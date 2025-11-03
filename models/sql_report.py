@@ -116,10 +116,7 @@ SQL_QUERIES = {
                 when a.amount_tax > 0 then a.amount_untaxed 
                 else 0
             end AS "PRIVATE",
-            case 
-                when a.amount_tax = 0 then a.amount_untaxed 
-                else 0
-            end AS "GOVERNMENT",
+            0 AS "GOVERNMENT",
             ABS(
                 COALESCE(
                     CASE WHEN s.x_invoice_type = 'service' THEN a.amount_untaxed ELSE 0 END, 
@@ -207,38 +204,52 @@ SQL_QUERIES = {
         WHERE a.invoice_date BETWEEN %s AND %s;
     """,
     'disbursement_journal': """
-        SELECT 
-            ap."date" "RELEASE DATE",
-            he."date" "DATE",
-            am.name "NUMBER",
-            p.default_code  "TYPE",
-            '' "NUM",
-            he.payment_mode "PAYEE/SUPPLIER",
-            he.x_particulars "PARTICULARS",
-            '' "PRIMARY",
-            '' "SUPPLEMENTARY",
-            '' "OTHER REFERENCES",
-            he.total_amount  "AMOUNT",
-            '' "ZERO RATED",
-            '' "EXEMP / NON - VAT",
-            he.untaxed_amount_currency "VATABLE",
-            he.tax_amount "INPUT TAX 12%%",
-            he.total_amount "GROSS AMOUNT",
-            CASE WHEN he.account_id IS NOT NULL THEN 'Y' ELSE NULL END "INPUT TAX ALLOWED?",
-            he.untaxed_amount_currency "TAX BASE",
-            '' "RATE",
-            'TAX BASE * RATE'"AMOUNT",
-            '' "EWT ABSORBED BY COMPANY?",
-            '' " CV AMOUNT (CREDIT) ",
-            p.default_code "ACCOUNT TITLE"
-        FROM hr_expense he
-        INNER JOIN hr_expense_sheet hes ON he.sheet_id = hes.id
-        INNER JOIN account_payment ap ON hes.journal_id = ap.id
-        INNER JOIN account_move am ON ap.move_id = am.id
-        LEFT JOIN product_product p ON he.product_id = p.id
-        WHERE he.date BETWEEN %s AND %s;
+        SELECT DISTINCT ON (he.id)
+            am.date AS "RELEASED DATE",
+            am.create_date::date AS "DATE",
+            CONCAT('CV', LPAD(hes.id::text, 6, '0')) AS "VOUCHER NUMBER",
+            p.default_code AS "TYPE",
+            '' AS "NUMBER",
+            r.name AS "PAYEE / SUPPLIER",
+            he.x_particulars AS "PARTICULARS",
+            '' AS "SI NO",
+            '' AS "OR NO",
+            '' AS "OTHER REFERENCES",
+            he.total_amount AS "AMOUNT",
+            he.total_amount AS "ZERO-RATED",
+            he.untaxed_amount_currency AS "EXEMPT / NON-VAT",
+            he.tax_amount AS "VATABLE",
+            he.tax_amount AS "INPUT TAX 12%%",
+            he.total_amount AS "GROSS AMOUNT",
+            CASE 
+                WHEN he.tax_amount > 0 THEN 'Y'
+                ELSE 'N'
+            END AS "INPUT TAX ALLOWED?",
+            he.untaxed_amount_currency AS "TAX BASE",
+            '' AS "RATE",
+            he.untaxed_amount_currency AS "AMOUNT",
+            '' AS "EWT ABSORBED BY COMPANY?",
+            he.total_amount AS "CV AMOUNT (CASH IN BANK) (CREDIT)",
+            aa.name->> 'en_US' AS "ACCOUNT TITLE"
+        FROM hr_expense_sheet AS hes
+        INNER JOIN hr_expense AS he 
+            ON hes.id = he.sheet_id
+        LEFT JOIN account_payment AS ap 
+            ON hes.journal_id = ap.journal_id
+        LEFT JOIN account_move AS am 
+            ON ap.move_id = am.id
+        LEFT JOIN product_product AS p 
+            ON he.product_id = p.id
+        LEFT JOIN res_partner AS r 
+            ON he.vendor_id = r.id
+        left join account_account aa on he.account_id = aa.id
+        ORDER BY 
+            he.id, 
+            hes.accounting_date, 
+            he.date, 
+            he.x_particulars;
+
     """,
-    
 }
 
 
@@ -320,6 +331,8 @@ class SqlReport(models.Model):
             # --- Build Final Table ---
             table_html = f"""
                 <div style="
+                    width: 100%;
+                    max-width: 1000px;
                     max-height: 600px;
                     overflow-y: auto;
                     border: 1px solid #ccc;
@@ -344,8 +357,6 @@ class SqlReport(models.Model):
                     </table>
                 </div>
             """
-
-
 
             self.result_columns = json.dumps(columns)
             self.result_ids.unlink()
