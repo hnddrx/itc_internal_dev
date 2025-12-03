@@ -116,10 +116,7 @@ SQL_QUERIES = {
                 when a.amount_tax > 0 then a.amount_untaxed 
                 else 0
             end AS "PRIVATE",
-            case 
-                when a.amount_tax = 0 then a.amount_untaxed 
-                else 0
-            end AS "GOVERNMENT",
+            0 AS "GOVERNMENT",
             ABS(
                 COALESCE(
                     CASE WHEN s.x_invoice_type = 'service' THEN a.amount_untaxed ELSE 0 END, 
@@ -207,38 +204,50 @@ SQL_QUERIES = {
         WHERE a.invoice_date BETWEEN %s AND %s;
     """,
     'disbursement_journal': """
-        SELECT 
-            ap."date" "RELEASE DATE",
-            he."date" "DATE",
-            am.name "NUMBER",
-            p.default_code  "TYPE",
-            '' "NUM",
-            he.payment_mode "PAYEE/SUPPLIER",
-            he.x_particulars "PARTICULARS",
-            '' "PRIMARY",
-            '' "SUPPLEMENTARY",
-            '' "OTHER REFERENCES",
-            he.total_amount  "AMOUNT",
-            '' "ZERO RATED",
-            '' "EXEMP / NON - VAT",
-            he.untaxed_amount_currency "VATABLE",
-            he.tax_amount "INPUT TAX 12%%",
-            he.total_amount "GROSS AMOUNT",
-            CASE WHEN he.account_id IS NOT NULL THEN 'Y' ELSE NULL END "INPUT TAX ALLOWED?",
-            he.untaxed_amount_currency "TAX BASE",
-            '' "RATE",
-            'TAX BASE * RATE'"AMOUNT",
-            '' "EWT ABSORBED BY COMPANY?",
-            '' " CV AMOUNT (CREDIT) ",
-            p.default_code "ACCOUNT TITLE"
-        FROM hr_expense he
-        INNER JOIN hr_expense_sheet hes ON he.sheet_id = hes.id
-        INNER JOIN account_payment ap ON hes.journal_id = ap.id
-        INNER JOIN account_move am ON ap.move_id = am.id
-        LEFT JOIN product_product p ON he.product_id = p.id
-        WHERE he.date BETWEEN %s AND %s;
+        SELECT DISTINCT ON (he.id)
+        am.create_date::date AS "RELEASED DATE",
+        he.date::date AS "DATE",
+        CONCAT('CV', LPAD(hes.id::text, 6, '0')) AS "VOUCHER NUMBER",
+        p.default_code AS "TYPE",
+        r.name AS "PAYEE / SUPPLIER",
+        he.x_particulars AS "PARTICULARS",
+        am.id AS "SI NO",
+        ap.name AS "OR NO",
+        '' AS "OTHER REFERENCES",
+        he.total_amount AS "AMOUNT",
+        CASE 
+            WHEN at.name->>'en_US' ILIKE '%%0%%ZR%%' THEN he.total_amount
+            ELSE 0 
+        END AS "ZERO-RATED",
+        CASE 
+            WHEN at.name->>'en_US' ILIKE '%%0%%EXEMPT%%' THEN he.untaxed_amount_currency
+            ELSE 0 
+        END AS "EXEMPT / NON-VAT",
+        CASE 
+            WHEN at.name->>'en_US' ILIKE '%%12%%' THEN he.untaxed_amount_currency
+            ELSE 0 
+        END AS "VATABLE",
+        he.tax_amount AS "INPUT TAX 12%%",
+        he.total_amount AS "GROSS AMOUNT",
+        CASE 
+            WHEN at.name->>'en_US' ILIKE '%%12%%' THEN 'Y'
+            ELSE 'N'
+        END AS "INPUT TAX ALLOWED?",
+        aa.name->>'en_US' AS "ACCOUNT TITLE"
+    FROM hr_expense_sheet hes
+    INNER JOIN hr_expense he ON hes.id = he.sheet_id
+    INNER JOIN account_payment ap ON hes.journal_id = ap.journal_id
+    LEFT JOIN account_move am ON ap.move_id = am.id
+    LEFT JOIN account_move_line aml ON am.id = aml.move_id
+    LEFT JOIN expense_tax et ON he.id = et.expense_id
+    LEFT JOIN account_tax at ON et.tax_id = at.id
+    LEFT JOIN product_product p ON he.product_id = p.id
+    LEFT JOIN res_partner r ON he.vendor_id = r.id
+    LEFT JOIN account_account aa ON he.account_id = aa.id
+    ORDER BY he.id, hes.accounting_date, he.date, he.x_particulars;
+
+
     """,
-    
 }
 
 
@@ -320,6 +329,8 @@ class SqlReport(models.Model):
             # --- Build Final Table ---
             table_html = f"""
                 <div style="
+                    width: 100%;
+                    max-width: 1000px;
                     max-height: 600px;
                     overflow-y: auto;
                     border: 1px solid #ccc;
@@ -344,8 +355,6 @@ class SqlReport(models.Model):
                     </table>
                 </div>
             """
-
-
 
             self.result_columns = json.dumps(columns)
             self.result_ids.unlink()
@@ -399,6 +408,10 @@ class SqlReport(models.Model):
         worksheet.write("A3", "TIN: 008-168-070-00000", small_format)
         worksheet.write("A5", dict(self._fields['name'].selection).get(self.name, self.name), title_format)
         worksheet.write("A6", f"Period Covered: {self.from_date.strftime('%m/%d/%Y')} - {self.to_date.strftime('%m/%d/%Y')}", small_format)
+
+        worksheet.write("G1", f"No. Of Transactions: {len(rows)} ", small_format)
+        worksheet.write("G2", f"Date Processed: {self.exported_on.strftime('%m/%d/%Y')}", small_format)
+        worksheet.write("G3", f"Processed by: {self.exported_by.name or ''}", small_format)
 
         worksheet.freeze_panes(7, 0)
 

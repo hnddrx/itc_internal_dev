@@ -1,125 +1,130 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-  <!-- CREDIT MEMO TEMPLATE -->
   <template id="custom_report_credit_memo">
-    <t t-foreach="docs" t-as="doc">
-      <t t-set="o" t-value="doc"/> <!-- alias for consistency -->
-      <div class="page" style="font-family: Arial, sans-serif; font-size: 14px; ">
-        <main style="padding: 20px;"> <!-- ✅ required wrapper -->
+    <t t-foreach="docs" t-as="o">
 
-          <!-- Header -->
-          <table style="width:100%; border-collapse:collapse; margin-bottom:10px;">
+      <div class="page" style="font-family: Arial, sans-serif; font-size: 13px;">
+
+        <main style="padding: 25px;">
+
+          <!-- HEADER -->
+          <table style="width:100%; border-collapse:collapse; margin-bottom:15px;">
             <tr>
-              <td style="width:70%; vertical-align:top; font-size:12px;">
-                <p style="font-size:14px; font-weight:bold; margin:0;">
+              <td style="width:70%; vertical-align:top;">
+                <p style="margin:0; font-weight:bold; font-size:15px;">
                   <t t-esc="o.company_id.name"/>
                 </p>
-                <p style="margin:2px 0;">
+                <p style="margin:2px 0; line-height:17px;">
                   <t t-esc="o.company_id.street or ''"/><br/>
                   <t t-esc="o.company_id.city or ''"/><br/>
                   VAT REG TIN: <t t-esc="o.company_id.vat or ''"/><br/>
                   Telephone No.: <t t-esc="o.company_id.phone or ''"/><br/>
-                  Business Style: <t t-esc="o.company_id.name"/>
+                  Business Style : <t t-esc="o.company_id.name"/>
                 </p>
               </td>
+
               <td style="width:30%; text-align:right; vertical-align:top;">
-                <h2 style="margin:0; font-size:16px;">CREDIT MEMO</h2>
-                <p style="font-size:13px; margin:0;">
-                  CM-<t t-esc="o.name"/>
-                </p>
+                <h2 style="margin:0; font-size:20px; font-weight:bold;">CREDIT MEMO</h2>
+                <p style="font-size:14px; margin-top:5px;">CM-<t t-esc="o.name"/></p>
               </td>
             </tr>
           </table>
 
-          <!-- Customer Info -->
-          <table style="width:100%; border:1px solid black; border-collapse:collapse; margin-bottom:10px;">
+          <!-- CUSTOMER BLOCK -->
+          <table style="width:100%; border-collapse:collapse; margin-bottom:10px;">
             <tr>
-              <td style="padding:5px; font-weight:bold; width:15%;">To:</td>
-              <td style="padding:5px; font-weight:bold;">
-                <t t-esc="o.partner_id.name"/>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding:5px;">Address:</td>
-              <td style="padding:5px;">
-                <t t-esc="o.partner_id.contact_address or ''"/>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding:5px;">VAT REG TIN:</td>
-              <td style="padding:5px;"><t t-esc="o.partner_id.vat or ''"/></td>
+              <td style="width:15%; font-weight:bold;">To:</td>
+              <td style="font-weight:bold;"><t t-esc="o.partner_id.name"/></td>
             </tr>
           </table>
 
-          <!-- Date -->
-          <p style="text-align:right; font-size:12px; margin:0 0 10px 0;">
+          <table style="width:100%; border-collapse:collapse; margin-bottom:10px;">
+            <tr>
+              <td style="width:15%;">Address:</td>
+              <td><t t-esc="o.partner_id.contact_address or ''"/></td>
+            </tr>
+            <tr>
+              <td>VAT REG TIN:</td>
+              <td><t t-esc="o.partner_id.vat or ''"/></td>
+            </tr>
+          </table>
+
+          <!-- DATE (Right aligned like PDF) -->
+          <p style="text-align:right; font-size:13px; margin:0 0 15px 0;">
             DATE: <t t-esc="o.invoice_date or o.create_date"/>
           </p>
 
-          <!-- Description vs Amount -->
-          <table style="width:100%; border:1px solid black; border-collapse:collapse; margin-bottom:15px;">
+          <!-- DESCRIPTION AND AMOUNT TABLE (exact PDF layout) -->
+          <table style="width:100%; border-collapse:collapse; font-size:13px;">
             <thead>
               <tr>
-                <th style="width:70%; padding:5px; border:1px solid black; text-align:center;">DESCRIPTION</th>
-                <th style="width:30%; padding:5px; border:1px solid black; text-align:center;">AMOUNT</th>
+                <th style="width:70%; border:1px solid black; padding:6px; text-align:left;">DESCRIPTION</th>
+                <th style="width:30%; border:1px solid black; padding:6px; text-align:center;">AMOUNT</th>
               </tr>
             </thead>
+
             <tbody>
               <tr>
-                <td style="padding:5px; border:1px solid black;">Remarks: <t t-esc="o.narration or ''"/></td>
-                <td style="padding:5px; border:1px solid black; text-align:right;">
-                  VATABLE: <t t-esc="o.amount_untaxed"/>
+                <td style="border:1px solid black; padding:6px;">REMARKS: <t t-esc="o.narration or ''"/></td>
+                <td style="border:1px solid black; padding:6px; text-align:right;">
+                  <t t-esc="o.amount_untaxed"/>
                 </td>
               </tr>
+
               <tr>
-                <td style="padding:5px; border:1px solid black;">Reference: <t t-esc="o.ref or ''"/></td>
-                <td style="padding:5px; border:1px solid black; text-align:right;">ZERO RATED: 0.00</td>
+                <td style="border:1px solid black; padding:6px;">REFERENCE: <t t-esc="o.ref or ''"/></td>
+                <td style="border:1px solid black; padding:6px; text-align:right;">0.00</td>
               </tr>
+
               <tr>
-                <td style="padding:5px; border:1px solid black;">Reason: <t t-esc="o.invoice_origin or ''"/></td>
-                <td style="padding:5px; border:1px solid black; text-align:right;">VAT-EXEMPT: 0.00</td>
+                <td style="border:1px solid black; padding:6px;">REASON: <t t-esc="o.invoice_origin or ''"/></td>
+                <td style="border:1px solid black; padding:6px; text-align:right;">0.00</td>
               </tr>
+
               <tr>
-                <td style="padding:5px; border:1px solid black;"></td>
-                <td style="padding:5px; border:1px solid black; text-align:right;">
-                  VAT(12%): <t t-esc="o.amount_tax"/>
+                <td style="border:1px solid black; padding:6px;"></td>
+                <td style="border:1px solid black; padding:6px; text-align:right;">
+                  <t t-esc="o.amount_tax"/>
                 </td>
               </tr>
             </tbody>
+
             <tfoot>
               <tr>
-                <td style="padding:5px; border:1px solid black; font-weight:bold;"></td>
-                <td style="padding:5px; border:1px solid black; text-align:right; font-weight:bold;">
+                <td style="border:1px solid black; padding:6px; font-weight:bold;"></td>
+                <td style="border:1px solid black; padding:6px; text-align:right; font-weight:bold;">
                   TOTAL: <t t-esc="o.amount_total"/>
                 </td>
               </tr>
             </tfoot>
           </table>
 
-          <!-- Signatories -->
-          <table style="width:100%; text-align:center; border-collapse:collapse; font-size:12px; margin-top:20px;">
+          <!-- SIGNATORIES -->
+          <table style="width:100%; border-collapse:collapse; text-align:center; margin-top:30px; font-size:12px;">
             <tr>
               <td style="border:1px solid black; padding:10px;">PREPARED BY:</td>
               <td style="border:1px solid black; padding:10px;">CERTIFIED CORRECT BY:</td>
               <td style="border:1px solid black; padding:10px;">APPROVED BY:</td>
             </tr>
-            <tr style="height:50px;">
+            <tr style="height:60px;">
               <td style="border:1px solid black;"></td>
               <td style="border:1px solid black;"></td>
               <td style="border:1px solid black;"></td>
             </tr>
           </table>
 
-          <!-- Footer -->
-          <p style="font-size:10px; margin-top:20px; text-align:left;">
-            Printed By: Custom Credit Memo Module<br/>
-            Acknowledgment Certificate No: ___________<br/>
-            Acknowledgment Certificate Date Issued: ___________<br/>
+          <!-- FOOTER -->
+          <p style="font-size:10px; margin-top:20px; line-height:14px;">
+            Printed By : Etaxpoint Software Solutions Corp. (Open Edition - Tax Based Accounting System)<br/>
+            Acknowledgment Certificate No.: ____________________<br/>
+            Acknowledgment Certificate Date Issued: ____________________<br/>
             Permitted Series Range: CM-000000000001 - CM-999999999999
           </p>
 
         </main>
+
       </div>
+
     </t>
   </template>
 
@@ -133,4 +138,5 @@
     <field name="binding_model_id" ref="account.model_account_move"/>
     <field name="binding_type">report</field>
   </record>
+
 </odoo>

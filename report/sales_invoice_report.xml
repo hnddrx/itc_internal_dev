@@ -11,11 +11,11 @@
               <tr>
                 <td style="width:60%; vertical-align:top; padding:5px; border:1px solid black;">
                   <strong style="font-size:18px;">SALES INVOICE</strong><br/>
-                  <strong>SI NO.:</strong> <t t-esc="doc.invoice_origin"/><br/>
+                  <strong>SI NO.:</strong> <t t-esc="doc.invoice_origin or ''"/><br/>
                   <strong>BR:</strong> BR-00000-MAIN
                 </td>
                 <td style="width:40%; vertical-align:bottom; padding:5px; text-align:right; border:1px solid black;">
-                  <strong>SI Date:</strong> <t t-esc="doc.invoice_date"/><br/>
+                  <strong>SI Date:</strong> <t t-esc="doc.invoice_date or ''"/><br/>
                   <strong>Term:</strong> <t t-esc="doc.invoice_payment_term_id.name or ''"/><br/>
                 </td>
               </tr>
@@ -25,7 +25,7 @@
             <table style="width:100%; border:1px solid black; border-collapse:collapse; font-size:12px; margin-bottom:15px;">
               <tr>
                 <td style="border:1px solid black; padding:5px; width:25%;"><strong>Sold To:</strong></td>
-                <td style="border:1px solid black; padding:5px;" colspan="3"><t t-esc="doc.partner_id.name"/></td>
+                <td style="border:1px solid black; padding:5px;" colspan="3"><t t-esc="doc.partner_id.name or ''"/></td>
               </tr>
               <tr>
                 <td style="border:1px solid black; padding:5px;"><strong>Address:</strong></td>
@@ -35,7 +35,7 @@
                 <td style="border:1px solid black; padding:5px;"><strong>TIN:</strong></td>
                 <td style="border:1px solid black; padding:5px;"><t t-esc="doc.partner_id.vat or ''"/></td>
                 <td style="border:1px solid black; padding:5px;"><strong>Business Style/Trade Name:</strong></td>
-                <td style="border:1px solid black; padding:5px;"><t t-esc="doc.partner_id.name"/></td>
+                <td style="border:1px solid black; padding:5px;"><t t-esc="doc.partner_id.name or ''"/></td>
               </tr>
               <tr>
                 <td style="border:1px solid black; padding:5px;"><strong>Delivery/Shipped to:</strong></td>
@@ -62,22 +62,20 @@
               </thead>
               <tbody>
                 <tr t-foreach="doc.invoice_line_ids" t-as="line">
-                  <td style="border:1px solid black; padding:5px;"><t t-esc="line.name"/></td>
-                  <td style="border:1px solid black; padding:5px; text-align:center;"><t t-esc="line.quantity"/></td>
-                  <td style="border:1px solid black; padding:5px; text-align:center;"><t t-esc="line.product_uom_id.name"/></td>
-
-                  <!-- Format currency with <t t-esc="doc.currency_id.symbol"/> and commas -->
+                  <td style="border:1px solid black; padding:5px;"><t t-esc="line.name or ''"/></td>
+                  <td style="border:1px solid black; padding:5px; text-align:center;"><t t-esc="'{:,.2f}'.format(line.quantity or 0)"/></td>
+                  <td style="border:1px solid black; padding:5px; text-align:center;"><t t-esc="line.product_uom_id.name or ''"/></td>
                   <td style="border:1px solid black; padding:5px; text-align:right;">
-                    <t t-esc="doc.currency_id.symbol"/><t t-esc="'{:,}'.format(line.price_unit)"/>
+                    <t t-esc="doc.currency_id.symbol"/><t t-esc="'{:,.2f}'.format(line.price_unit or 0)"/>
                   </td>
                   <td style="border:1px solid black; padding:5px; text-align:right;">
-                    <t t-esc="doc.currency_id.symbol"/><t t-esc="'{:,}'.format(line.price_unit * line.quantity)"/>
+                    <t t-esc="doc.currency_id.symbol"/><t t-esc="'{:,.2f}'.format((line.price_unit or 0) * (line.quantity or 0))"/>
                   </td>
                   <td style="border:1px solid black; padding:5px; text-align:right;">
-                    <t t-esc="line.discount or 0.0"/>%
+                    <t t-esc="'{:,.2f}'.format(line.discount or 0)"/>%
                   </td>
                   <td style="border:1px solid black; padding:5px; text-align:right;">
-                    <t t-esc="doc.currency_id.symbol"/><t t-esc="'{:,}'.format(line.price_subtotal)"/>
+                    <t t-esc="doc.currency_id.symbol"/><t t-esc="'{:,.2f}'.format(line.price_subtotal or 0)"/>
                   </td>
                 </tr>
               </tbody>
@@ -85,7 +83,7 @@
                 <tr>
                   <td colspan="6" style="border:1px solid black; padding:5px; text-align:right; font-weight:bold;">TOTAL</td>
                   <td style="border:1px solid black; padding:5px; text-align:right; font-weight:bold;">
-                    <t t-esc="doc.currency_id.symbol"/><t t-esc="'{:,}'.format(doc.amount_untaxed)"/>
+                    <t t-esc="doc.currency_id.symbol"/><t t-esc="'{:,.2f}'.format(doc.amount_untaxed or 0)"/>
                   </td>
                 </tr>
               </tfoot>
@@ -105,7 +103,9 @@
                   </ol>
                 </td>
                 <td style="padding:5px; text-align:right; border:1px solid black;">VATable:</td>
-                <td style="padding:5px; text-align:right; border:1px solid black;"><t t-esc="doc.currency_id.symbol"/><t t-esc="'{:,}'.format(doc.amount_untaxed)"/></td>
+                <td style="padding:5px; text-align:right; border:1px solid black;">
+                  <t t-esc="doc.currency_id.symbol"/><t t-esc="'{:,.2f}'.format(doc.amount_untaxed or 0)"/>
+                </td>
               </tr>
               <tr>
                 <td style="padding:5px; text-align:right; border:1px solid black;">Zero Rated:</td>
@@ -117,11 +117,15 @@
               </tr>
               <tr>
                 <td style="padding:5px; text-align:right; border:1px solid black;">VAT:</td>
-                <td style="padding:5px; text-align:right; border:1px solid black;"><t t-esc="doc.currency_id.symbol"/><t t-esc="'{:,}'.format(doc.amount_tax)"/></td>
+                <td style="padding:5px; text-align:right; border:1px solid black;">
+                  <t t-esc="doc.currency_id.symbol"/><t t-esc="'{:,.2f}'.format(doc.amount_tax or 0)"/>
+                </td>
               </tr>
               <tr>
                 <td style="padding:5px; text-align:right; border:1px solid black; font-weight:bold;">Amount Due:</td>
-                <td style="padding:5px; text-align:right; border:1px solid black; font-weight:bold;"><t t-esc="doc.currency_id.symbol"/><t t-esc="'{:,}'.format(doc.amount_total)"/></td>
+                <td style="padding:5px; text-align:right; border:1px solid black; font-weight:bold;">
+                  <t t-esc="doc.currency_id.symbol"/><t t-esc="'{:,.2f}'.format(doc.amount_total or 0)"/>
+                </td>
               </tr>
             </table>
 
@@ -146,7 +150,7 @@
 
             <div style="font-size:10px; margin-top:20px;">
               <p>
-                Printed By : Etaxpoint Software Solutions Corp. (Open Edition - Tax Based Accounting System) <br/>
+                Printed By: InnovaThink Corporation (Open Edition - Tax Based Accounting System) <br/>
                 Acknowledgment Certificate No.: <br/>
                 Acknowledgment Certificate Date Issued: <br/>
                 Permitted Series Range: SA-000000000001 - SA-999999999999
@@ -165,7 +169,7 @@
     <field name="model">account.move</field>
     <field name="report_type">qweb-pdf</field>
     <field name="report_name">itc_internal_dev.custom_report_sales_invoice</field>
-    <field name="print_report_name">'Sales Invoice - %s' % (object.invoice_origin)</field>
+    <field name="print_report_name">'Sales Invoice - %s' % (object.invoice_origin or '')</field>
     <field name="binding_model_id" ref="account.model_account_move"/>
     <field name="binding_type">report</field>
   </record>
