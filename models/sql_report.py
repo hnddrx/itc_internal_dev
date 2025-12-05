@@ -63,6 +63,8 @@ REPORT_NAMES = [
     ('secretary_cert', 'Secretary Cert'),
 ]
 
+""" Categories for various reports, can be expanded as needed.
+ """
 REPORT_CATEGORIES = [
     ('annex', 'Annex'),
     ('books', 'Books'),
@@ -246,11 +248,344 @@ SQL_QUERIES = {
     LEFT JOIN account_account aa ON he.account_id = aa.id
     ORDER BY he.id, hes.accounting_date, he.date, he.x_particulars;
 
-
     """,
+    'ap_history': """ 
+        SELECT
+            am.invoice_date AS "AP DATE",
+            am.name AS "AP ENTRY NUMBER",
+            rp.name AS "NAME OF SUPPLIER",
+            ap_line.account_name->>'en_US' AS "ACCOUNT TITLE",
+            am.invoice_date AS "REFERENCE DATE",
+            am.ref AS "SALES INVOICE",
+            am.amount_total AS "BILLING",
+            NULL AS "OTHERS",
+            pt.name AS "TERMS",
+            am.invoice_date_due AS "DUE DATE",
+            am.amount_total AS "AMOUNT",
+            ap_line.balance * -1 AS "ACCOUNTS PAYABLE",
+            pay_move.date AS "CV RELEASE DATE",
+            pay_move.name AS "CV NUMBER",
+            COALESCE(pay_amount.applied_amount, 0) AS "CV AMOUNT",
+            CASE
+                WHEN am.state = 'cancel' THEN 'Cancelled'
+                WHEN am.amount_residual = 0 THEN 'Paid'
+                WHEN am.amount_residual < am.amount_total THEN 'Partially Paid'
+                ELSE 'Open'
+            END AS "STATUS",
+            NULL AS "REMARKS"
+        FROM account_move am
+        LEFT JOIN res_partner rp ON rp.id = am.partner_id
+        LEFT JOIN account_payment_term pt ON pt.id = am.invoice_payment_term_id
+        LEFT JOIN (
+            SELECT 
+                aml.move_id,
+                aml.balance,
+                aa.name AS account_name
+            FROM account_move_line aml
+            JOIN account_account aa ON aa.id = aml.account_id
+            WHERE aa.account_type = 'liability_payable'
+        ) ap_line ON ap_line.move_id = am.id
+        LEFT JOIN LATERAL (
+            SELECT 
+                SUM(pr.amount) AS applied_amount,
+                pay_aml.move_id AS pay_move_id
+            FROM account_move_line bill_aml
+            JOIN account_partial_reconcile pr 
+                ON pr.debit_move_id = bill_aml.id 
+                OR pr.credit_move_id = bill_aml.id
+            JOIN account_move_line pay_aml 
+                ON pay_aml.id = pr.credit_move_id 
+                OR pay_aml.id = pr.debit_move_id
+            WHERE bill_aml.move_id = am.id
+                AND pay_aml.move_id != am.id
+            GROUP BY pay_aml.move_id
+            LIMIT 1
+        ) pay_amount ON TRUE
+        LEFT JOIN account_move pay_move ON pay_move.id = pay_amount.pay_move_id
+        WHERE am.move_type = 'in_invoice'
+            AND am.state != 'draft'
+        ORDER BY am.invoice_date DESC;
+
+     """,
+     'unpaid_sales_invoice_summary': """SELECT
+    am.name AS "SALES INVOICE NUMBER",
+    am.invoice_date AS "SALES INVOICE DATE",
+    '' AS "BRANCH CODE",
+    COALESCE(rc.name, '') AS "BRANCH NAME",
+    rp.name AS "NAME OF CUSTOMER",
+    sp.name AS "SALES REPRESENTATIVE",
+    am.amount_total AS "INVOICE AMOUNT"
+FROM account_move am
+LEFT JOIN res_partner rp ON am.partner_id = rp.id
+LEFT JOIN res_users ru ON am.invoice_user_id = ru.id
+LEFT JOIN res_partner sp ON ru.partner_id = sp.id
+LEFT JOIN res_company rc ON am.company_id = rc.id
+WHERE am.move_type = 'out_invoice'
+  AND am.state = 'posted'
+  AND am.payment_state IN ('not_paid','partial')
+ORDER BY am.invoice_date DESC;
+""",
+'summary_paid_ap': """
+SELECT
+    am.invoice_date AS "AP DATE",
+    am.name AS "AP ENTRY NUMBER",
+    rp.name AS "NAME OF SUPPLIER",
+    a.name->> 'en_US' AS "ACCOUNT TITLE",
+    am.invoice_date AS "REFERENCE DATE",
+    am.invoice_origin AS "SALES INVOICE",
+    am.amount_total AS "BILLING"
+FROM account_move am
+LEFT JOIN res_partner rp ON am.partner_id = rp.id
+LEFT JOIN account_move_line aal ON aal.move_id = am.id
+left join account_account a on aal.account_id = a.id
+WHERE am.move_type = 'in_invoice'
+  AND am.state = 'posted'
+  AND am.payment_state = 'paid'
+  and a.name->> 'en_US' = 'Accounts Payable'
+  and am.invoice_date between %s and %s
+ORDER BY am.invoice_date DESC;
+
+""",
+'summary_outstanding_ap': """SELECT
+    am.invoice_date AS "AP DATE",
+    am.name AS "AP ENTRY NUMBER",
+    rp.name AS "NAME OF SUPPLIER",
+    am.name AS "PARTICULARS",
+    aa.name->> 'en_US' AS "ACCOUNT TITLE",
+    am.invoice_date_due AS "DUE DATE",
+    am.invoice_date AS "REFERENCE DATE",
+    am.invoice_origin AS "SALES INVOICE",
+    am.amount_total AS "BILLING",
+    '' AS "OTHERS",
+    am.amount_total AS "AMOUNT",
+    COALESCE(ap.amount, 0) AS "CV AMOUNT",
+    '' AS "EWT",
+    (am.amount_total - COALESCE(ap.amount,0)) AS "PAYABLE AMOUNT",
+    am.amount_total AS "TOTAL",
+    am.payment_state AS "STATUS"
+FROM account_move am
+LEFT JOIN res_partner rp ON am.partner_id = rp.id
+LEFT JOIN account_move_line aml ON aml.move_id = am.id
+LEFT JOIN account_account aa ON aa.id = aml.account_id
+LEFT JOIN (
+    SELECT move_id, SUM(amount) AS amount
+    FROM account_payment
+    WHERE state = 'posted'
+    GROUP BY move_id
+) ap ON ap.move_id = am.id
+WHERE am.move_type = 'in_invoice'
+  AND am.state = 'posted'
+  AND am.payment_state IN ('not_paid','partial')
+ and aa.name->> 'en_US' = 'Accounts Payable'
+ORDER BY am.invoice_date DESC;
+""",
+'summary_outstanding_ar': """
+SELECT
+    rp.name AS "NAME OF CUSTOMER",
+    CURRENT_DATE AS "REPORT DATE",
+    sp.name AS "SALES REPRESENTATIVE",
+    am.invoice_date AS "SALES INVOICE DATE",
+    am.name AS "INVOICE NUMBER",
+    STRING_AGG(DISTINCT ap.name, ', ') AS "OR/CR NUMBER",
+    '' AS "DELIVERY RECEIPT NUMBER",
+    '' AS "OTHERS",
+    am.amount_total AS "SALES INVOICE AMOUNT",
+    COALESCE(SUM(aml_credit.amount_currency),0) AS "COLLECTED",
+    (am.amount_total - COALESCE(SUM(aml_credit.amount_currency ),0)) AS "OUTSTANDING BALANCE"
+FROM account_move am
+LEFT JOIN res_partner rp ON am.partner_id = rp.id
+LEFT JOIN res_users ru ON am.invoice_user_id = ru.id
+LEFT JOIN res_partner sp ON ru.partner_id = sp.id
+LEFT JOIN account_partial_reconcile apr ON apr.debit_move_id IN (
+    SELECT id FROM account_move_line WHERE move_id = am.id
+)
+LEFT JOIN account_move_line aml_credit ON aml_credit.id = apr.credit_move_id
+LEFT JOIN account_payment ap ON ap.id = aml_credit.payment_id AND ap.state='posted'
+WHERE am.move_type = 'out_invoice'
+  AND am.state = 'posted'
+  AND am.payment_state IN ('not_paid','partial')
+GROUP BY rp.name, sp.name, am.invoice_date, am.name, am.amount_total
+ORDER BY am.invoice_date DESC;
+""",
+'summary_ap': """
+SELECT
+    am.invoice_date AS "AP DATE",
+    am.name AS "AP ENTRY NUMBER",
+    rp.name AS "NAME OF THE SUPPLIER",
+    aa.name ->> 'en_US'AS "ACCOUNT TITLE",
+    am.invoice_date AS "REFERENCE DATE",
+    am.invoice_origin AS "SALES INVOICE",
+    am.amount_total AS "BILLING",
+    '' AS "OTHERS",
+    COALESCE(am.invoice_payment_term_id, 0) AS "TERMS",
+    am.invoice_date_due AS "DUE DATE",
+    am.amount_total AS "AMOUNT",
+    '' AS "EWT PAYABLE",
+    (am.amount_total - COALESCE(ap.amount,0)) AS "ACCOUNTS PAYABLE",
+    COALESCE(ap.paydate::text,'') AS "CV RELEASED DATE",
+    COALESCE(ap.name,'') AS "CV NUMBER",
+    COALESCE(ap.amount,0) AS "CV AMOUNT",
+    am.payment_state  AS "STATUS"
+FROM account_move am
+LEFT JOIN res_partner rp ON am.partner_id = rp.id
+LEFT JOIN account_move_line aml ON aml.move_id = am.id
+LEFT JOIN account_account aa ON aa.id = aml.account_id
+LEFT JOIN (
+    SELECT aml.move_id, ap.name, ap.date as paydate, SUM(aml.amount_currency ) AS amount
+    FROM account_move_line aml	
+    LEFT JOIN account_payment ap ON ap.id = aml.payment_id
+    WHERE ap.state = 'posted'
+    GROUP BY aml.move_id, ap.name, ap.date
+) ap ON ap.move_id = am.id
+WHERE am.move_type = 'in_invoice'
+  AND am.state = 'posted'
+  and aa.name ->> 'en_US' = 'Accounts Payable'
+ORDER BY am.invoice_date DESC;
+""",
+'or_summary': """
+SELECT
+    ap.date AS "OFFICIAL RECEIPT DATE",
+    ap.name AS "OFFICIAL RECEIPT NO",
+    rc.id AS "BRANCH CODE",
+    rc.name AS "BRANCH NAME",
+    sp.name AS "SALES REPRESENTATIVE",
+    rp.name AS "NAME OF CUSTOMER",
+    am.invoice_date AS "SERVICE INVOICE (SI) DATE"
+FROM account_payment ap
+LEFT JOIN res_partner rp ON ap.partner_id = rp.id
+LEFT JOIN res_users ru ON ap.partner_id = ru.id
+LEFT JOIN res_partner sp ON ru.partner_id = sp.id
+LEFT JOIN account_move am ON am.id = ap.move_id  -- payments applied to invoices
+LEFT JOIN res_company rc ON ap.company_id = rc.id
+WHERE ap.payment_type  = 'inbound'
+  AND ap.state = 'paid'
+ORDER BY ap.date DESC;
+""",
+'lapsing_schedule': """
+SELECT
+    aa.name AS "ASSET NAME",
+    COALESCE(opening.opening_balance,0) AS "BEGINNING BALANCE",
+    COALESCE(additions.added_amount,0) AS "ADDITIONS",
+    (COALESCE(opening.opening_balance,0) + COALESCE(additions.added_amount,0)) AS "TOTAL",
+    COALESCE(disposals.retired_amount,0) AS "DISPOSAL/RETIREMENT",
+    ((COALESCE(opening.opening_balance,0) + COALESCE(additions.added_amount,0)) - COALESCE(disposals.retired_amount,0)) AS "NET TOTAL"
+FROM account_asset aa
+-- Opening balance
+LEFT JOIN (
+    SELECT id as asset_id, SUM(original_value) AS opening_balance
+    FROM account_asset
+    WHERE state IN ('draft','open')
+    GROUP BY id
+) opening ON opening.asset_id = aa.id
+-- Additions
+LEFT JOIN (
+    SELECT id as asset_id, SUM(original_value) AS added_amount
+    FROM account_asset
+    WHERE state = 'open'
+    GROUP BY id
+) additions ON additions.asset_id = aa.id
+-- Retirements / disposals
+LEFT JOIN (
+    SELECT id as asset_id, SUM(original_value) AS retired_amount
+    FROM account_asset
+    WHERE state = 'close'
+    GROUP BY id
+) disposals ON disposals.asset_id = aa.id
+ORDER BY aa.name
+
+""",
+'disbursement_summary':"""
+SELECT
+    ap.date AS "CV ENTRY DATE",
+    ap.date AS "CV RELEASE DATE",
+    ap.name AS "CV NUMBER",
+    am.invoice_date AS "AP DATE",
+    am.name AS "AP ENTRY NUMBER",
+    rc.id AS "BRANCH CODE",
+    rc.name AS "BRANCH NAME",
+    rp.name AS "NAME OF PAYEE/SUPPLIER",
+    am.invoice_origin AS "PARTICULARS",
+    aa.name AS "ACCOUNT TITLE",
+    am.amount_total AS "GROSS AMOUNT",
+    '' AS "EWT AMOUNT",
+    COALESCE(ap.amount,0) AS "CV AMOUNT",
+    am.payment_state AS "STATUS"
+FROM account_payment ap
+LEFT JOIN account_move am ON am.id = ap.move_id  -- payments applied to invoices
+LEFT JOIN res_partner rp ON am.partner_id = rp.id
+LEFT JOIN res_company rc ON ap.company_id = rc.id
+LEFT JOIN account_move_line aml ON aml.move_id = am.id
+LEFT JOIN account_account aa ON aa.id = aml.account_id
+WHERE ap.payment_type = 'outbound'
+  AND ap.state = 'posted'
+  AND am.move_type = 'in_invoice'
+ORDER BY ap.date DESC;
+
+""",
+'check_collection_summary': """
+SELECT
+    rp.name AS "NAME OF CUSTOMER",
+
+    am.amount_total AS "CR/OR AMOUNT",
+    am.invoice_date AS "CR/OR DATE",
+    am.name AS "CR/OR NUMBER",
+
+    ap.date AS "CHECK DATE",
+    ap.check_number AS "CHECK NO",
+    '' AS "BANK NAME",
+
+    ap.amount AS "CHECK AMOUNT"
+
+FROM account_payment ap
+
+LEFT JOIN res_partner rp ON rp.id = ap.partner_id
+
+-- Link OR/CR (account_move) that sourced the payment
+LEFT JOIN account_move am ON am.id = ap.move_id
+
+WHERE ap.state = 'posted'
+  AND ap.payment_method_line_id IS NOT NULL
+  AND ap.payment_type = 'inbound'  -- collections only
+  AND ap.check_number IS NOT NULL  -- only check payments
+    AND ap.payment_method_line_id IN (
+      SELECT id 
+      FROM account_payment_method_line 
+      WHERE name ILIKE '%%Checks%%'            
+  )
+
+
+ORDER BY ap.date, rp.name; """,
+'cash_collection_summary': """ 
+SELECT
+    rp.name AS "NAME OF CUSTOMER",
+
+    am.amount_total AS "CR/OR AMOUNT",
+    am.invoice_date AS "CR/OR DATE",
+    am.name AS "CR/OR NUMBER",
+
+    ap.date AS "CHECK DATE",
+    ap.check_number AS "CHECK NO",
+    '' AS "BANK NAME",
+
+    ap.amount AS "CHECK AMOUNT"
+
+FROM account_payment ap
+
+LEFT JOIN res_partner rp ON rp.id = ap.partner_id
+
+-- Link OR/CR (account_move) that sourced the payment
+LEFT JOIN account_move am ON am.id = ap.move_id
+
+WHERE ap.state = 'posted'
+  AND ap.payment_method_line_id IS NOT NULL
+  AND ap.payment_type = 'inbound'  -- collections only
+  AND ap.check_number is NULL  -- only check payments
+
+ORDER BY ap.date, rp.name;
+ """
 }
 
-
+""" Start of the class """
 class SqlReport(models.Model):
     _name = 'custom.sql.report'
     _description = 'Custom SQL Report'
@@ -274,10 +609,21 @@ class SqlReport(models.Model):
     sql_query = fields.Text("SQL Query")
     result_ids = fields.One2many('custom.sql.report.line', 'report_id', string="Results")
     result_columns = fields.Text("Result Columns")  # JSON array
-
+    filter_by_year = fields.Boolean(string="Filter By year", tracking=True, help="Checking this will allow you to filter by year.")
+    year = fields.Selection(
+        [(str(y), str(y)) for y in range(2000, 2051)],
+        string="Year",
+        help="Select a year to auto-fill From Date and To Date"
+    )
     _sql_constraints = [
         ('unique_report_name', 'unique(name)', 'Each report name must be unique!')
     ]
+
+    @api.onchange('year')
+    def _onchange_year(self):
+        if self.year:
+            self.from_date = f'{self.year}-01-01'
+            self.to_date = f'{self.year}-12-31'
 
     def action_execute_query(self):
         self.ensure_one()
@@ -410,6 +756,8 @@ class SqlReport(models.Model):
         worksheet.write("A6", f"Period Covered: {self.from_date.strftime('%m/%d/%Y')} - {self.to_date.strftime('%m/%d/%Y')}", small_format)
 
         worksheet.write("G1", f"No. Of Transactions: {len(rows)} ", small_format)
+        self.exported_on = fields.Datetime.now()
+        self.exported_by = self.env.user
         worksheet.write("G2", f"Date Processed: {self.exported_on.strftime('%m/%d/%Y')}", small_format)
         worksheet.write("G3", f"Processed by: {self.exported_by.name or ''}", small_format)
 
@@ -474,8 +822,7 @@ class SqlReport(models.Model):
             'mimetype': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         })
 
-        self.exported_on = fields.Datetime.now()
-        self.exported_by = self.env.user
+       
 
         return {
             'type': 'ir.actions.act_url',
