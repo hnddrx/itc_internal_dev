@@ -30,8 +30,10 @@
                             <field name="description" colspan="2"/>
                         </group>
                         <group>
-                            <field name="from_date"/>
-                            <field name="to_date"/>
+                            <field name="from_date" invisible="filter_by_year == True"/>
+                            <field name="to_date" invisible="filter_by_year == True"/>
+                            <field name="year" invisible="filter_by_year == False"/>
+                            <field name="filter_by_year" widget="toggle"/>
                             <field name="generated_on" readonly="1"/>
                             <field name="generated_by" readonly="1"/>
                             <field name="sql_query" invisible="1" nolabel="1" class="o_sql_query_field"/>

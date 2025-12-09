@@ -134,14 +134,14 @@
                 <td style="font-size:11px; border:1px solid black;">Signature over Printed Name</td>
               </tr>
             </table>
-            <div style="font-size:10px; margin-top:20px;">
+            <!-- <div style="font-size:10px; margin-top:20px;">
               <p>
               Printed By : InnovaThink Corporation.. (Open Edition - Tax Based Accounting System) <br/>
               Acknowledgment Certificate No.: <br/>
               Acknowledgment Certificate Date Issued: <br/>
               Permitted Series Range: SA-000000000001 - SA-999999999999
               </p>
-            </div>
+            </div> -->
           </main>
         </div>
       </t>
