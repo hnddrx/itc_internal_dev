@@ -18,7 +18,7 @@
                     class="btn-primary"/>
       </header>
       <xpath expr="//field[@name='partner_id']" position="before">
-         <field name="x_purchase_type" />
+         <field name="x_purchase_type" readonly="state == 'purchase'"/>
       </xpath>
       <xpath expr="//field[@name='partner_id']" position="after">
          <field name="x_vendor_tin" invisible="not partner_id"/>

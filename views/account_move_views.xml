@@ -11,12 +11,16 @@
                 <button name="%(report_service_invoice_account_move)d"
                         string="Print Service Invoice"
                         type="action"
-                        class="oe_highlight"/>
+                        class="oe_highlight"
+                        modifiers="{'invisible': [['x_invoice_type','!=','service']]}"/>
+
                 <button name="%(report_sales_invoice_account_move)d"
                         string="Print Sales Invoice"
                         type="action"
-                        class="oe_highlight"/>
+                        class="oe_highlight"
+                        modifiers="{'invisible': [['x_invoice_type','!=','consu']]}"/>
             </xpath>
+
 
             <!-- Add custom fields below existing group -->
             <xpath expr="//sheet/group" position="inside">

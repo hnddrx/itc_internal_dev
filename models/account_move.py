@@ -9,7 +9,7 @@ class Account(models.Model):
             ('consu', 'Sales'),
         ],
         string="Invoice Type",
-        default='service',
+        default=False,
         help="Indicates whether the invoice is Service or Sales."
     )
 

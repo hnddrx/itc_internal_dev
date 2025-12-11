@@ -721,6 +721,45 @@ WHERE invoice_date >= date_trunc('year', CURRENT_DATE)
   AND invoice_date < date_trunc('month', CURRENT_DATE) - INTERVAL '6 months'  -- last 6 months
 ORDER BY invoice_date;
 
+""",
+'map_summary': """
+WITH invoice_data AS (
+    SELECT
+        ROW_NUMBER() OVER (ORDER BY am.id) AS sequence_number,
+        rp.vat AS taxpayer_identification_number,
+        CASE WHEN rp.is_company THEN aml.debit ELSE 0 END AS corporation,
+        CASE WHEN NOT rp.is_company THEN aml.debit ELSE 0 END AS individual,
+        '' AS atc_code,
+        atc.name->>'en_US' AS nature_of_payment,
+        aml.debit AS amount_of_income_payment,
+        '' AS tax_rate,
+        aml.credit AS amount_of_tax_withheld
+    FROM account_move_line aml
+    JOIN account_move am ON aml.move_id = am.id
+    JOIN res_partner rp ON am.partner_id = rp.id
+    LEFT JOIN account_tax atc ON aml.tax_line_id = atc.id
+    WHERE am.move_type IN ('out_invoice', 'out_refund') -- customer invoices
+      AND am.state = 'posted'
+)
+SELECT
+    sequence_number,
+    taxpayer_identification_number,
+    SUM(corporation) AS corporation,
+    SUM(individual) AS individual,
+    atc_code,
+    nature_of_payment,
+    SUM(amount_of_income_payment) AS amount_of_income_payment,
+    tax_rate,
+    SUM(amount_of_tax_withheld) AS amount_of_tax_withheld
+FROM invoice_data
+GROUP BY
+    sequence_number,
+    taxpayer_identification_number,
+    atc_code,
+    nature_of_payment,
+    tax_rate
+ORDER BY sequence_number;
+
 """
 }
 
