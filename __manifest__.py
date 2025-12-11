@@ -39,6 +39,7 @@
         'web.assets_backend': [
             'itc_internal_dev/static/src/css/custom_buttons.css',
             'itc_internal_dev/static/src/css/required.css',
+            'itc_internal_dev/static/src/js/sql_report_filter.js',
         ],
     },
     'installable': True,
