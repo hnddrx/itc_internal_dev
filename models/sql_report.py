@@ -62,6 +62,7 @@ REPORT_NAMES = [
     ('audit_logs', 'Audit Logs'),
     ('form_1900', 'Form 1900'),
     ('secretary_cert', 'Secretary Cert'),
+    ('inventory_book', 'Inventory Book'),
 ]
 
 """ Categories for various reports, can be expanded as needed.
@@ -583,7 +584,144 @@ WHERE ap.state = 'posted'
   AND ap.check_number is NULL  -- only check payments
 
 ORDER BY ap.date, rp.name;
- """
+ """,
+'general_journal': """
+SELECT
+    aml.date AS DATE,
+    am.name AS "JOURNAL BATCH ID",
+    aml.name AS "DESCTIPTION",
+    '' AS "ACCOUNT CODE",
+    aa.name->>'en_US' AS "ACCOUNT TITLE",
+    aml.ref AS "REF NUMBER",
+    aml.debit AS "DEBIT",
+    aml.credit AS "CREDIT"
+FROM account_move_line aml
+join account_account aa on aml.account_id = aa.id
+LEFT JOIN account_move am ON aml.move_id = am.id
+WHERE am.state = 'posted'
+ORDER BY aml.date, am.name, aml.id;
+""",
+'inventory_book': """
+SELECT
+    sm.date::date AS "DATE",
+    pt.name->> 'en_US' AS "PRODUCT NAME",
+    sm.description_picking AS "DESCRIPTION",
+    uom.name->>'en_US' AS "UNIT",
+
+    -- Price per unit (from stock valuation layer)
+    svl.unit_cost AS "PRICE PER UNIT",
+
+    -- Amount = Qty * Unit Cost
+    (svl.quantity * svl.unit_cost) AS "AMOUNT"
+
+FROM stock_move sm
+LEFT JOIN product_product pp ON sm.product_id = pp.id
+LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
+LEFT JOIN uom_uom uom ON sm.product_uom = uom.id
+LEFT JOIN stock_valuation_layer svl ON svl.stock_move_id = sm.id
+where pt.name  is not null
+ORDER BY sm.date;
+""",
+'vat_summary_purchase': """
+SELECT
+    am.name AS "SEQUENCE NUMBER",
+    rp.vat AS "TAX PAYER IDENTIFICATION NUMBER",
+    rp.name AS "REGISTERED NAME",
+    -- Supplier Name: LAST, FIRST, MIDDLE (adjust fields if you have them in partner)
+   ''
+        AS "NAME OF SUPPLIER(LAST NAME, FIRST NAME, MIDDLE NAME)",
+    rp.contact_address_complete AS "SUPPLIER ADDRESS",
+
+    -- Amounts
+    am.amount_untaxed + am.amount_tax AS "AMOUNT OF GROSS PURCHASE",
+    0.0 AS "AMOUNT OF EXEMPT PURCHASE",       -- placeholder
+    0.0 AS "AMOUNT OF ZERO RATED PURCHASE",   -- placeholder
+    am.amount_untaxed AS "AMOUNT OF TAXABLE PURCHASE",
+
+    -- Purchase types (you may need custom fields or tags to separate these)
+    0.0 AS "AMOUNT OF PURCHASE OF SERVICES",           -- placeholder
+    0.0 AS "AMOUNT OF PURCHASE OF CAPITAL GOODS",     -- placeholder
+    0.0 AS "AMOUNT OF PURCHASE OF OTHER THAN CAPITAL GOODS", -- placeholder
+
+    -- VAT
+    am.amount_tax AS "AMOUNT OF INPUT TAX",
+
+    -- Gross taxable purchase (for VAT computation)
+    am.amount_untaxed AS "AMOUNT OF GROSS TAXABLE PURCHASE"
+
+FROM account_move am
+LEFT JOIN res_partner rp ON am.partner_id = rp.id
+WHERE am.move_type = 'in_invoice'
+  AND am.state = 'posted'
+ORDER BY am.invoice_date, am.name;
+
+""",
+'vat_summary_sales': """
+SELECT
+    TO_CHAR(am.invoice_date, 'MM/YYYY') AS "TAXABLE MONTH",
+    rp.vat AS "TAX PAYER IDENTIFICATION NUMBER",
+    rp.name AS "REGISTERED NAME",
+    -- Customer Name: LAST, FIRST, MIDDLE (adjust fields if available)
+  ''
+        AS "NAME OF CUSTOMER",
+    rp.contact_address_complete AS "CUSTOMER ADDRESS",
+
+    -- Amounts
+    am.amount_untaxed + am.amount_tax AS "AMOUNT OF GROSS SALES",
+    0.0 AS "AMOUNT OF EXEMPT SALES",       -- placeholder, requires exemption logic
+    0.0 AS "AMOUNT OF ZERO RATED SALES",   -- placeholder, requires zero-rated logic
+    am.amount_untaxed AS "AMOUNT OF TAXABLE SALES",
+    am.amount_tax AS "AMOUNT OF OUTPUT TAX",
+    am.amount_untaxed AS "AMOUNT OF GROSS TAXABLE SALES"
+
+FROM account_move am
+LEFT JOIN res_partner rp ON am.partner_id = rp.id
+WHERE am.move_type = 'out_invoice'
+  AND am.state = 'posted'
+ORDER BY am.invoice_date, am.name;
+
+""",
+'semestral_suppliers': """
+WITH supplier_invoices AS (
+    SELECT
+        p.id AS partner_id,
+        p.vat AS tax_payer_id,
+        p.branch_code AS branch_code,
+        '' AS corporation,
+        p.name AS last_name,          -- assuming single name field
+        '' AS first_name,             -- if you have separate first name
+        '' AS middle_name,            -- optional
+        '' AS atc_code,
+        l.debit AS amount_of_income_payment,
+        t.amount AS tax_rate,
+        l.tax_line_id AS tax_line_id,
+        l.credit AS amount_of_tax_withheld,
+        am.date AS invoice_date
+    FROM account_move_line l
+    JOIN account_move am ON l.move_id = am.id
+    JOIN res_partner p ON am.partner_id = p.id
+    LEFT JOIN account_tax t ON l.tax_line_id = t.id
+    WHERE am.move_type = 'in_invoice'  -- supplier invoices
+      AND am.state = 'posted'
+)
+SELECT
+    ROW_NUMBER() OVER (ORDER BY invoice_date) AS sequence_number,
+    tax_payer_id AS "TAX PAYER IDENTIFICATION NUMBER",
+    branch_code AS "BRANCH CODE",
+    corporation AS "CORPORATION",
+    last_name AS "LAST NAME",
+    first_name AS "FIRST NAME",
+    middle_name AS "MIDDLE NAME",
+    atc_code AS "ATC CODE",
+    amount_of_income_payment AS "AMOUNT OF INCOME PAYMENT",
+    tax_rate AS "TAX RATE",
+    amount_of_tax_withheld AS "AMOUNT OF TAX WITHHELD"
+FROM supplier_invoices
+WHERE invoice_date >= date_trunc('year', CURRENT_DATE) 
+  AND invoice_date < date_trunc('month', CURRENT_DATE) - INTERVAL '6 months'  -- last 6 months
+ORDER BY invoice_date;
+
+"""
 }
 
 """ Start of the class """
