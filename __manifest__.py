@@ -21,6 +21,7 @@
         'report/official_receipt_report.xml',
         'report/service_invoice_report.xml',
         'report/credit_memo_report.xml',
+        'report/debit_memo_report.xml',
         'report/report_statement_of_account_template.xml',
         'report/acknowledgement_report.xml',
         #Views
