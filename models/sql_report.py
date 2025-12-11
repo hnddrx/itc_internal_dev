@@ -6,6 +6,7 @@ import logging
 import xlsxwriter
 import json
 from datetime import date, datetime
+from markupsafe import Markup
 
 _logger = logging.getLogger(__name__)
 
@@ -607,17 +608,89 @@ class SqlReport(models.Model):
     to_date = fields.Date("To Date", required=True)
 
     sql_query = fields.Text("SQL Query")
-    result_ids = fields.One2many('custom.sql.report.line', 'report_id', string="Results")
+    
     result_columns = fields.Text("Result Columns")  # JSON array
-    filter_by_year = fields.Boolean(string="Filter By year", tracking=True, help="Checking this will allow you to filter by year.")
+    filter_by_year = fields.Boolean(string="Filter By year", tracking=True, default=True ,help="Checking this will allow you to filter by year.")
     year = fields.Selection(
         [(str(y), str(y)) for y in range(2000, 2051)],
         string="Year",
+        default=str(date.today().year),
         help="Select a year to auto-fill From Date and To Date"
     )
     _sql_constraints = [
         ('unique_report_name', 'unique(name)', 'Each report name must be unique!')
     ]
+
+    filter_column = fields.Selection(
+        selection=lambda self: self._get_dynamic_columns(),
+        string="Filter Column"
+    )
+
+    filter_value = fields.Selection(
+        selection=lambda self: self._get_unique_values(),
+        string="Filter Value"
+    )
+
+    result_ids = fields.One2many('custom.sql.report.line', 'report_id', string="Results")
+    def _get_dynamic_columns(self):
+        """
+        Return a list of (value, label) tuples even if no record is provided.
+        Must NEVER call ensure_one(), because Odoo calls this as an empty recordset.
+        """
+        # If no record (self is empty), return empty selection
+        if not self:
+            return []
+
+        # When editing a record, use its HTML or JSON data
+        columns = []
+
+        # Example: Extract column names from JSON data
+        try:
+            if self.result_ids:
+                raw = [json.loads(r.data) for r in self.result_ids]
+                if raw and len(raw) > 0:
+                    for col in raw[0].keys():
+                        columns.append((col, col))
+        except Exception:
+            pass
+
+        return columns
+
+
+    def _get_unique_values(self):
+        """Return unique values of the selected filter column."""
+        #self.ensure_one()
+
+        if not self.filter_column:
+            return []
+
+        unique_vals = set()
+
+        for line in self.result_ids:
+            if not line.data:
+                continue
+
+            try:
+                row = json.loads(line.data)
+            except Exception:
+                continue
+
+            # JSON row must be { "col": value, ... }
+            if self.filter_column in row:
+                val = row[self.filter_column]
+                if val not in (None, ""):
+                    unique_vals.add(str(val))
+
+        # Convert to selection-friendly structure
+        return [(v, v) for v in sorted(unique_vals)]
+
+
+
+    @api.onchange('filter_column', 'filter_value')
+    def _onchange_apply_filter(self):
+        for line in self.result_ids:
+            line.html_result = line.get_filtered_html(self.filter_column, self.filter_value)
+
 
     @api.onchange('year')
     def _onchange_year(self):
@@ -625,6 +698,7 @@ class SqlReport(models.Model):
             self.from_date = f'{self.year}-01-01'
             self.to_date = f'{self.year}-12-31'
 
+    """ Generate Report Action"""
     def action_execute_query(self):
         self.ensure_one()
 
@@ -674,7 +748,7 @@ class SqlReport(models.Model):
 
             # --- Build Final Table ---
             table_html = f"""
-                <div style="
+                <div  class="o_sql_report_result" style="
                     width: 100%;
                     max-width: 1000px;
                     max-height: 600px;
@@ -721,6 +795,8 @@ class SqlReport(models.Model):
         columns = json.loads(self.result_columns or "[]")
         rows = [json.loads(r.data) for r in self.result_ids]
         return columns, rows
+
+    """ Export to Excel Action"""    
 
     def action_export_excel(self):
         self.ensure_one()
@@ -830,6 +906,67 @@ class SqlReport(models.Model):
             'target': 'self',
         }
 
+    """ Export to PDF Action"""
+    def action_export_pdf(self):
+        self.ensure_one()
+        if not self.result_ids:
+            raise UserError("No data to export. Execute a query first.")
+
+        # Prepare HTML content
+        html_content = self.result_ids[0].html_result or "<p>No data available</p>"
+
+        # Optional: Wrap in basic HTML body for PDF rendering
+        html = f"""
+        <html>
+            <head>
+                <style>
+                    table {{
+                        width: 100%;
+                        border-collapse: collapse;
+                    }}
+                    th, td {{
+                        border: 1px solid #000;
+                        padding: 4px;
+                        text-align: left;
+                    }}
+                    th {{
+                        background-color: #f8f9fa;
+                    }}
+                </style>
+            </head>
+            <body>
+                <h2>{dict(self._fields['name'].selection).get(self.name, self.name)}</h2>
+                <p>Period Covered: {self.from_date} - {self.to_date}</p>
+                {html_content}
+            </body>
+        </html>
+        """
+
+        # Generate PDF using Odoo's built-in QWeb PDF engine
+        pdf, _ = self.env['ir.actions.report']._get_pdf(
+            docids=[], reportname='custom.sql.report.pdf', data={'html': html}
+        )
+
+        # Create attachment
+        filename = f"{self.name.replace(' ', '_')}.pdf"
+        attachment = self.env['ir.attachment'].create({
+            'name': filename,
+            'type': 'binary',
+            'datas': base64.b64encode(pdf),
+            'res_model': self._name,
+            'res_id': self.id,
+            'mimetype': 'application/pdf'
+        })
+
+        self.exported_on = fields.Datetime.now()
+        self.exported_by = self.env.user
+
+        return {
+            'type': 'ir.actions.act_url',
+            'url': f"/web/content/{attachment.id}?download=true",
+            'target': 'self',
+        }
+
 
 
 class SqlReportLine(models.Model):
@@ -839,3 +976,59 @@ class SqlReportLine(models.Model):
     report_id = fields.Many2one('custom.sql.report', string="Report", ondelete="cascade")
     data = fields.Text("Row Data")  # JSON string
     html_result = fields.Html("Details")  # HTML table
+
+    def get_filtered_html(self, column, value):
+        if not self.data:
+            return ""
+
+        import json
+        rows = json.loads(self.data)
+
+        if not rows:
+            return ""
+
+        # Determine headers:
+        # If rows are dicts:
+        if isinstance(rows[0], dict):
+            headers = list(rows[0].keys())
+        # If rows are lists (no column names)
+        else:
+            headers = [f"Column {i+1}" for i in range(len(rows[0]))]
+
+        # Filter rows
+        filtered = []
+        for row in rows:
+            if isinstance(row, dict):
+                cell_value = row.get(column, "")
+            else:
+                # column is index
+                try:
+                    idx = int(column)
+                    cell_value = row[idx]
+                except:
+                    continue
+
+            # Convert both sides to string safely
+            if str(value).lower() in str(cell_value).lower():
+                filtered.append(row)
+
+
+        # Build HTML table
+        html = "<table class='table table-bordered'><thead><tr>"
+        for h in headers:
+            html += f"<th>{h}</th>"
+        html += "</tr></thead><tbody>"
+
+        for row in filtered:
+            html += "<tr>"
+            if isinstance(row, dict):
+                for h in headers:
+                    html += f"<td>{row.get(h, '')}</td>"
+            else:
+                for cell in row:
+                    html += f"<td>{cell}</td>"
+            html += "</tr>"
+
+        html += "</tbody></table>"
+
+        return html
