@@ -94,6 +94,7 @@
               <tr>
                 <td rowspan="5" style="width:65%; padding:8px; vertical-align:top; border:1px solid black;">
                   <p><strong>Amount in words:</strong> <span t-esc="doc.currency_id.amount_to_text(doc.amount_total)"/></p>
+                  <p><strong>Terms and Conditions</strong></p>
                   <ol style="margin:0; padding-left:15px; font-size:11px;">
                     <li>Our liability for loss or damage ceases after delivery to the carrier in good order and condition.</li>
                     <li>This invoice is payable on demand, unless otherwise agreed upon.</li>
