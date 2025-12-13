@@ -63,7 +63,7 @@
             name="Customers"
             parent="menu_custom_sales_invoice_root"
             action="action_customers_menu"
-            sequence="1"
+            sequence="2"
         />
 
         <!-- Sales Invoices -->
@@ -79,7 +79,7 @@
             name="Sales Invoices"
             parent="menu_custom_sales_invoice_root"
             action="action_sales_invoices"
-            sequence="2"
+            sequence="1"
         />
 
         <!-- Credit Notes -->
@@ -111,5 +111,19 @@
             sequence="4"
         />
 
+        <!-- Sales Payments -->
+        <record id="action_sales_payments" model="ir.actions.act_window">
+            <field name="name">Sales Payments</field>
+            <field name="res_model">account.payment</field>
+            <field name="view_mode">list,form</field>
+            <field name="domain">[('payment_type','=','inbound')]</field>
+        </record>
+        <menuitem
+            id="menu_custom_sales_payments"
+            name="Sales Payments"
+            parent="menu_custom_sales_invoice_root"
+            action="action_sales_payments"
+            sequence="5"
+        />
     </data>
 </odoo>
