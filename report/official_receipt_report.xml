@@ -41,6 +41,10 @@
               <thead style="background:#f0f0f0;">
                 <tr>
                   <th style="border:1px solid black; padding:5px; text-align:left;">Reference Number</th>
+                  <th style="border:1px solid black; padding:5px; text-align:left;">Reference Date</th>
+                  <th style="border:1px solid black; padding:5px; text-align:left;">Reference Amount</th>
+                  <th style="border:1px solid black; padding:5px; text-align:left;">Reference EWT</th>
+
                   <th style="border:1px solid black; padding:5px; text-align:right; width:100px;">Amount</th>
                 </tr>
               </thead>
@@ -51,6 +55,11 @@
                 <t t-foreach="range(rows)" t-as="row">
                   <tr>
                     <td style="border:1px solid black; padding:5px;"><t t-if="row*2 &lt; num_invs"><span t-field="reconciled_invoices[row*2].name"/></t></td>
+
+                    <td style="border:1px solid black; padding:5px;"><t t-if="row*2 &lt; num_invs"><span t-field="reconciled_invoices[row*2].create_date"/></t></td>
+                    <td style="border:1px solid black; padding:5px;"><t t-if="row*2 &lt; num_invs"><span t-field="reconciled_invoices[row*2].name"/></t></td>
+                    <td style="border:1px solid black; padding:5px;"><t t-if="row*2 &lt; num_invs"><span t-field="reconciled_invoices[row*2].name"/></t></td>
+
                     <td style="border:1px solid black; padding:5px; text-align:right;"><t t-if="row*2 &lt; num_invs"><span t-field="reconciled_invoices[row*2].amount_total" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></t></td>
                   </tr>
                 </t>
