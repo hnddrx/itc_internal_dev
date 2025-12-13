@@ -57,6 +57,7 @@
             sequence="51"
             web_icon="itc_internal_dev,static/description/vendor_payment.png"
         />
+         
 
         <!-- =========================================================
              SUBMENU → ACTION
@@ -85,6 +86,7 @@
             id="menu_custom_customers"
             name="Customers"
             action="action_customers_menu"
+            parent="menu_custom_sales_invoice_root"
             sequence="1"
         />
 
@@ -104,19 +106,9 @@
             </field>
         </record>
 
-        <menuitem
-            id="menu_custom_sales_invoice_root"
-            name="Payments"
-            sequence="2"
-        />
 
-        <menuitem
-            id="menu_custom_sales_invoice_action"
-            name="Sales Invoices"
-            parent="menu_custom_sales_invoice_root"
-            action="action_sales_invoice_menu"
-            sequence="1"
-        />
+
+
 
         <!-- ===============================
              Credit Note Action & Menu
@@ -131,6 +123,7 @@
         <menuitem
             id="menu_custom_credit_note"
             name="Credit Notes"
+            parent="menu_custom_sales_invoice_root"
             action="action_credit_note_menu"
             sequence="3"
         />
@@ -147,6 +140,7 @@
         <menuitem
             id="menu_custom_products_sales"
             name="Products"
+            parent="menu_custom_sales_invoice_root"
             action="action_products_sales_menu"
             sequence="4"
         />
