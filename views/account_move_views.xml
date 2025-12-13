@@ -61,12 +61,19 @@
         </record>
         <menuitem
             id="menu_custom_sales_invoices"
-            name="Sales Invoices"
+            name="Sales Invoice"
             parent="menu_custom_sales_invoice_root"
-            action="action_sales_invoices"
             sequence="1"
         />
 
+        <menuitem
+            id="menu_custom_invoices"
+            name="Invoices"
+            action="action_sales_invoices"
+            parent="menu_custom_sales_invoices"
+            sequence="1"
+
+        />
         <!-- Customers -->
         <record id="action_customers_menu" model="ir.actions.act_window">
             <field name="name">Customers</field>
