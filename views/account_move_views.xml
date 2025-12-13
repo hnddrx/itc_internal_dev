@@ -51,6 +51,22 @@
              Submenus beside each other
              ========================================================= -->
 
+        <!-- Sales Invoices -->
+        <record id="action_sales_invoices" model="ir.actions.act_window">
+            <field name="name">Invoices</field>
+            <field name="res_model">account.move</field>
+            <field name="view_mode">list,form</field>
+            <field name="domain">[('move_type','=','out_invoice')]</field>
+            <field name="context">{'default_move_type': 'out_invoice','search_default_posted': 1}</field>
+        </record>
+        <menuitem
+            id="menu_custom_sales_invoices"
+            name="Sales Invoices"
+            parent="menu_custom_sales_invoice_root"
+            action="action_sales_invoices"
+            sequence="1"
+        />
+
         <!-- Customers -->
         <record id="action_customers_menu" model="ir.actions.act_window">
             <field name="name">Customers</field>
@@ -64,22 +80,6 @@
             parent="menu_custom_sales_invoice_root"
             action="action_customers_menu"
             sequence="2"
-        />
-
-        <!-- Sales Invoices -->
-        <record id="action_sales_invoices" model="ir.actions.act_window">
-            <field name="name">Sales Invoices</field>
-            <field name="res_model">account.move</field>
-            <field name="view_mode">list,form</field>
-            <field name="domain">[('move_type','=','out_invoice')]</field>
-            <field name="context">{'default_move_type': 'out_invoice','search_default_posted': 1}</field>
-        </record>
-        <menuitem
-            id="menu_custom_sales_invoices"
-            name="Sales Invoices"
-            parent="menu_custom_sales_invoice_root"
-            action="action_sales_invoices"
-            sequence="1"
         />
 
         <!-- Credit Notes -->
@@ -121,9 +121,9 @@
         <menuitem
             id="menu_custom_sales_payments"
             name="Sales Payments"
-            parent="menu_custom_sales_invoice_root"
+            parent="menu_custom_sales_invoices"
             action="action_sales_payments"
-            sequence="5"
+            sequence="1"
         />
     </data>
 </odoo>
