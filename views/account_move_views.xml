@@ -61,7 +61,7 @@
         </record>
         <menuitem
             id="menu_custom_sales_invoices"
-            name="Sales Invoice"
+            name="Invoicing"
             parent="menu_custom_sales_invoice_root"
             sequence="1"
         />
@@ -127,7 +127,7 @@
         </record>
         <menuitem
             id="menu_custom_sales_payments"
-            name="Sales Payments"
+            name="Payments"
             parent="menu_custom_sales_invoices"
             action="action_sales_payments"
             sequence="1"
