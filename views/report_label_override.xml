@@ -1,20 +1,20 @@
 <odoo>
     <!-- Replace all occurrences of "Tax ID" with "TIN" in account reports -->
     <template id="replace_tax_id_labels" inherit_id="account.report_general_ledger">
-        <xpath expr="//th[normalize-space()='Tax ID']" position="replace">
-            <th>TIN</th>
+        <xpath expr="//th[normalize-space()='Vat Reg']" position="replace">
+            <th>Vat Reg</th>
         </xpath>
     </template>
 
     <template id="replace_tax_id_in_trial_balance" inherit_id="account.report_trialbalance">
-        <xpath expr="//th[normalize-space()='Tax ID']" position="replace">
-            <th>TIN</th>
+        <xpath expr="//th[normalize-space()='Vat Reg']" position="replace">
+            <th>Vat Reg</th>
         </xpath>
     </template>
 
     <template id="replace_tax_id_in_partner_ledger" inherit_id="account.report_partnerledger">
-        <xpath expr="//th[normalize-space()='Tax ID']" position="replace">
-            <th>TIN</th>
+        <xpath expr="//th[normalize-space()='Vat Reg']" position="replace">
+            <th>Vat Reg</th>
         </xpath>
     </template>
 
