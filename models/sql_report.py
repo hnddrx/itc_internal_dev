@@ -1007,7 +1007,7 @@ class SqlReport(models.Model):
 
         worksheet.write(
             "A2",
-            company.partner_id.contact_address or "",
+            company.partner_id.contact_address_complete or "",
             small_format
         )
 
