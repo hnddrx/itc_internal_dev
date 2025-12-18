@@ -1001,10 +1001,21 @@ class SqlReport(models.Model):
         total_format = workbook.add_format({'num_format': '#,##0.00', 'bold': True, 'border': 1, 'align': 'right', 'valign': 'top', 'bg_color': '#f0f0f0'})
         total_label_format = workbook.add_format({'bold': True, 'border': 1, 'align': 'left', 'valign': 'top', 'bg_color': '#f0f0f0'})
 
-        # === Header Info ===
-        worksheet.write("A1", "INNOVATHINK CORPORATION", bold_format)
-        worksheet.write("A2", "VISTAMALL LAS PINAS IT HUB ALABANG ZAPOTE ROAD COR CV STARR AVE. PHILAMLIFE VILLAGE PAMPLONA DOS 1740 CITY OF LAS PINAS NCR, FOURTH DISCTRICT PHILIPPINES.", small_format)
-        worksheet.write("A3", "TIN: 008-168-070-00000", small_format)
+        company = self.env.company
+
+        worksheet.write("A1", company.name or "", bold_format)
+
+        worksheet.write(
+            "A2",
+            company.partner_id.contact_address or "",
+            small_format
+        )
+
+        worksheet.write(
+            "A3",
+            f"VAT REG: {company.vat or ''}",
+            small_format
+        )
         worksheet.write("A5", dict(self._fields['name'].selection).get(self.name, self.name), title_format)
         worksheet.write("A6", f"Period Covered: {self.from_date.strftime('%m/%d/%Y')} - {self.to_date.strftime('%m/%d/%Y')}", small_format)
 
