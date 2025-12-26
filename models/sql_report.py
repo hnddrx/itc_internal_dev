@@ -1035,7 +1035,7 @@ class SqlReport(models.Model):
 
         worksheet.write(
             "A3",
-            f"VAT REG: {company.vat or ''}",
+            f"VAT REG TIN: {company.vat or ''}",
             small_format
         )
         worksheet.write("A5", dict(self._fields['name'].selection).get(self.name, self.name), title_format)
