@@ -760,6 +760,28 @@ GROUP BY
     tax_rate
 ORDER BY sequence_number;
 
+""",
+'general_ledger': """
+SELECT
+    am.date AS "DATE",
+    am.name AS "REFERENCE",
+    aml.name AS "DESCRIPTION",
+    (aa.code_store ->> '1') || ' - ' || (aa.name ->> 'en_US') AS "ACCOUNT TITLE",
+    aml.debit AS "DEBIT",
+    aml.credit AS "CREDIT",
+    SUM(aml.debit - aml.credit)
+        OVER (
+            PARTITION BY aml.account_id
+            ORDER BY aml.id
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+        ) AS "BALANCE"
+FROM account_move_line aml
+JOIN account_move am
+    ON am.id = aml.move_id
+JOIN account_account aa
+    ON aa.id = aml.account_id
+WHERE am.state = 'posted'
+ORDER BY aa.id, aml.id;
 """
 }
 
