@@ -23,6 +23,11 @@
                             type="action"
                             class="oe_highlight"
                             modifiers="{'invisible': [['x_invoice_type','!=','consu']]}"/>
+                    <button name="action_generate_2306" 
+                            string="Generate BIR 2306" 
+                            type="object" 
+                            class="btn-secondary" 
+                            invisible="move_type != 'in_invoice'"/>
                 </xpath>
 
                 <!-- Add custom fields below existing group -->
