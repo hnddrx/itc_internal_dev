@@ -1,0 +1,166 @@
+<odoo>
+    <!-- =========================
+         Form View
+    ========================= -->
+    <record id="view_sql_report_form" model="ir.ui.view">
+        <field name="name">custom.sql.report.form</field>
+        <field name="model">custom.sql.report</field>
+        <field name="arch" type="xml">
+            <form string="SQL Report">
+                <header>
+                    <field name="name" readonly="1" class="o_field_widget o_text_overflow"/>
+
+                    <div class="o_form_buttons" style="margin-left:auto; display:flex; gap:8px; flex-wrap:wrap;">
+                        <!-- Generate Report -->
+                        <button type="object"
+                                name="action_execute_query"
+                                class="btn btn-primary o_btn_icon"
+                                string="Generate Report"/>
+                        
+                        <!-- Export Excel -->
+                        <!-- Export Excel -->
+                        <button type="object"
+                                name="action_export_excel"
+                                class="btn o_btn_icon"
+                                title="Export the current report to Excel">
+                            <img src="https://img.icons8.com/ios-filled/50/000000/ms-excel.png"
+                                 alt="Excel Icon"
+                                 style="width:20px; height:20px; margin-right:5px;"/>
+                            <span>Export</span>
+
+                        </button>
+
+
+
+                        
+                        <!-- Export PDF -->
+                        <!--<button type="object"
+                                name="action_export_pdf"
+                                class="btn btn-outline-danger o_btn_icon"
+                                icon="fa fa-file-pdf"
+                                string="Export to PDF"/> -->
+                    </div>
+                </header>
+
+
+                <sheet>
+                    <!-- =========================
+                        Report Info
+                    ========================= -->
+                    <group>
+                        <group>
+                            <field name="name" widget="selection" groups="itc_internal_dev.group_sql_report_manager"/>
+                            <field name="report_category" groups="itc_internal_dev.group_sql_report_manager"/>
+                        </group>
+                        <group>
+                            <field name="description" colspan="2" class="o_field_full_width"/>
+                        </group>
+                        <group>
+                            <field name="generated_by" readonly="1"/>
+                            <field name="generated_on" readonly="1"/>
+                            <field name="sql_query" invisible="1" nolabel="1" class="o_sql_query_field"/>
+                        </group>
+                    </group>
+
+                    <!-- =========================
+                        Filters Panel
+                    ========================= -->
+                    <group string="Filters" class="o_group o_group_box" colspan="2">
+                        <group>
+                            <!-- Date or Year Filter -->
+                            <field name="filter_by_year" widget="toggle"/>
+                            <field name="from_date" invisible="filter_by_year == True"/>
+                            <field name="to_date" invisible="filter_by_year == True"/>
+                            <field name="year" invisible="filter_by_year == False"/>
+                        </group>
+
+                        <group>
+                            <!-- Dynamic Column Filter -->
+                            <field name="filter_column" colspan="2" class="o_field_full_width" placeholder="Select column to filter"/>
+                            <field name="filter_value" colspan="2" class="o_field_full_width" placeholder="Enter value to filter"/>
+                        </group>
+                    </group>
+
+                    <!-- =========================
+                        Results Notebook
+                    ========================= -->
+                    <notebook>
+                        <page string="Result">
+                            <field name="result_ids" create="false" edit="false" delete="false">
+                                <list string="Query Results" edit="false" create="false" delete="false" class="o_list_view">
+                                    <field name="html_result" readonly="1" class="o_field_full_width"/>
+                                </list>
+                                <form string="Query Result Line" edit="false" create="false" delete="false"> 
+                                    <field name="html_result" readonly="1" class="o_field_full_width">
+                                        <div class="o_sql_report_result"/>
+                                    </field>
+                                </form>
+                            </field>
+                        </page>
+
+                        <page string="Raw Data" invisible="1">
+                            <field name="result_ids" create="false" edit="false" delete="false">
+                                <list string="Query Results">
+                                    <field name="data" invisible="1" readonly="1"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+
+                    <!-- =========================
+                        Export Info
+                    ========================= -->
+                    <group colspan="2" string="Export Info" class="o_group_box o_group_bottom">
+                        <field name="exported_on" readonly="1"/>
+                        <field name="exported_by" readonly="1"/>
+                    </group>
+                </sheet>
+
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- =========================
+         Tree Views
+    ========================= -->
+    <record id="view_sql_report_line_list" model="ir.ui.view">
+        <field name="name">custom.sql.report.line.list</field>
+        <field name="model">custom.sql.report.line</field>
+        <field name="arch" type="xml">
+            <list string="Query Results" create="false" edit="false" delete="false">
+                <field name="html_result"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_sql_report_list" model="ir.ui.view">
+        <field name="name">custom.sql.report.list</field>
+        <field name="model">custom.sql.report</field>
+        <field name="arch" type="xml">
+            <list string="SQL Reports">
+                <field name="name"/>
+                <field name="report_category"/>
+                <field name="generated_on"/>
+                <field name="generated_by"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- =========================
+         Action
+    ========================= -->
+    <record id="action_custom_sql_report" model="ir.actions.act_window">
+        <field name="name">BIR CAS Reports</field>
+        <field name="res_model">custom.sql.report</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- =========================
+         Menu Item (with icon)
+    ========================= -->
+    <menuitem id="menu_custom_sql_report"
+              name="BIR CAS Reports"
+              action="action_custom_sql_report"
+              web_icon="itc_internal_dev,static/icon/Reports_Flat_Icon.svg.png"/> <!-- or use fa-database / fa-chart-bar -->
+</odoo>
