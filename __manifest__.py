@@ -13,6 +13,7 @@
 
         #Data
         'data/salary_advance.xml',
+        'data/bir_paperformat.xml',
 
         #Report
         'report/sales_invoice_report.xml',
@@ -24,6 +25,7 @@
         'report/debit_memo_report.xml',
         'report/report_statement_of_account_template.xml',
         'report/acknowledgement_report.xml',
+        'report/bir_0619e.xml',
         #Views
         'views/salary_advance_views.xml',
         'views/expense_view.xml',

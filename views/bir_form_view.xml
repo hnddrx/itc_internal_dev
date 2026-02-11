@@ -20,10 +20,6 @@
                                     <t t-esc="record.name.value"/>
                                 </h3>
 
-                                <div>
-                                    <t t-esc="record.description.value"/>
-                                </div>
-
                                 <!-- Dynamic Action -->
                                 <button type="object"
                                         name="open_action"

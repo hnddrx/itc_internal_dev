@@ -36,6 +36,12 @@
                             class="btn-primary"
                             invisible="state != 'draft'"/>
 
+                    <button name="action_generate_report_chatter"
+                        string="Print 0619E"
+                        type="object"
+                        invisible="state != 'generated'"
+                        class="btn-primary"/>
+
                     <field name="state" widget="statusbar"
                            statusbar_visible="draft,generated,locked"/>
                 </header>
@@ -48,6 +54,7 @@
                     <group string="Return Information">
                         <group>
                             <field name="reference_no" readonly="1"/>
+                            <field name="company_id"/>
                             <field name="month"/>
                             <field name="due_date" readonly="1"/>
                         </group>
@@ -91,6 +98,7 @@
                     </group>
 
                 </sheet>
+                <chatter/>
             </form>
         </field>
     </record>
