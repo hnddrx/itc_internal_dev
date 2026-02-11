@@ -855,7 +855,6 @@ class SqlReport(models.Model):
 
         return columns
 
-
     def _get_unique_values(self):
         """Return unique values of the selected filter column."""
         #self.ensure_one()

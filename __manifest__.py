@@ -33,14 +33,14 @@
         'views/account_move_views.xml',
         'views/sql_report_views.xml',
         'views/account_statement_menu.xml',
-        #'views/report_label_override.xml',
-
-        #'views/sales_order_line.xml',
+        'views/bir_0619e_views.xml',
+        'views/bir_form_view.xml',
     ],
 
     'assets': {
         'web.assets_backend': [
             'itc_internal_dev/static/src/css/custom_buttons.css',
+            'itc_internal_dev/static/src/css/bir_button.css',
             'itc_internal_dev/static/src/css/required.css',
             'itc_internal_dev/static/src/js/sql_report_filter.js',
         ],

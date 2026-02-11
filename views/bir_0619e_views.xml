@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- ========================= -->
+    <!-- TREE VIEW -->
+    <!-- ========================= -->
+    <record id="view_bir_0619e_tree" model="ir.ui.view">
+        <field name="name">bir.0619e.tree</field>
+        <field name="model">bir.0619e</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="reference_no"/>
+                <field name="month"/>
+                <field name="taxpayer_name"/>
+                <field name="amount_remittance"/>
+                <field name="total_amount"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ========================= -->
+    <!-- FORM VIEW -->
+    <!-- ========================= -->
+    <record id="view_bir_0619e_form" model="ir.ui.view">
+        <field name="name">bir.0619e.form</field>
+        <field name="model">bir.0619e</field>
+        <field name="arch" type="xml">
+            <form string="BIR Form 0619E">
+
+                <!-- HEADER BUTTON -->
+                <header>
+                    <button name="action_generate_0619e"
+                            type="object"
+                            string="Generate 0619E"
+                            class="btn-primary"
+                            invisible="state != 'draft'"/>
+
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,generated,locked"/>
+                </header>
+
+                <sheet>
+
+                    <!-- ========================= -->
+                    <!-- HEADER INFO -->
+                    <!-- ========================= -->
+                    <group string="Return Information">
+                        <group>
+                            <field name="reference_no" readonly="1"/>
+                            <field name="month"/>
+                            <field name="due_date" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="atc" readonly="1"/>
+                            <field name="tax_type_code" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <!-- ========================= -->
+                    <!-- PART I – BACKGROUND INFO -->
+                    <!-- ========================= -->
+                    <group string="Part I – Background Information" col="2">
+                        <group>
+                            <field name="tin" readonly="1"/>
+                            <field name="rdo_code" readonly="1"/>
+                            <field name="taxpayer_name" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="address" readonly="1"/>
+                            <field name="zip_code" readonly="1"/>
+                            <field name="email" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <!-- ========================= -->
+                    <!-- PART II – TAX REMITTANCE -->
+                    <!-- ========================= -->
+                    <group string="Part II – Tax Remittance" col="2">
+                        <group>
+                            <field name="amount_remittance" readonly="1"/>
+                            <field name="net_remittance" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="surcharge" readonly="1"/>
+                            <field name="interest" readonly="1"/>
+                            <field name="compromise" readonly="1"/>
+                            <field name="total_penalties" readonly="1"/>
+                            <field name="total_amount" readonly="1"/>
+                        </group>
+                    </group>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_bir_0619e" model="ir.actions.act_window">
+        <field name="name">BIR 0619E</field>
+        <field name="res_model">bir.0619e</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    
+
+</odoo>

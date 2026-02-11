@@ -160,7 +160,14 @@
          Menu Item (with icon)
     ========================= -->
     <menuitem id="menu_custom_sql_report"
-              name="BIR CAS Reports"
-              action="action_custom_sql_report"
+              name="Process Tax Returns"
               web_icon="itc_internal_dev,static/icon/Reports_Flat_Icon.svg.png"/> <!-- or use fa-database / fa-chart-bar -->
+
+    <menuitem 
+        id="menu_custom_sql_report_main"
+        name="CAS Reports"
+        parent="menu_custom_sql_report"
+        action="action_custom_sql_report"
+        sequence="10"
+    />
 </odoo>
