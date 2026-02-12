@@ -9,7 +9,7 @@
         <field name="model">bir.0619e</field>
         <field name="arch" type="xml">
             <list>
-                <field name="reference_no"/>
+                <field name="name"/>
                 <field name="month"/>
                 <field name="taxpayer_name"/>
                 <field name="amount_remittance"/>
@@ -47,13 +47,24 @@
                 </header>
 
                 <sheet>
+                     <div class="oe_button_box" name="button_box">
+                        <button name="%(itc_internal_dev.action_report_custom_bir_0619e)d" 
+                                type="action" 
+                                class="oe_stat_button" 
+                                icon="fa-print">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Print</span>
+                                <span class="o_stat_text">Report</span>
+                            </div>
+                        </button>
+                    </div>
 
                     <!-- ========================= -->
                     <!-- HEADER INFO -->
                     <!-- ========================= -->
                     <group string="Return Information">
                         <group>
-                            <field name="reference_no" readonly="1"/>
+                            <field name="name" readonly="1"/>
                             <field name="company_id"/>
                             <field name="month"/>
                             <field name="due_date" readonly="1"/>
@@ -109,6 +120,14 @@
         <field name="view_mode">list,form</field>
     </record>
 
+
+      <record id="seq_bir_0619e" model="ir.sequence">
+        <field name="name">BIR 0619E Sequence</field>
+        <field name="code">bir.0619e</field>
+        <field name="prefix">0619E/%(year)s/</field>
+        <field name="padding">4</field>
+        <field name="implementation">standard</field>
+    </record>
     
 
 </odoo>

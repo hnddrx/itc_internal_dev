@@ -36,6 +36,8 @@
         'views/sql_report_views.xml',
         'views/account_statement_menu.xml',
         'views/bir_0619e_views.xml',
+        'views/bir_1702q_views.xml',
+        'views/bir_2550q_views.xml',
         'views/bir_form_view.xml',
     ],
 

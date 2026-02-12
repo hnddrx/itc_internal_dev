@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- BIR Form 2550Q Views for Odoo 18 -->
+<odoo>
+    <data>
+
+        <!-- ==================== TREE VIEW ==================== -->
+        <record id="view_bir_2550q_tree" model="ir.ui.view">
+            <field name="name">bir.2550q.tree</field>
+            <field name="model">bir.2550q</field>
+            <field name="arch" type="xml">
+                <list string="BIR 2550Q Returns" 
+                      decoration-info="state=='draft'" 
+                      decoration-success="state=='filed'" 
+                      decoration-muted="state=='cancelled'">
+                    <field name="name"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                    <field name="year_ended"/>
+                    <field name="quarter"/>
+                    <field name="return_period_from"/>
+                    <field name="return_period_to"/>
+                    <field name="total_amount_payable" widget="monetary"/>
+                    <field name="state" widget="badge" 
+                           decoration-info="state=='draft'" 
+                           decoration-success="state in ('confirmed','filed')"
+                           decoration-muted="state=='cancelled'"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- ==================== FORM VIEW ==================== -->
+        <record id="view_bir_2550q_form" model="ir.ui.view">
+            <field name="name">bir.2550q.form</field>
+            <field name="model">bir.2550q</field>
+            <field name="arch" type="xml">
+                <form string="BIR Form 2550Q">
+
+                    <!-- ========== HEADER WITH BUTTONS ========== -->
+                    <header>
+                        <button name="action_generate_data" 
+                                string="Generate Data" 
+                                type="object" 
+                                class="oe_highlight"
+                                invisible="state != 'draft'"/>
+                        <button name="action_confirm" 
+                                string="Confirm" 
+                                type="object" 
+                                class="oe_highlight"
+                                invisible="state != 'draft'"/>
+                        <button name="action_file" 
+                                string="Mark as Filed" 
+                                type="object" 
+                                class="oe_highlight"
+                                invisible="state != 'confirmed'"/>
+                        
+                        <button name="action_cancel" 
+                                string="Cancel" 
+                                type="object"
+                                invisible="state in ('cancelled','filed')"/>
+                        <button name="action_set_draft" 
+                                string="Reset to Draft" 
+                                type="object"
+                                invisible="state != 'cancelled'"/>
+                        <field name="state" widget="statusbar" 
+                               statusbar_visible="draft,confirmed,filed,cancelled"/>
+                    </header>
+
+                    <sheet>
+                        <!-- ========== TITLE ========== -->
+                        <div class="oe_title">
+                            <h1>BIR Form No. 2550Q</h1>
+                            <h3>Quarterly Value-Added Tax (VAT) Return</h3>
+                        </div>
+
+                        <!-- ========== PART I - BACKGROUND INFO ========== -->
+                        <group string="Part I - Background Information">
+                            <group>
+                                <field name="company_id" options="{'no_create': True}" groups="base.group_multi_company"/>
+                                <field name="taxpayer_classification"/>
+                                <field name="year_ended"/>
+                                <field name="quarter"/>
+                            </group>
+                            <group>
+                                <field name="return_period_from" readonly="1"/>
+                                <field name="return_period_to" readonly="1"/>
+                                <field name="is_amended"/>
+                                <field name="is_short_period"/>
+                            </group>
+                        </group>
+
+                        <!-- ========== SCHEDULES NOTEBOOK ========== -->
+                        <notebook>
+
+                            <!-- Part IV - VAT Computation -->
+                            <page string="Part IV - VAT Computation">
+                                <group>
+                                    <group string="Sales and Output Tax">
+                                        <field name="vatable_sales"/>
+                                        <field name="output_tax_31b"/>
+                                        <field name="zero_rated_sales"/>
+                                        <field name="exempt_sales"/>
+                                        <field name="total_adjusted_output_tax" class="oe_highlight"/>
+                                    </group>
+                                    <group string="Input Tax">
+                                        <field name="input_tax_carried_over"/>
+                                        <field name="transitional_input_tax"/>
+                                        <field name="presumptive_input_tax"/>
+                                        <field name="total_current_purchases"/>
+                                        <field name="total_current_input_tax"/>
+                                        <field name="total_available_input_tax"/>
+                                        <field name="total_allowable_input_tax" class="oe_highlight"/>
+                                    </group>
+                                </group>
+                            </page>
+
+                            <!-- Part III - Tax Credits & Adjustments -->
+                            <page string="Part III - Tax Credits and Adjustments">
+                                <group>
+                                    <field name="creditable_vat_withheld"/>
+                                    <field name="advance_vat_payments"/>
+                                    <field name="total_penalties"/>
+                                </group>
+                            </page>
+
+                            <!-- Part II - Tax Payable -->
+                            <page string="Part II - Tax Payable">
+                                <group>
+                                    <field name="net_vat_payable"/>
+                                    <field name="total_amount_payable" class="oe_highlight"/>
+                                </group>
+                            </page>
+
+                        </notebook>
+
+                    </sheet>
+
+                    <chatter/>
+
+                </form>
+            </field>
+        </record>
+
+        <!-- ==================== SEARCH VIEW ==================== -->
+        <record id="view_bir_2550q_search" model="ir.ui.view">
+            <field name="name">bir.2550q.search</field>
+            <field name="model">bir.2550q</field>
+            <field name="arch" type="xml">
+                <search string="BIR 2550Q Returns">
+                    <!-- Search Fields -->
+                    <field name="company_id"/>
+                    <field name="quarter"/>
+                    <field name="return_period_from"/>
+                    <field name="return_period_to"/>
+                    
+                    <!-- Filters -->
+                    <filter string="Amended" name="amended" domain="[('is_amended','=',True)]"/>
+                    <filter string="Short Period" name="short_period" domain="[('is_short_period','=',True)]"/>
+                    
+                    <!-- Group By -->
+                    <group expand="0" string="Group By">
+                        <filter string="Company" name="group_company" context="{'group_by': 'company_id'}"/>
+                        <filter string="Quarter" name="group_quarter" context="{'group_by': 'quarter'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+
+        <!-- ==================== ACTION ==================== -->
+        <record id="action_bir_2550q" model="ir.actions.act_window">
+            <field name="name">BIR 2550Q Returns</field>
+            <field name="res_model">bir.2550q</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{'search_default_draft':1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first BIR 2550Q Quarterly VAT Return.
+                </p>
+                <p>
+                    Fill in background info and click "Generate Data" to aggregate VAT values automatically.
+                </p>
+            </field>
+        </record>
+
+        <!-- ==================== SEQUENCE ==================== -->
+        <record id="sequence_bir_2550q" model="ir.sequence">
+            <field name="name">BIR 2550Q Sequence</field>
+            <field name="code">bir.2550q</field>
+            <field name="prefix">2550Q/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="implementation">standard</field>
+        </record>
+
+    </data>
+</odoo>
