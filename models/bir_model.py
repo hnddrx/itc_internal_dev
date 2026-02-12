@@ -125,7 +125,7 @@ class Bir0619E(models.Model):
                 for line in move.line_ids:
                     if line.tax_line_id:
                         if "WC100" in line.tax_line_id.name:
-                            rec.reference_no = line.move_id.name    
+                            rec.name = line.move_id.name    
                             total_withholding += abs(line.balance)
 
             rec.amount_remittance = total_withholding
