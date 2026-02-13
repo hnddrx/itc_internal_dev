@@ -65,16 +65,12 @@
                     </header>
 
                     <sheet>
-                        <!-- ========== TITLE ========== -->
-                        <div class="oe_title">
-                            <h1>BIR Form No. 2550Q</h1>
-                            <h3>Quarterly Value-Added Tax (VAT) Return</h3>
-                        </div>
+                       
 
                         <!-- ========== PART I - BACKGROUND INFO ========== -->
                         <group string="Part I - Background Information">
                             <group>
-                                <field name="company_id" options="{'no_create': True}" groups="base.group_multi_company"/>
+                                <field name="company_id" />
                                 <field name="taxpayer_classification"/>
                                 <field name="year_ended"/>
                                 <field name="quarter"/>
