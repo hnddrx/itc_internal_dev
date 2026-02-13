@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-  <template id="custom_report_credit_memo">
+  <template id="custom_report_debit_memo">
     <t t-call="web.external_layout">
     <t t-foreach="docs" t-as="o">
 
@@ -12,7 +12,7 @@
         <div></div>
         <!-- CREDIT MEMO TITLE UPPER RIGHT -->
         <div style="text-align:right;">
-          <p style="font-size:24px; font-weight:bold; margin:0;">CREDIT MEMO</p>
+          <p style="font-size:24px; font-weight:bold; margin:0;">DEBIT MEMO</p>
           <p style="font-size:16px; margin:3px 0 0 0;">CM-<t t-esc="o.name"/></p>
         </div>
       </div>
@@ -126,12 +126,12 @@
   </template>
 
   <!-- REPORT ACTION -->
-  <record id="action_report_credit_memo_custom" model="ir.actions.report">
-    <field name="name">Credit Memo</field>
+  <record id="action_report_debit_memo_custom" model="ir.actions.report">
+    <field name="name">Debit Memo</field>
     <field name="model">account.move</field>
     <field name="report_type">qweb-pdf</field>
-    <field name="report_name">itc_internal_dev.custom_report_credit_memo</field>
-    <field name="print_report_name">'Credit Memo - %s' % (object.name)</field>
+    <field name="report_name">itc_internal_dev.custom_report_debit_memo</field>
+    <field name="print_report_name">'Debit Memo - %s' % (object.name)</field>
     <field name="binding_model_id" ref="account.model_account_move"/>
     <field name="binding_type">report</field>
   </record>

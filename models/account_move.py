@@ -1,16 +1,20 @@
-from odoo import models, fields, api
+from odoo import models, fields, api, _
+from odoo.exceptions import UserError
+from odoo.modules.module import get_resource_path
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.utils import simpleSplit
+import io
+import base64
+
 
 class Account(models.Model):
     _inherit = "account.move"
 
     x_invoice_type = fields.Selection(
-        [
-            ('service', 'Service'),
-            ('consu', 'Sales'),
-        ],
+        [('service', 'Service'), ('consu', 'Sales')],
         string="Invoice Type",
         default='service',
-        help="Indicates whether the invoice is Service or Sales."
     )
 
     x_partner_tin = fields.Char(
@@ -18,13 +22,9 @@ class Account(models.Model):
         related='partner_id.vat',
         readonly=True,
         store=True,
-        help="Tax Identification Number of the customer associated with this account move."
     )
 
-    x_reference_number = fields.Char(
-        string="Reference Number",
-        help="Reference number for this account move."
-    )
+    x_reference_number = fields.Char(string="Reference Number")
 
     @api.model
     def create(self, vals):
@@ -37,4 +37,3 @@ class Account(models.Model):
                 move.x_reference_number = sale_order.name
                 move.x_invoice_type = sale_order.x_invoice_type or 'service'
         return move
-

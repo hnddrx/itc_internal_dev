@@ -6,3 +6,9 @@ access_sql_report_user,access_sql_report_user,model_custom_sql_report,itc_intern
 access_sql_report_manager,access_sql_report_manager,model_custom_sql_report,itc_internal_dev.group_sql_report_manager,1,1,1,1
 access_sql_report_line_user,access_sql_report_line_user,model_custom_sql_report_line,itc_internal_dev.group_sql_report_user,1,0,1,1
 access_sql_report_line_manager,access_sql_report_line_manager,model_custom_sql_report_line,itc_internal_dev.group_sql_report_manager,1,1,1,1
+access_bir_model,access_bir_model,model_bir_model,,1,1,1,1
+access_bir_0619e,access_bir_0619e,model_bir_0619e,,1,1,1,1
+access_bir_1702q,access_bir_1702q,model_bir_1702q,,1,1,1,1
+access_bir_2550q,access_bir_2550q,model_bir_2550q,,1,1,1,1
+access_bir_1601eq,access_bir_1601eq,model_bir_1601eq,,1,1,1,1
+access_bir_1601eq_line,bir.1601eq.line,model_bir_1601eq_line,,1,1,1,1

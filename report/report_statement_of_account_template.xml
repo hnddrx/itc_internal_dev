@@ -5,6 +5,19 @@
   =========================== -->
   <template id="custom_report_statement_of_account">
     <t t-call="web.external_layout">
+
+      <!-- PAGE BREAK + TABLE HEADER FIX -->
+      <style>
+        /* Ensure tables break cleanly across pages */
+        table { page-break-inside: auto; }
+        tr { page-break-inside: avoid; page-break-after: auto; }
+        thead { display: table-header-group; }
+        tfoot { display: table-footer-group; }
+
+        /* Ensure every partner starts a new page */
+        .page { page-break-after: always; }
+      </style>
+
       <t t-foreach="docs" t-as="partner">
         <div class="page" style="font-family: Arial, sans-serif; font-size: 13px; line-height:1.5;">
           <main>
@@ -35,11 +48,13 @@
                   <th style="border:1px solid #000; padding:5px; text-align:right;">Balance</th>
                 </tr>
               </thead>
+
               <tbody>
                 <t t-set="due_invoices" t-value="env['account.move'].search([
                   ('move_type', '=', 'out_invoice'),
                   ('state', '=', 'posted'),
                   ('payment_state', '=', 'not_paid'),
+                  ('partner_id', '=', partner.id)
                 ])"/>
                 
                 <t t-if="due_invoices">
@@ -55,6 +70,7 @@
                     </td>
                   </tr>
                 </t>
+
                 <t t-if="not due_invoices">
                   <tr>
                     <td colspan="5" style="border:1px solid #000; padding:8px; text-align:center; color:#888;">
@@ -82,6 +98,7 @@
           </main>
         </div>
       </t>
+
     </t>
   </template>
 

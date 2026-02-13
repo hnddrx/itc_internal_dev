@@ -13,6 +13,7 @@
 
         #Data
         'data/salary_advance.xml',
+        'data/bir_paperformat.xml',
 
         #Report
         'report/sales_invoice_report.xml',
@@ -21,8 +22,10 @@
         'report/official_receipt_report.xml',
         'report/service_invoice_report.xml',
         'report/credit_memo_report.xml',
+        'report/debit_memo_report.xml',
         'report/report_statement_of_account_template.xml',
         'report/acknowledgement_report.xml',
+        'report/bir_0619e.xml',
         #Views
         'views/salary_advance_views.xml',
         'views/expense_view.xml',
@@ -32,13 +35,19 @@
         'views/account_move_views.xml',
         'views/sql_report_views.xml',
         'views/account_statement_menu.xml',
-        #'views/sales_order_line.xml',
+        'views/bir_0619e_views.xml',
+        'views/bir_1702q_views.xml',
+        'views/bir_2550q_views.xml',
+        'views/bir_1601eq_views.xml',
+        'views/bir_form_view.xml',
     ],
 
     'assets': {
         'web.assets_backend': [
             'itc_internal_dev/static/src/css/custom_buttons.css',
+            'itc_internal_dev/static/src/css/bir_button.css',
             'itc_internal_dev/static/src/css/required.css',
+            'itc_internal_dev/static/src/js/sql_report_filter.js',
         ],
     },
     'installable': True,

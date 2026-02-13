@@ -28,7 +28,7 @@
               </tr>
               <tr>
                 <td style="border:1px solid black; padding:5px;"><strong>Address:</strong></td>
-                <td style="border:1px solid black; padding:5px;" colspan="3"><span/>, <span t-field="doc.partner_id.street2"/></td>
+                <td style="border:1px solid black; padding:5px;" colspan="3"><span/>, <span t-field="doc.partner_id.contact_address_complete"/></td>
               </tr>
               <tr>
                 <td style="border:1px solid black; padding:5px;"><strong>TIN:</strong></td>
@@ -41,8 +41,10 @@
               <thead style="background:#f0f0f0;">
                 <tr>
                   <th style="border:1px solid black; padding:5px; text-align:left;">Reference Number</th>
-                  <th style="border:1px solid black; padding:5px; text-align:right; width:100px;">Amount</th>
-                  <th style="border:1px solid black; padding:5px; text-align:left;">Reference Number</th>
+                  <th style="border:1px solid black; padding:5px; text-align:left;">Reference Date</th>
+                  <th style="border:1px solid black; padding:5px; text-align:left;">Reference Amount</th>
+                  <th style="border:1px solid black; padding:5px; text-align:left;">Reference EWT</th>
+
                   <th style="border:1px solid black; padding:5px; text-align:right; width:100px;">Amount</th>
                 </tr>
               </thead>
@@ -53,15 +55,18 @@
                 <t t-foreach="range(rows)" t-as="row">
                   <tr>
                     <td style="border:1px solid black; padding:5px;"><t t-if="row*2 &lt; num_invs"><span t-field="reconciled_invoices[row*2].name"/></t></td>
+
+                    <td style="border:1px solid black; padding:5px;"><t t-if="row*2 &lt; num_invs"><span t-field="reconciled_invoices[row*2].create_date"/></t></td>
+                    <td style="border:1px solid black; padding:5px;"><t t-if="row*2 &lt; num_invs"><span t-field="reconciled_invoices[row*2].name"/></t></td>
+                    <td style="border:1px solid black; padding:5px;"><t t-if="row*2 &lt; num_invs"><span t-field="reconciled_invoices[row*2].name"/></t></td>
+
                     <td style="border:1px solid black; padding:5px; text-align:right;"><t t-if="row*2 &lt; num_invs"><span t-field="reconciled_invoices[row*2].amount_total" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></t></td>
-                    <td style="border:1px solid black; padding:5px;"><t t-if="row*2 + 1 &lt; num_invs"><span t-field="reconciled_invoices[row*2 + 1].name"/></t></td>
-                    <td style="border:1px solid black; padding:5px; text-align:right;"><t t-if="row*2 + 1 &lt; num_invs"><span t-field="reconciled_invoices[row*2 + 1].amount_total" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></t></td>
                   </tr>
                 </t>
               </tbody>
               <tfoot>
                 <tr>
-                  <td colspan="3" style="border:1px solid black; padding:5px; text-align:right; font-weight:bold;">TOTAL</td>
+                  <td style="border:1px solid black; padding:5px; text-align:right; font-weight:bold;">TOTAL</td>
                   <td style="border:1px solid black; padding:5px; text-align:right; font-weight:bold;"><span t-field="doc.amount" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></td>
                 </tr>
               </tfoot>
@@ -209,14 +214,14 @@
             </table>
 
             <!-- Footer -->
-            <p style="font-size:10px; margin-top:20px; text-align:center;">
+            <!-- <p style="font-size:10px; margin-top:20px; text-align:center;">
               Page 1 of 1<br/>
               THIS DOCUMENT IS NOT VALID FOR CLAIM OF INPUT TAX<br/>
-              Printed By: Etaxpoint Software Solutions Corp. (Open Edition - Tax Based Accounting System)<br/>
+              Printed By: InnovaThink Corporation.. (Open Edition - Tax Based Accounting System)<br/>
               Acknowledgment Certificate No.: <br/>
               Acknowledgment Certificate Date Issued: <br/>
               Permitted Series Range: OR-000000000001 - OR-999999999999
-            </p>
+            </p> -->
           </main>
         </div>
       </t>
