@@ -1,0 +1,17 @@
+<odoo>
+  <!-- Server Action -->
+  <record id="action_generate_all_due_statements" model="ir.actions.server">
+    <field name="name">Generate All Due Statements</field>
+    <field name="model_id" ref="base.model_res_partner"/>
+    <field name="state">code</field>
+    <field name="code">action = env["account.statement.wizard"].action_generate_all_due_statements()</field>
+  </record>
+
+  <!-- Menu Item under Accounting Reports -->
+  <menuitem id="menu_due_statement_report"
+            name="Statement of Account"
+            parent="account.menu_finance_reports"
+            action="action_generate_all_due_statements"
+            sequence="120"
+            />
+</odoo>

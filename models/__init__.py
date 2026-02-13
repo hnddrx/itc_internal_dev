@@ -5,3 +5,5 @@ from . import account_account
 from . import sales_order
 from . import account_move
 from . import sales_order_line
+from . import sql_report
+from . import account_statement
