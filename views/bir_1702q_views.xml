@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- BIR Form 1702Q Views for Odoo 18 -->
+<!-- File: views/bir_1702q_views.xml -->
+<odoo>
+    <data>
+        
+        <!-- ==================== TREE VIEW ==================== -->
+        <record id="view_bir_1702q_tree" model="ir.ui.view">
+            <field name="name">bir.1702q.tree</field>
+            <field name="model">bir.1702q</field>
+            <field name="arch" type="xml">
+                <list string="BIR 1702Q Returns" 
+                      decoration-info="state=='draft'" 
+                      decoration-success="state=='filed'" 
+                      decoration-muted="state=='cancelled'">
+                    <field name="name"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                    <field name="year"/>
+                    <field name="quarter"/>
+                    <field name="atc_code"/>
+                    <field name="net_tax_payable" widget="monetary"/>
+                    <field name="total_amount_payable" widget="monetary"/>
+                    <field name="state" widget="badge" 
+                           decoration-info="state=='draft'" 
+                           decoration-success="state in ('confirmed', 'filed')"
+                           decoration-muted="state=='cancelled'"/>
+            </list>
+            </field>
+        </record>
+
+        <!-- ==================== FORM VIEW ==================== -->
+        <record id="view_bir_1702q_form" model="ir.ui.view">
+            <field name="name">bir.1702q.form</field>
+            <field name="model">bir.1702q</field>
+            <field name="arch" type="xml">
+                <form string="BIR Form 1702Q">
+                    
+                    <!-- ========== HEADER WITH BUTTONS ========== -->
+                    <header>
+                        <button name="action_generate_data" 
+                                string="Generate Data" 
+                                type="object" 
+                                class="oe_highlight"
+                                invisible="state != 'draft'"/>
+                        <button name="action_confirm" 
+                                string="Confirm" 
+                                type="object" 
+                                class="oe_highlight"
+                                invisible="state != 'draft'"/>
+                        <button name="action_file" 
+                                string="Mark as Filed" 
+                                type="object" 
+                                class="oe_highlight"
+                                invisible="state != 'confirmed'"/>
+                        <button name="action_print_report" 
+                                string="Print Report" 
+                                type="object" 
+                                class="oe_highlight"/>
+                        <button name="action_cancel" 
+                                string="Cancel" 
+                                type="object"
+                                invisible="state in ('cancelled', 'filed')"/>
+                        <button name="action_draft" 
+                                string="Reset to Draft" 
+                                type="object"
+                                invisible="state != 'cancelled'"/>
+                        <field name="state" widget="statusbar" 
+                               statusbar_visible="draft,confirmed,filed"/>
+                    </header>
+                    
+                    <sheet>
+                        <!-- ========== BUTTON BOX ========== -->
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_print_report" 
+                                    type="object" 
+                                    class="oe_stat_button" 
+                                    icon="fa-print">
+                                <div class="o_stat_info">
+                                    <span class="o_stat_text">Print</span>
+                                    <span class="o_stat_text">Report</span>
+                                </div>
+                            </button>
+                        </div>
+                        
+                        <!-- ========== TITLE ========== -->
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        
+                        <!-- ========== BASIC INFORMATION ========== -->
+                        <group>
+                            <group string="Basic Information">
+                                <field name="company_id" options="{'no_create': True}"/>
+                                <field name="year"/>
+                                <field name="quarter"/>
+                                <field name="fiscal_year"/>
+                                <field name="year_ended"/>
+                                <field name="is_amended"/>
+                                <field name="atc_code"/>
+                            </group>
+                            <group string="Company Details">
+                                <field name="tin"/>
+                                <field name="rdo_code"/>
+                                <field name="registered_name"/>
+                                <field name="registered_address"/>
+                                <field name="zip_code"/>
+                                <field name="contact_number"/>
+                                <field name="email"/>
+                            </group>
+                        </group>
+                        
+                        <!-- ========== TAX CONFIGURATION ========== -->
+                        <group>
+                            <group string="Tax Configuration">
+                                <field name="deduction_method"/>
+                                <field name="has_tax_relief"/>
+                                <field name="tax_relief_specify" 
+                                       invisible="not has_tax_relief"/>
+                            </group>
+                            <group string="Period">
+                                <field name="date_from"/>
+                                <field name="date_to"/>
+                            </group>
+                        </group>
+
+                        <!-- ========== SCHEDULES NOTEBOOK ========== -->
+                        <notebook>
+                            
+                            <!-- SCHEDULE 1: EXEMPT/SPECIAL -->
+                            <page string="Schedule 1 - Exempt/Special" name="schedule1">
+                                <group>
+                                    <group string="Exempt Income">
+                                        <field name="s1_exempt_sales"/>
+                                        <field name="s1_exempt_cost"/>
+                                        <field name="s1_exempt_gross_income"/>
+                                        <field name="s1_exempt_other_income"/>
+                                        <field name="s1_exempt_total_gross"/>
+                                        <field name="s1_exempt_deductions"/>
+                                        <field name="s1_exempt_taxable_income"/>
+                                        <field name="s1_exempt_previous_quarters"/>
+                                        <field name="s1_exempt_total_taxable"/>
+                                        <field name="s1_exempt_tax_rate"/>
+                                        <field name="s1_exempt_tax_due"/>
+                                        <field name="s1_exempt_share_agencies"/>
+                                        <field name="s1_exempt_net_tax"/>
+                                    </group>
+                                    <group string="Special Rate Income">
+                                        <field name="s1_special_sales"/>
+                                        <field name="s1_special_cost"/>
+                                        <field name="s1_special_gross_income"/>
+                                        <field name="s1_special_other_income"/>
+                                        <field name="s1_special_total_gross"/>
+                                        <field name="s1_special_deductions"/>
+                                        <field name="s1_special_taxable_income"/>
+                                        <field name="s1_special_previous_quarters"/>
+                                        <field name="s1_special_total_taxable"/>
+                                        <field name="s1_special_tax_rate"/>
+                                        <field name="s1_special_tax_due"/>
+                                        <field name="s1_special_share_agencies"/>
+                                        <field name="s1_special_net_tax"/>
+                                    </group>
+                                </group>
+                            </page>
+
+                            <!-- SCHEDULE 2: REGULAR/NORMAL RATE -->
+                            <page string="Schedule 2 - Regular/Normal Rate" name="schedule2">
+                                <group>
+                                    <group string="Income">
+                                        <field name="s2_sales"/>
+                                        <field name="s2_cost"/>
+                                        <field name="s2_gross_income"/>
+                                        <field name="s2_other_income"/>
+                                        <field name="s2_total_gross"/>
+                                    </group>
+                                    <group string="Tax Computation">
+                                        <field name="s2_deductions"/>
+                                        <field name="s2_taxable_income"/>
+                                        <field name="s2_previous_quarters"/>
+                                        <field name="s2_total_taxable"/>
+                                        <field name="s2_tax_rate"/>
+                                        <field name="s2_normal_tax"/>
+                                        <field name="s2_mcit"/>
+                                        <field name="s2_tax_due" class="oe_subtotal_footer_separator"/>
+                                    </group>
+                                </group>
+                            </page>
+
+                            <!-- SCHEDULE 3: MCIT -->
+                            <page string="Schedule 3 - MCIT" name="schedule3">
+                                <group>
+                                    <group string="Gross Income by Quarter">
+                                        <field name="s3_gross_q1"/>
+                                        <field name="s3_gross_q2"/>
+                                        <field name="s3_gross_q3"/>
+                                        <field name="s3_total_gross"/>
+                                    </group>
+                                    <group string="MCIT Computation">
+                                        <field name="s3_mcit_rate"/>
+                                        <field name="s3_mcit" class="oe_subtotal_footer_separator"/>
+                                    </group>
+                                </group>
+                            </page>
+
+                            <!-- SCHEDULE 4: TAX CREDITS -->
+                            <page string="Schedule 4 - Tax Credits" name="schedule4">
+                                <group>
+                                    <group string="Tax Credits/Payments">
+                                        <field name="s4_prior_year_excess"/>
+                                        <field name="s4_previous_quarters_payment"/>
+                                        <field name="s4_previous_mcit"/>
+                                        <field name="s4_previous_creditable"/>
+                                        <field name="s4_current_creditable"/>
+                                        <field name="s4_amended_tax_paid"/>
+                                        <field name="s4_other_credits"/>
+                                    </group>
+                                    <group>
+                                        <field name="s4_total_credits" class="oe_subtotal_footer_separator"/>
+                                    </group>
+                                </group>
+                            </page>
+
+                            <!-- TAX PAYABLE -->
+                            <page string="Tax Payable" name="tax_payable">
+                                <group>
+                                    <group string="Tax Computation">
+                                        <field name="tax_due_normal"/>
+                                        <field name="unexpired_excess_mcit"/>
+                                        <field name="balance_tax_normal"/>
+                                        <field name="tax_due_special"/>
+                                        <field name="aggregate_tax_due" class="oe_subtotal_footer_separator"/>
+                                        <field name="total_tax_credits"/>
+                                        <field name="net_tax_payable" class="oe_subtotal_footer_separator"/>
+                                    </group>
+                                    <group string="Penalties">
+                                        <field name="surcharge"/>
+                                        <field name="interest"/>
+                                        <field name="compromise"/>
+                                        <field name="total_penalties" class="oe_subtotal_footer_separator"/>
+                                        <field name="total_amount_payable" 
+                                               class="oe_subtotal_footer_separator" 
+                                               widget="monetary"/>
+                                    </group>
+                                </group>
+                            </page>
+
+                            <!-- PAYMENT DETAILS -->
+                            <page string="Payment Details" name="payment">
+                                <group>
+                                    <group>
+                                        <field name="payment_method"/>
+                                        <field name="payment_bank"/>
+                                        <field name="payment_number"/>
+                                    </group>
+                                    <group>
+                                        <field name="payment_date"/>
+                                        <field name="payment_amount"/>
+                                        <field name="attachment_count"/>
+                                    </group>
+                                </group>
+                            </page>
+                            
+                        </notebook>
+                    </sheet>
+                    
+                   <chatter />
+                </form>
+            </field>
+        </record>
+
+        <!-- ==================== SEARCH VIEW ==================== -->
+        <record id="view_bir_1702q_search" model="ir.ui.view">
+            <field name="name">bir.1702q.search</field>
+            <field name="model">bir.1702q</field>
+            <field name="arch" type="xml">
+                <search string="BIR 1702Q Returns">
+                    <!-- Search Fields -->
+                    <field name="name"/>
+                    <field name="company_id"/>
+                    <field name="year"/>
+                    <field name="quarter"/>
+                    
+                    <!-- Filters by State -->
+                    <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                    <filter string="Confirmed" name="confirmed" domain="[('state', '=', 'confirmed')]"/>
+                    <filter string="Filed" name="filed" domain="[('state', '=', 'filed')]"/>
+                    
+                    <separator/>
+                    
+                    <!-- Filters by Period -->
+                    <filter string="Current Year" name="current_year" 
+                            domain="[('year', '=', context_today().year)]"/>
+                    <filter string="Q1" name="q1" domain="[('quarter', '=', '1')]"/>
+                    <filter string="Q2" name="q2" domain="[('quarter', '=', '2')]"/>
+                    <filter string="Q3" name="q3" domain="[('quarter', '=', '3')]"/>
+                    
+                    <!-- Group By -->
+                    <group expand="0" string="Group By">
+                        <filter string="Company" name="group_company" 
+                                context="{'group_by': 'company_id'}"/>
+                        <filter string="Year" name="group_year" 
+                                context="{'group_by': 'year'}"/>
+                        <filter string="Quarter" name="group_quarter" 
+                                context="{'group_by': 'quarter'}"/>
+                        <filter string="Status" name="group_state" 
+                                context="{'group_by': 'state'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- ==================== ACTION ==================== -->
+        <record id="action_bir_1702q" model="ir.actions.act_window">
+            <field name="name">BIR 1702Q Returns</field>
+            <field name="res_model">bir.1702q</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{'search_default_current_year': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first BIR 1702Q Quarterly Income Tax Return
+                </p>
+                <p>
+                    Generate quarterly income tax returns for your corporation or partnership.
+                    The system will auto-populate data from your accounting records.
+                </p>
+            </field>
+        </record>
+
+      
+        <!-- ==================== SEQUENCE ==================== -->
+        <record id="sequence_bir_1702q" model="ir.sequence">
+            <field name="name">BIR 1702Q Sequence</field>
+            <field name="code">bir.1702q</field>
+            <field name="prefix">1702Q/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+        </record>
+
+    </data>
+</odoo>

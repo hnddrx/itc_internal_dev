@@ -15,7 +15,7 @@
                   <strong>BR:</strong> BR-00000-MAIN
                 </td>
                 <td style="width:40%; vertical-align:bottom; padding:5px; text-align:right; border:1px solid black;">
-                  <strong>OR Date:</strong> <span t-field="doc.date" t-options='{"format": "MMMM dd, yyyy"}'/><br/>
+                  <strong>AR Date:</strong> <span t-field="doc.date" t-options='{"format": "MMMM dd, yyyy"}'/><br/>
                 </td>
               </tr>
             </table>

@@ -1,32 +1,137 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <record id="view_move_form_inherit_custom" model="ir.ui.view">
-        <field name="name">account.move.form.inherit.custom</field>
-        <field name="model">account.move</field>
-        <field name="inherit_id" ref="account.view_move_form"/>
-        <field name="arch" type="xml">
+    <data>
 
-            <!-- Add new buttons inside the header -->
-            <xpath expr="//header" position="inside">
-                <button name="%(report_service_invoice_account_move)d"
-                        string="Print Service Invoice"
-                        type="action"
-                        class="oe_highlight"/>
-                <button name="%(report_sales_invoice_account_move)d"
-                        string="Print Sales Invoice"
-                        type="action"
-                        class="oe_highlight"/>
-            </xpath>
+        <!-- =========================================================
+             Customize account.move form
+             ========================================================= -->
+        <record id="view_move_form_inherit_custom" model="ir.ui.view">
+            <field name="name">account.move.form.inherit.custom</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
 
-            <!-- Add custom fields below existing group -->
-            <xpath expr="//sheet/group" position="inside">
-                <group>
-                    <field name="x_invoice_type" widget="selection"/>
-                    <field name="x_reference_number"/>
-                    <field name="x_partner_tin"/>
-                </group>
-            </xpath>
+                <!-- Add new buttons inside the header -->
+                <xpath expr="//header" position="inside">
+                    <button name="%(report_service_invoice_account_move)d"
+                            string="Print Service Invoice"
+                            type="action"
+                            class="oe_highlight"
+                            modifiers="{'invisible': [['x_invoice_type','!=','service']]}"/>
+                    <button name="%(report_sales_invoice_account_move)d"
+                            string="Print Sales Invoice"
+                            type="action"
+                            class="oe_highlight"
+                            modifiers="{'invisible': [['x_invoice_type','!=','consu']]}"/>
+                    
+                </xpath>
 
-        </field>
-    </record>
+                <!-- Add custom fields below existing group -->
+                <xpath expr="//sheet/group" position="inside">
+                    <group>
+                        <field name="x_invoice_type" widget="selection"/>
+                        <field name="x_reference_number"/>
+                        <field name="x_partner_tin"/>
+                    </group>
+                </xpath>
+
+            </field>
+        </record>
+
+        <!-- =========================================================
+             Top-Level Menu
+             ========================================================= -->
+        <menuitem
+            id="menu_custom_sales_invoice_root"
+            name="Sales Invoice"
+            sequence="51"
+            web_icon="itc_internal_dev,static/description/vendor_payment.png"
+        />
+
+        <!-- =========================================================
+             Submenus beside each other
+             ========================================================= -->
+
+        <!-- Sales Invoices -->
+        <record id="action_sales_invoices" model="ir.actions.act_window">
+            <field name="name">Invoices</field>
+            <field name="res_model">account.move</field>
+            <field name="view_mode">list,form</field>
+            <field name="domain">[('move_type','=','out_invoice')]</field>
+            <field name="context">{'default_move_type': 'out_invoice','search_default_posted': 1}</field>
+        </record>
+        <menuitem
+            id="menu_custom_sales_invoices"
+            name="Invoicing"
+            parent="menu_custom_sales_invoice_root"
+            sequence="1"
+        />
+
+        <menuitem
+            id="menu_custom_invoices"
+            name="Invoices"
+            action="action_sales_invoices"
+            parent="menu_custom_sales_invoices"
+            sequence="1"
+
+        />
+        <!-- Customers -->
+        <record id="action_customers_menu" model="ir.actions.act_window">
+            <field name="name">Customers</field>
+            <field name="res_model">res.partner</field>
+            <field name="view_mode">list,form</field>
+            <field name="domain">[('customer_rank','>',0)]</field>
+        </record>
+        <menuitem
+            id="menu_custom_customers"
+            name="Customers"
+            parent="menu_custom_sales_invoice_root"
+            action="action_customers_menu"
+            sequence="2"
+        />
+
+        <!-- Credit Notes -->
+        <record id="action_credit_notes" model="ir.actions.act_window">
+            <field name="name">Credit Notes</field>
+            <field name="res_model">account.move</field>
+            <field name="view_mode">list,form</field>
+            <field name="domain">[('move_type','=','out_refund')]</field>
+        </record>
+        <menuitem
+            id="menu_custom_credit_notes"
+            name="Credit Notes"
+            parent="menu_custom_sales_invoice_root"
+            action="action_credit_notes"
+            sequence="3"
+        />
+
+        <!-- Products -->
+        <record id="action_products_sales" model="ir.actions.act_window">
+            <field name="name">Products</field>
+            <field name="res_model">product.template</field>
+            <field name="view_mode">list,form</field>
+        </record>
+        <menuitem
+            id="menu_custom_products_sales"
+            name="Products"
+            parent="menu_custom_sales_invoice_root"
+            action="action_products_sales"
+            sequence="4"
+        />
+
+        <!-- Sales Payments -->
+        <record id="action_sales_payments" model="ir.actions.act_window">
+            <field name="name">Sales Payments</field>
+            <field name="res_model">account.payment</field>
+            <field name="view_mode">list,form</field>
+            <field name="domain">[('payment_type','=','inbound')]</field>
+        </record>
+        <menuitem
+            id="menu_custom_sales_payments"
+            name="Payments"
+            parent="menu_custom_sales_invoices"
+            action="action_sales_payments"
+            sequence="1"
+        />
+    </data>
 </odoo>

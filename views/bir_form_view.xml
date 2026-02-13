@@ -1,0 +1,120 @@
+<odoo>
+    <record id="view_bir_model_kanban" model="ir.ui.view">
+        <field name="name">bir.model.kanban</field>
+        <field name="model">bir.model</field>
+        <field name="arch" type="xml">
+            <kanban create="false">
+
+                <field name="name"/>
+                <field name="description"/>
+                <field name="image_url"/>
+                <field name="action_id"/>
+
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="o_kanban_record o_kanban_dashboard_box">
+
+                            <div class="o_kanban_details">
+
+                                <h3>
+                                    <t t-esc="record.name.value"/>
+                                </h3>
+
+                                <!-- Dynamic Action -->
+                                <button type="object"
+                                        name="open_action"
+                                        class="btn btn-primary mt-2"
+                                        >
+                                    Open
+                                </button>
+
+                            </div>
+
+                        </div>
+                    </t>
+                </templates>
+
+            </kanban>
+        </field>
+    </record>
+
+
+    <record id="bir_demo_0619e" model="bir.model">
+        <field name="name">BIR 0619E</field>
+        <field name="category">monthly</field>
+        <field name="description">Monthly Remittance of Creditable Withholding Tax</field>
+        <field name="action_id" ref="action_bir_0619e"/>
+    </record>
+
+    <record id="bir_demo_2550m" model="bir.model">
+        <field name="name">BIR 2550M</field>
+        <field name="category">monthly</field>
+        <field name="description">Monthly Remittance of Creditable Withholding Tax</field>
+        <!-- <field name="action_id" ref="action_bir_2550m"/> -->
+    </record>
+
+    <record id="bir_demo_1601eq" model="bir.model">
+        <field name="name">BIR 1601-EQ</field>
+        <field name="category">quarterly</field>
+        <field name="description">Quarterly Return of Withholding Tax</field>
+        <field name="action_id" ref="action_bir_1601eq"/>
+    </record>
+
+    <record id="bir_demo_1702q" model="bir.model">
+        <field name="name">BIR 1702-Q</field>
+        <field name="category">quarterly</field>
+        <field name="description">Quarterly Return of Withholding Tax</field>
+        <field name="action_id" ref="action_bir_1702q"/>
+    </record>
+
+    <record id="bir_demo_2550q" model="bir.model">
+        <field name="name">BIR 2550-Q</field>
+        <field name="category">quarterly</field>
+        <field name="description">Quarterly Return of Withholding Tax</field>
+        <field name="action_id" ref="action_bir_2550q"/>
+    </record>
+
+    <record id="bir_demo_1604eq" model="bir.model">
+        <field name="name">BIR 1604-E-Q</field>
+        <field name="category">annual</field>
+        <field name="description">Annual Return of Withholding Tax</field>
+        <!-- <field name="action_id" ref="action_bir_1604eq"/> -->
+    </record>
+
+     <record id="bir_demo_1702c" model="bir.model">
+        <field name="name">BIR 1702 (Corporation)</field>
+        <field name="category">annual</field>
+        <field name="description">Annual Return of Withholding Tax</field>
+        <!-- <field name="action_id" ref="action_bir_1702c"/> -->
+    </record>
+
+     <record id="bir_demo_1601e" model="bir.model">
+        <field name="name">BIR 1601-E</field>
+        <field name="category">annual</field>
+        <field name="description">Annual Return of Withholding Tax</field>
+        <!-- <field name="action_id" ref="action_bir_1601e"/> -->
+    </record>
+
+
+
+
+
+  
+
+    
+
+    <record id="action_bir_model" model="ir.actions.act_window">
+        <field name="name">BIR Forms</field>
+        <field name="res_model">bir.model</field>
+        <field name="view_mode">kanban</field>
+        <field name="view_id" ref="view_bir_model_kanban"/>
+        <field name="target">current</field>
+    </record>
+
+    <menuitem
+        id="menu_bir_model"
+        name="BIR Forms"
+        parent="menu_custom_sql_report"
+        action="action_bir_model"
+        sequence="20"/>
+</odoo>

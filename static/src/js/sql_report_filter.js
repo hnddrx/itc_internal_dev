@@ -38,34 +38,19 @@ function addColumnFilters(table) {
     thead.appendChild(filterRow);
 }
 
-// Utility: wait for element in DOM
-function waitForElement(selector, callback, timeout = 5000) {
-    const start = Date.now();
-    function check() {
-        const el = document.querySelector(selector);
-        if (el) return callback(el);
-        if (Date.now() - start > timeout) return;
-        setTimeout(check, 100);
-    }
-    check();
-}
-
-// Patch HtmlField to inject filters
 patch(HtmlField.prototype, {
     mounted() {
         this._super(...arguments);
 
-        // Wait for the SQL report container
-        waitForElement(".o_sql_report_result", (container) => {
+        // Watch for table inside o_sql_report_result
+        const container = this.el.querySelector(".o_sql_report_result");
+        if (!container) return;
+
+        const observer = new MutationObserver(() => {
             const tables = container.querySelectorAll("table");
             tables.forEach(addColumnFilters);
-
-            // Optional: watch for future table changes
-            const observer = new MutationObserver(() => {
-                const tables = container.querySelectorAll("table");
-                tables.forEach(addColumnFilters);
-            });
-            observer.observe(container, { childList: true, subtree: true });
         });
+
+        observer.observe(container, { childList: true, subtree: true });
     }
 }, "itc_internal_dev.sql_report_filter");

@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- BIR Form 1601-EQ Views for Odoo 18 -->
+<odoo>
+    <data>
+
+        <!-- ==================== TREE VIEW ==================== -->
+        <record id="view_bir_1601eq_tree" model="ir.ui.view">
+            <field name="name">bir.1601eq.tree</field>
+            <field name="model">bir.1601eq</field>
+            <field name="arch" type="xml">
+                <list string="BIR 1601-EQ Returns"
+                      decoration-info="state=='draft'"
+                      decoration-success="state=='filed'"
+                      decoration-muted="state=='cancelled'">
+
+                    <field name="name"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                    <field name="year"/>
+                    <field name="quarter"/>
+                    <field name="return_period_from"/>
+                    <field name="return_period_to"/>
+                    <field name="total_amount_due" widget="monetary"/>
+                    <field name="state" widget="badge"
+                           decoration-info="state=='draft'"
+                           decoration-success="state in ('confirmed','filed')"
+                           decoration-muted="state=='cancelled'"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- ==================== FORM VIEW ==================== -->
+        <record id="view_bir_1601eq_form" model="ir.ui.view">
+            <field name="name">bir.1601eq.form</field>
+            <field name="model">bir.1601eq</field>
+            <field name="arch" type="xml">
+                <form string="BIR Form 1601-EQ">
+
+                    <!-- ========== HEADER WITH BUTTONS ========== -->
+                    <header>
+                        <button name="action_generate"
+                                string="Generate Data"
+                                type="object"
+                                class="oe_highlight"
+                                invisible="state != 'draft'"/>
+
+                        <button name="action_confirm"
+                                string="Confirm"
+                                type="object"
+                                class="oe_highlight"
+                                invisible="state != 'draft'"/>
+
+                        <button name="action_file"
+                                string="Mark as Filed"
+                                type="object"
+                                class="oe_highlight"
+                                invisible="state != 'confirmed'"/>
+
+                        <button name="action_cancel"
+                                string="Cancel"
+                                type="object"
+                                invisible="state in ('cancelled','filed')"/>
+
+                        <button name="action_set_draft"
+                                string="Reset to Draft"
+                                type="object"
+                                invisible="state != 'cancelled'"/>
+
+                        <field name="state"
+                               widget="statusbar"
+                               statusbar_visible="draft,confirmed,filed,cancelled"/>
+                    </header>
+
+                    <sheet>
+
+                        <!-- ========== TITLE ========== -->
+                        
+
+                        <!-- ========== PART I - BACKGROUND INFO ========== -->
+                        <group string="Part I - Background Information">
+                            <group>
+                                <field name="company_id" />
+                                <field name="year"/>
+                                <field name="quarter"/>
+                                <field name="return_period_from"/>
+                                <field name="return_period_to" />
+                            </group>
+
+                            <group>
+                                <field name="tin"/>
+                                <field name="rdo_code"/>
+                                <field name="withholding_agent_name"/>
+                                <field name="category"/>
+                                <field name="is_amended"/>
+                                <field name="any_taxes_withheld"/>
+                            </group>
+                        </group>
+
+                        <!-- ========== NOTEBOOK SECTIONS ========== -->
+                        <notebook>
+
+                            <!-- ATC SCHEDULE -->
+                            <page string="ATC Schedule (Page 2)">
+                                <field name="line_ids">
+                                    <list editable="bottom">
+                                        <field name="atc"/>
+                                        <field name="nature_of_payment"/>
+                                        <field name="tax_base"/>
+                                        <field name="tax_rate"/>
+                                        <field name="tax_withheld"/>
+                                    </list>
+                                </field>
+                            </page>
+
+                            <!-- PART II - TAX COMPUTATION -->
+                            <page string="Part II - Tax Computation">
+                                <group>
+                                    <group string="Tax Withheld">
+                                        <field name="total_tax_withheld" class="oe_highlight"/>
+                                    </group>
+
+                                    <group string="Remittances">
+                                        <field name="remittance_1st_month"/>
+                                        <field name="remittance_2nd_month"/>
+                                        <field name="tax_remitted_prev"/>
+                                        <field name="over_remittance_prev"/>
+                                        <field name="other_payments"/>
+                                        <field name="total_remittances" class="oe_highlight"/>
+                                    </group>
+                                </group>
+
+                                <group>
+                                    <group string="Tax Still Due">
+                                        <field name="tax_still_due"/>
+                                    </group>
+
+                                    <group string="Penalties">
+                                        <field name="surcharge"/>
+                                        <field name="interest"/>
+                                        <field name="compromise"/>
+                                        <field name="total_penalties" class="oe_highlight"/>
+                                    </group>
+                                </group>
+
+                                <group>
+                                    <field name="total_amount_due" class="oe_highlight"/>
+                                    <field name="over_remittance_option"/>
+                                </group>
+                            </page>
+
+                            <!-- PART III - PAYMENT DETAILS -->
+                            <page string="Part III - Payment Details">
+                                <group>
+                                    <field name="payment_cash"/>
+                                    <field name="payment_check"/>
+                                    <field name="payment_tax_debit"/>
+                                    <field name="payment_others"/>
+                                    <field name="other_payment_details"/>
+                                </group>
+                            </page>
+
+                        </notebook>
+
+                    </sheet>
+
+                    <chatter/>
+
+                </form>
+            </field>
+        </record>
+
+        <!-- ==================== SEARCH VIEW ==================== -->
+        <record id="view_bir_1601eq_search" model="ir.ui.view">
+            <field name="name">bir.1601eq.search</field>
+            <field name="model">bir.1601eq</field>
+            <field name="arch" type="xml">
+                <search string="BIR 1601-EQ Returns">
+
+                    <!-- Search Fields -->
+                    <field name="company_id"/>
+                    <field name="quarter"/>
+                    <field name="year"/>
+
+                    <!-- Filters -->
+                    <filter string="Amended"
+                            name="amended"
+                            domain="[('is_amended','=',True)]"/>
+
+                    <!-- Group By -->
+                    <group expand="0" string="Group By">
+                        <filter string="Company"
+                                name="group_company"
+                                context="{'group_by': 'company_id'}"/>
+                        <filter string="Quarter"
+                                name="group_quarter"
+                                context="{'group_by': 'quarter'}"/>
+                        <filter string="Year"
+                                name="group_year"
+                                context="{'group_by': 'year'}"/>
+                    </group>
+
+                </search>
+            </field>
+        </record>
+
+        <!-- ==================== ACTION ==================== -->
+        <record id="action_bir_1601eq" model="ir.actions.act_window">
+            <field name="name">BIR 1601-EQ Returns</field>
+            <field name="res_model">bir.1601eq</field>
+            <field name="view_mode">list,form</field>
+            <field name="context">{'search_default_draft':1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first BIR 1601-EQ Quarterly Return.
+                </p>
+                <p>
+                    Fill in background information and click "Generate Data"
+                    to automatically compute ATC-based withholding taxes.
+                </p>
+            </field>
+        </record>
+
+        <!-- ==================== SEQUENCE ==================== -->
+        <record id="sequence_bir_1601eq" model="ir.sequence">
+            <field name="name">BIR 1601-EQ Sequence</field>
+            <field name="code">bir.1601eq</field>
+            <field name="prefix">1601EQ/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="implementation">standard</field>
+        </record>
+
+    </data>
+</odoo>

@@ -6,6 +6,7 @@ import logging
 import xlsxwriter
 import json
 from datetime import date, datetime
+from markupsafe import Markup
 
 _logger = logging.getLogger(__name__)
 
@@ -61,6 +62,7 @@ REPORT_NAMES = [
     ('audit_logs', 'Audit Logs'),
     ('form_1900', 'Form 1900'),
     ('secretary_cert', 'Secretary Cert'),
+    ('inventory_book', 'Inventory Book'),
 ]
 
 """ Categories for various reports, can be expanded as needed.
@@ -582,7 +584,205 @@ WHERE ap.state = 'posted'
   AND ap.check_number is NULL  -- only check payments
 
 ORDER BY ap.date, rp.name;
- """
+ """,
+'general_journal': """
+SELECT
+    aml.date AS DATE,
+    am.name AS "JOURNAL BATCH ID",
+    aml.name AS "DESCTIPTION",
+    '' AS "ACCOUNT CODE",
+    aa.name->>'en_US' AS "ACCOUNT TITLE",
+    aml.ref AS "REF NUMBER",
+    aml.debit AS "DEBIT",
+    aml.credit AS "CREDIT"
+FROM account_move_line aml
+join account_account aa on aml.account_id = aa.id
+LEFT JOIN account_move am ON aml.move_id = am.id
+WHERE am.state = 'posted'
+ORDER BY aml.date, am.name, aml.id;
+""",
+'inventory_book': """
+SELECT
+    sm.date::date AS "DATE",
+    pt.name->> 'en_US' AS "PRODUCT NAME",
+    sm.description_picking AS "DESCRIPTION",
+    uom.name->>'en_US' AS "UNIT",
+
+    -- Price per unit (from stock valuation layer)
+    svl.unit_cost AS "PRICE PER UNIT",
+
+    -- Amount = Qty * Unit Cost
+    (svl.quantity * svl.unit_cost) AS "AMOUNT"
+
+FROM stock_move sm
+LEFT JOIN product_product pp ON sm.product_id = pp.id
+LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
+LEFT JOIN uom_uom uom ON sm.product_uom = uom.id
+LEFT JOIN stock_valuation_layer svl ON svl.stock_move_id = sm.id
+where pt.name  is not null
+ORDER BY sm.date;
+""",
+'vat_summary_purchase': """
+SELECT
+    am.name AS "SEQUENCE NUMBER",
+    rp.vat AS "TAX PAYER IDENTIFICATION NUMBER",
+    rp.name AS "REGISTERED NAME",
+    -- Supplier Name: LAST, FIRST, MIDDLE (adjust fields if you have them in partner)
+   ''
+        AS "NAME OF SUPPLIER(LAST NAME, FIRST NAME, MIDDLE NAME)",
+    rp.contact_address_complete AS "SUPPLIER ADDRESS",
+
+    -- Amounts
+    am.amount_untaxed + am.amount_tax AS "AMOUNT OF GROSS PURCHASE",
+    0.0 AS "AMOUNT OF EXEMPT PURCHASE",       -- placeholder
+    0.0 AS "AMOUNT OF ZERO RATED PURCHASE",   -- placeholder
+    am.amount_untaxed AS "AMOUNT OF TAXABLE PURCHASE",
+
+    -- Purchase types (you may need custom fields or tags to separate these)
+    0.0 AS "AMOUNT OF PURCHASE OF SERVICES",           -- placeholder
+    0.0 AS "AMOUNT OF PURCHASE OF CAPITAL GOODS",     -- placeholder
+    0.0 AS "AMOUNT OF PURCHASE OF OTHER THAN CAPITAL GOODS", -- placeholder
+
+    -- VAT
+    am.amount_tax AS "AMOUNT OF INPUT TAX",
+
+    -- Gross taxable purchase (for VAT computation)
+    am.amount_untaxed AS "AMOUNT OF GROSS TAXABLE PURCHASE"
+
+FROM account_move am
+LEFT JOIN res_partner rp ON am.partner_id = rp.id
+WHERE am.move_type = 'in_invoice'
+  AND am.state = 'posted'
+ORDER BY am.invoice_date, am.name;
+
+""",
+'vat_summary_sales': """
+SELECT
+    TO_CHAR(am.invoice_date, 'MM/YYYY') AS "TAXABLE MONTH",
+    rp.vat AS "TAX PAYER IDENTIFICATION NUMBER",
+    rp.name AS "REGISTERED NAME",
+    -- Customer Name: LAST, FIRST, MIDDLE (adjust fields if available)
+  ''
+        AS "NAME OF CUSTOMER",
+    rp.contact_address_complete AS "CUSTOMER ADDRESS",
+
+    -- Amounts
+    am.amount_untaxed + am.amount_tax AS "AMOUNT OF GROSS SALES",
+    0.0 AS "AMOUNT OF EXEMPT SALES",       -- placeholder, requires exemption logic
+    0.0 AS "AMOUNT OF ZERO RATED SALES",   -- placeholder, requires zero-rated logic
+    am.amount_untaxed AS "AMOUNT OF TAXABLE SALES",
+    am.amount_tax AS "AMOUNT OF OUTPUT TAX",
+    am.amount_untaxed AS "AMOUNT OF GROSS TAXABLE SALES"
+
+FROM account_move am
+LEFT JOIN res_partner rp ON am.partner_id = rp.id
+WHERE am.move_type = 'out_invoice'
+  AND am.state = 'posted'
+ORDER BY am.invoice_date, am.name;
+
+""",
+'semestral_suppliers': """
+WITH supplier_invoices AS (
+    SELECT
+        p.id AS partner_id,
+        p.vat AS tax_payer_id,
+        p.branch_code AS branch_code,
+        '' AS corporation,
+        p.name AS last_name,          -- assuming single name field
+        '' AS first_name,             -- if you have separate first name
+        '' AS middle_name,            -- optional
+        '' AS atc_code,
+        l.debit AS amount_of_income_payment,
+        t.amount AS tax_rate,
+        l.tax_line_id AS tax_line_id,
+        l.credit AS amount_of_tax_withheld,
+        am.date AS invoice_date
+    FROM account_move_line l
+    JOIN account_move am ON l.move_id = am.id
+    JOIN res_partner p ON am.partner_id = p.id
+    LEFT JOIN account_tax t ON l.tax_line_id = t.id
+    WHERE am.move_type = 'in_invoice'  -- supplier invoices
+      AND am.state = 'posted'
+)
+SELECT
+    ROW_NUMBER() OVER (ORDER BY invoice_date) AS sequence_number,
+    tax_payer_id AS "TAX PAYER IDENTIFICATION NUMBER",
+    branch_code AS "BRANCH CODE",
+    corporation AS "CORPORATION",
+    last_name AS "LAST NAME",
+    first_name AS "FIRST NAME",
+    middle_name AS "MIDDLE NAME",
+    atc_code AS "ATC CODE",
+    amount_of_income_payment AS "AMOUNT OF INCOME PAYMENT",
+    tax_rate AS "TAX RATE",
+    amount_of_tax_withheld AS "AMOUNT OF TAX WITHHELD"
+FROM supplier_invoices
+WHERE invoice_date >= date_trunc('year', CURRENT_DATE) 
+  AND invoice_date < date_trunc('month', CURRENT_DATE) - INTERVAL '6 months'  -- last 6 months
+ORDER BY invoice_date;
+
+""",
+'map_summary': """
+WITH invoice_data AS (
+    SELECT
+        ROW_NUMBER() OVER (ORDER BY am.id) AS sequence_number,
+        rp.vat AS taxpayer_identification_number,
+        CASE WHEN rp.is_company THEN aml.debit ELSE 0 END AS corporation,
+        CASE WHEN NOT rp.is_company THEN aml.debit ELSE 0 END AS individual,
+        '' AS atc_code,
+        atc.name->>'en_US' AS nature_of_payment,
+        aml.debit AS amount_of_income_payment,
+        '' AS tax_rate,
+        aml.credit AS amount_of_tax_withheld
+    FROM account_move_line aml
+    JOIN account_move am ON aml.move_id = am.id
+    JOIN res_partner rp ON am.partner_id = rp.id
+    LEFT JOIN account_tax atc ON aml.tax_line_id = atc.id
+    WHERE am.move_type IN ('out_invoice', 'out_refund') -- customer invoices
+      AND am.state = 'posted'
+)
+SELECT
+    sequence_number,
+    taxpayer_identification_number,
+    SUM(corporation) AS corporation,
+    SUM(individual) AS individual,
+    atc_code,
+    nature_of_payment,
+    SUM(amount_of_income_payment) AS amount_of_income_payment,
+    tax_rate,
+    SUM(amount_of_tax_withheld) AS amount_of_tax_withheld
+FROM invoice_data
+GROUP BY
+    sequence_number,
+    taxpayer_identification_number,
+    atc_code,
+    nature_of_payment,
+    tax_rate
+ORDER BY sequence_number;
+
+""",
+'general_ledger': """
+SELECT
+    am.date AS "DATE",
+    am.name AS "REFERENCE",
+    aml.name AS "DESCRIPTION",
+    (aa.code_store ->> '1') || ' - ' || (aa.name ->> 'en_US') AS "ACCOUNT TITLE",
+    aml.debit AS "DEBIT",
+    aml.credit AS "CREDIT",
+    SUM(aml.debit - aml.credit)
+        OVER (
+            PARTITION BY aml.account_id
+            ORDER BY aml.id
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+        ) AS "BALANCE"
+FROM account_move_line aml
+JOIN account_move am
+    ON am.id = aml.move_id
+JOIN account_account aa
+    ON aa.id = aml.account_id
+WHERE am.state = 'posted'
+ORDER BY aa.id, aml.id;
+"""
 }
 
 """ Start of the class """
@@ -607,17 +807,88 @@ class SqlReport(models.Model):
     to_date = fields.Date("To Date", required=True)
 
     sql_query = fields.Text("SQL Query")
-    result_ids = fields.One2many('custom.sql.report.line', 'report_id', string="Results")
+    
     result_columns = fields.Text("Result Columns")  # JSON array
-    filter_by_year = fields.Boolean(string="Filter By year", tracking=True, help="Checking this will allow you to filter by year.")
+    filter_by_year = fields.Boolean(string="Filter By year", tracking=True, default=True ,help="Checking this will allow you to filter by year.")
     year = fields.Selection(
         [(str(y), str(y)) for y in range(2000, 2051)],
         string="Year",
+        default=str(date.today().year),
         help="Select a year to auto-fill From Date and To Date"
     )
     _sql_constraints = [
         ('unique_report_name', 'unique(name)', 'Each report name must be unique!')
     ]
+
+    filter_column = fields.Selection(
+        selection=lambda self: self._get_dynamic_columns(),
+        string="Filter Column"
+    )
+
+    filter_value = fields.Selection(
+        selection=lambda self: self._get_unique_values(),
+        string="Filter Value"
+    )
+
+    result_ids = fields.One2many('custom.sql.report.line', 'report_id', string="Results")
+    def _get_dynamic_columns(self):
+        """
+        Return a list of (value, label) tuples even if no record is provided.
+        Must NEVER call ensure_one(), because Odoo calls this as an empty recordset.
+        """
+        # If no record (self is empty), return empty selection
+        if not self:
+            return []
+
+        # When editing a record, use its HTML or JSON data
+        columns = []
+
+        # Example: Extract column names from JSON data
+        try:
+            if self.result_ids:
+                raw = [json.loads(r.data) for r in self.result_ids]
+                if raw and len(raw) > 0:
+                    for col in raw[0].keys():
+                        columns.append((col, col))
+        except Exception:
+            pass
+
+        return columns
+
+    def _get_unique_values(self):
+        """Return unique values of the selected filter column."""
+        #self.ensure_one()
+
+        if not self.filter_column:
+            return []
+
+        unique_vals = set()
+
+        for line in self.result_ids:
+            if not line.data:
+                continue
+
+            try:
+                row = json.loads(line.data)
+            except Exception:
+                continue
+
+            # JSON row must be { "col": value, ... }
+            if self.filter_column in row:
+                val = row[self.filter_column]
+                if val not in (None, ""):
+                    unique_vals.add(str(val))
+
+        # Convert to selection-friendly structure
+        return [(v, v) for v in sorted(unique_vals)]
+
+
+
+    @api.onchange('filter_column', 'filter_value')
+    def _onchange_apply_filter(self):
+        for line in self.result_ids:
+            line.html_result = line.get_filtered_html(self.filter_column, self.filter_value)
+
 
     @api.onchange('year')
     def _onchange_year(self):
@@ -625,6 +896,7 @@ class SqlReport(models.Model):
             self.from_date = f'{self.year}-01-01'
             self.to_date = f'{self.year}-12-31'
 
+    """ Generate Report Action"""
     def action_execute_query(self):
         self.ensure_one()
 
@@ -674,7 +946,7 @@ class SqlReport(models.Model):
 
             # --- Build Final Table ---
             table_html = f"""
-                <div style="
+                <div  class="o_sql_report_result" style="
                     width: 100%;
                     max-width: 1000px;
                     max-height: 600px;
@@ -722,6 +994,8 @@ class SqlReport(models.Model):
         rows = [json.loads(r.data) for r in self.result_ids]
         return columns, rows
 
+    """ Export to Excel Action"""    
+
     def action_export_excel(self):
         self.ensure_one()
         if not self.result_ids:
@@ -748,10 +1022,21 @@ class SqlReport(models.Model):
         total_format = workbook.add_format({'num_format': '#,##0.00', 'bold': True, 'border': 1, 'align': 'right', 'valign': 'top', 'bg_color': '#f0f0f0'})
         total_label_format = workbook.add_format({'bold': True, 'border': 1, 'align': 'left', 'valign': 'top', 'bg_color': '#f0f0f0'})
 
-        # === Header Info ===
-        worksheet.write("A1", "INNOVATHINK CORPORATION", bold_format)
-        worksheet.write("A2", "4/F, Vista Mall IT Hub Alabang-Zapote Road corner C. V. Starr Avenue PhilAm Life Village, Pamplona 2 Las Pinas City", small_format)
-        worksheet.write("A3", "TIN: 008-168-070-00000", small_format)
+        company = self.env.company
+
+        worksheet.write("A1", company.name or "", bold_format)
+
+        worksheet.write(
+            "A2",
+            company.partner_id.contact_address_complete or "",
+            small_format
+        )
+
+        worksheet.write(
+            "A3",
+            f"VAT REG TIN: {company.vat or ''}",
+            small_format
+        )
         worksheet.write("A5", dict(self._fields['name'].selection).get(self.name, self.name), title_format)
         worksheet.write("A6", f"Period Covered: {self.from_date.strftime('%m/%d/%Y')} - {self.to_date.strftime('%m/%d/%Y')}", small_format)
 
@@ -830,6 +1115,67 @@ class SqlReport(models.Model):
             'target': 'self',
         }
 
+    """ Export to PDF Action"""
+    def action_export_pdf(self):
+        self.ensure_one()
+        if not self.result_ids:
+            raise UserError("No data to export. Execute a query first.")
+
+        # Prepare HTML content
+        html_content = self.result_ids[0].html_result or "<p>No data available</p>"
+
+        # Optional: Wrap in basic HTML body for PDF rendering
+        html = f"""
+        <html>
+            <head>
+                <style>
+                    table {{
+                        width: 100%;
+                        border-collapse: collapse;
+                    }}
+                    th, td {{
+                        border: 1px solid #000;
+                        padding: 4px;
+                        text-align: left;
+                    }}
+                    th {{
+                        background-color: #f8f9fa;
+                    }}
+                </style>
+            </head>
+            <body>
+                <h2>{dict(self._fields['name'].selection).get(self.name, self.name)}</h2>
+                <p>Period Covered: {self.from_date} - {self.to_date}</p>
+                {html_content}
+            </body>
+        </html>
+        """
+
+        # Generate PDF using Odoo's built-in QWeb PDF engine
+        pdf, _ = self.env['ir.actions.report']._get_pdf(
+            docids=[], reportname='custom.sql.report.pdf', data={'html': html}
+        )
+
+        # Create attachment
+        filename = f"{self.name.replace(' ', '_')}.pdf"
+        attachment = self.env['ir.attachment'].create({
+            'name': filename,
+            'type': 'binary',
+            'datas': base64.b64encode(pdf),
+            'res_model': self._name,
+            'res_id': self.id,
+            'mimetype': 'application/pdf'
+        })
+
+        self.exported_on = fields.Datetime.now()
+        self.exported_by = self.env.user
+
+        return {
+            'type': 'ir.actions.act_url',
+            'url': f"/web/content/{attachment.id}?download=true",
+            'target': 'self',
+        }
+
 
 
 class SqlReportLine(models.Model):
@@ -839,3 +1185,59 @@ class SqlReportLine(models.Model):
     report_id = fields.Many2one('custom.sql.report', string="Report", ondelete="cascade")
     data = fields.Text("Row Data")  # JSON string
     html_result = fields.Html("Details")  # HTML table
+
+    def get_filtered_html(self, column, value):
+        if not self.data:
+            return ""
+
+        import json
+        rows = json.loads(self.data)
+
+        if not rows:
+            return ""
+
+        # Determine headers:
+        # If rows are dicts:
+        if isinstance(rows[0], dict):
+            headers = list(rows[0].keys())
+        # If rows are lists (no column names)
+        else:
+            headers = [f"Column {i+1}" for i in range(len(rows[0]))]
+
+        # Filter rows
+        filtered = []
+        for row in rows:
+            if isinstance(row, dict):
+                cell_value = row.get(column, "")
+            else:
+                # column is index
+                try:
+                    idx = int(column)
+                    cell_value = row[idx]
+                except:
+                    continue
+
+            # Convert both sides to string safely
+            if str(value).lower() in str(cell_value).lower():
+                filtered.append(row)
+
+
+        # Build HTML table
+        html = "<table class='table table-bordered'><thead><tr>"
+        for h in headers:
+            html += f"<th>{h}</th>"
+        html += "</tr></thead><tbody>"
+
+        for row in filtered:
+            html += "<tr>"
+            if isinstance(row, dict):
+                for h in headers:
+                    html += f"<td>{row.get(h, '')}</td>"
+            else:
+                for cell in row:
+                    html += f"<td>{cell}</td>"
+            html += "</tr>"
+
+        html += "</tbody></table>"
+
+        return html
