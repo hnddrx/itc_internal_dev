@@ -37,6 +37,11 @@ class AccountAccount(models.Model):
             'income_sales_contra': 'cascade',
             'income_sales': 'cascade',
             'expenses': 'cascade',
+            'other_income': 'cascade',
+            'operating_expenses': 'cascade',
+            'non_current_liabilities': 'cascade',
+            'non_current_assets': 'cascade',
+            
         },
         tracking=True,
     )
