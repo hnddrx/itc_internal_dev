@@ -1,3 +1,14 @@
 **/__pycache__/
 *.pyc
 *.pyo__pycache__/
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Odoo
+*.log
+*.pot
+*.mo
+
