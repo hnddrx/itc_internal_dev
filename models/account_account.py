@@ -6,6 +6,8 @@ class AccountAccount(models.Model):
     account_type = fields.Selection(
         selection_add=[
             ('expense_manufacturing_oh', 'Manufacturing-OH'),
+            ('non_current_assets', 'Non-current Assets'),
+            ('non_current_liabilities', 'Non-current Liabilities'),
             ('asset_non_current_assets_contra', 'Non-current Assets (Contra)'),
             ('asset_current_assets_contra', 'Current Assets (Contra)'),
             ('expense_cost_of_sales', 'Cost of Sales'),
@@ -18,6 +20,8 @@ class AccountAccount(models.Model):
             ('income_sales_contra', 'Sales (Contra)'),
             ('income_sales', 'Sales'),
             ('expenses', 'Expenses'),
+            ('other_income', 'Other Income'),
+            ('operating_expenses', 'Operating Expenses'),
         ],
         ondelete={
             'expense_manufacturing_oh': 'cascade',
