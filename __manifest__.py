@@ -26,6 +26,7 @@
         'report/report_statement_of_account_template.xml',
         'report/acknowledgement_report.xml',
         'report/bir_0619e.xml',
+        'report/bir_1604e_report.xml',
         #Views
         'views/salary_advance_views.xml',
         'views/expense_view.xml',
@@ -39,6 +40,7 @@
         'views/bir_1702q_views.xml',
         'views/bir_2550q_views.xml',
         'views/bir_1601eq_views.xml',
+        'views/bir_1604e_views.xml',
         'views/bir_form_view.xml',
     ],
 
