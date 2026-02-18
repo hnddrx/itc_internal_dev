@@ -12,3 +12,8 @@ access_bir_1702q,access_bir_1702q,model_bir_1702q,,1,1,1,1
 access_bir_2550q,access_bir_2550q,model_bir_2550q,,1,1,1,1
 access_bir_1601eq,access_bir_1601eq,model_bir_1601eq,,1,1,1,1
 access_bir_1601eq_line,bir.1601eq.line,model_bir_1601eq_line,,1,1,1,1
+access_bir_1604e,Access BIR 1604-E,model_bir_1604e,base.group_user,1,1,1,1
+access_bir_1604e_schedule1,Access BIR 1604-E Schedule 1,model_bir_1604e_schedule1,base.group_user,1,1,1,1
+access_bir_1604e_schedule2,Access BIR 1604-E Schedule 2,model_bir_1604e_schedule2,base.group_user,1,1,1,1
+access_bir_1604e_schedule3,Access BIR 1604-E Schedule 3,model_bir_1604e_schedule3,base.group_user,1,1,1,1
+access_bir_1604e_schedule4,Access BIR 1604-E Schedule 4,model_bir_1604e_schedule4,base.group_user,1,1,1,1

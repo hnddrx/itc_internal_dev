@@ -78,7 +78,7 @@
         <field name="name">BIR 1604-E-Q</field>
         <field name="category">annual</field>
         <field name="description">Annual Return of Withholding Tax</field>
-        <!-- <field name="action_id" ref="action_bir_1604eq"/> -->
+        <field name="action_id" ref="action_bir_1604e"/>
     </record>
 
      <record id="bir_demo_1702c" model="bir.model">
