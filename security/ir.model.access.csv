@@ -17,3 +17,5 @@ access_bir_1604e_schedule1,Access BIR 1604-E Schedule 1,model_bir_1604e_schedule
 access_bir_1604e_schedule2,Access BIR 1604-E Schedule 2,model_bir_1604e_schedule2,base.group_user,1,1,1,1
 access_bir_1604e_schedule3,Access BIR 1604-E Schedule 3,model_bir_1604e_schedule3,base.group_user,1,1,1,1
 access_bir_1604e_schedule4,Access BIR 1604-E Schedule 4,model_bir_1604e_schedule4,base.group_user,1,1,1,1
+access_bir_1601e,Access BIR 1601-E,model_bir_1601e,base.group_user,1,1,1,1
+access_bir_1601e_line,Access BIR 1601-E Line,model_bir_1601e_line,base.group_user,1,1,1,1
