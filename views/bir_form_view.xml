@@ -50,7 +50,7 @@
         <field name="name">BIR 2550M</field>
         <field name="category">monthly</field>
         <field name="description">Monthly Remittance of Creditable Withholding Tax</field>
-        <!-- <field name="action_id" ref="action_bir_2550m"/> -->
+        <field name="action_id" ref="action_bir_2550m"/>
     </record>
 
     <record id="bir_demo_1601eq" model="bir.model">
