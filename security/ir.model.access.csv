@@ -23,11 +23,8 @@ access_bir_2550m,Access BIR 2550M,model_bir_2550m,base.group_user,1,1,1,1
 access_bir_2550m_sch8,Access BIR 2550M Schedule 8,model_bir_2550m_sch8,base.group_user,1,1,1,1
 access_bir_2550m_sch1,Access BIR 2550M Schedule 1,model_bir_2550m_sch1,base.group_user,1,1,1,1
 access_bir_2550m_sch2,Access BIR 2550M Schedule 2,model_bir_2550m_sch2,base.group_user,1,1,1,1
-access_bir_2550m_sch3,Access BIR 2550M Schedule 3,model_bir_2550m_sch3,base.group_user,1,1,1,1 
+access_bir_2550m_sch3,Access BIR 2550M Schedule 3,model_bir_2550m_sch3,base.group_user,1,1,1,1
 access_bir_2550m_sch4,Access BIR 2550M Schedule 4,model_bir_2550m_sch4,base.group_user,1,1,1,1
 access_bir_2550m_sch5,Access BIR 2550M Schedule 5,model_bir_2550m_sch5,base.group_user,1,1,1,1
 access_bir_2550m_sch6,Access BIR 2550M Schedule 6,model_bir_2550m_sch6,base.group_user,1,1,1,1
 access_bir_2550m_sch7,Access BIR 2550M Schedule 7,model_bir_2550m_sch7,base.group_user,1,1,1,1
-
-
-
