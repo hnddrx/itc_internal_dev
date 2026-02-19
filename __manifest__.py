@@ -41,6 +41,8 @@
         'views/bir_2550q_views.xml',
         'views/bir_1601eq_views.xml',
         'views/bir_1604e_views.xml',
+        'views/bir_1601e_views.xml',
+        'views/bir_2550m_views.xml',
         'views/bir_form_view.xml',
     ],
 
