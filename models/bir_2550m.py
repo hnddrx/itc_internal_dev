@@ -628,7 +628,6 @@ class Bir2550M(models.Model):
             # ── Capital Goods Purchases → Sch 2 ──
             # Find asset accounts with 'equipment', 'furniture', 'machinery', or 'capital'
             capital_accounts = self.env["account.account"].search([
-                ("company_id", "=", company_id),
                 ("account_type", "in", ["asset_fixed", "asset_non_current"]),
             ])
 
