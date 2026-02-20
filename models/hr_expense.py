@@ -17,6 +17,12 @@ class HrExpense(models.Model):
     store=True,
     help="Tax Identification Number of the vendor associated with this expense.")
 
+    supplier_id = fields.Many2one(
+        'res.partner',
+        string='Supplier',
+        domain=[('supplier_rank', '>', 0)],
+        help="Supplier for reference only. Appears in journal entries if Paid by Employee."
+    )
 
     #field linked to payment_terms
     x_voucher = fields.Many2one(
@@ -78,4 +84,22 @@ class HrExpense(models.Model):
             if record.x_checked_by and not record.x_checked_by_date:
                 record.x_checked_by_date = date.today()
 
-          
+    def _prepare_move_line_values(self):
+        """Set supplier on debit lines only if Paid by Employee."""
+        move_line_vals = super()._prepare_move_line_values()
+
+        for expense in self:
+            # Check if Paid by Employee
+            if expense.payment_mode == 'own_account':
+                if expense.supplier_id:
+                    for line in move_line_vals:
+                        # Debit lines (Expense + VAT) → partner = supplier
+                        if line.get('debit', 0) > 0:
+                            line['partner_id'] = expense.supplier_id.id
+
+                        # Credit line (Payable) → partner = Employee
+                        if line.get('credit', 0) > 0:
+                            if expense.employee_id.address_home_id:
+                                line['partner_id'] = expense.employee_id.address_home_id.id
+            # Else: Paid by Company → do nothing, normal cash/bank
+        return move_line_vals

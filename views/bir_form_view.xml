@@ -94,14 +94,7 @@
         <field name="description">Annual Return of Withholding Tax</field>
         <field name="action_id" ref="action_bir_1601e"/>
     </record>
-
-
-
-
-
-  
-
-    
+        
 
     <record id="action_bir_model" model="ir.actions.act_window">
         <field name="name">BIR Forms</field>
