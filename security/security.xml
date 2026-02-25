@@ -2,7 +2,7 @@
 
     <record id="group_limited_employee_access" model="res.groups">
         <field name="name">Limited Employee Access</field>
-        <field name="category_id" ref="hr.module_category_hr"/>
+        <field name="category_id" ref="base.module_category_human_resources"/>
     </record>
 
     <record id="rule_hr_employee_own_only" model="ir.rule">
