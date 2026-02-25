@@ -28,4 +28,3 @@ access_bir_2550m_sch4,Access BIR 2550M Schedule 4,model_bir_2550m_sch4,base.grou
 access_bir_2550m_sch5,Access BIR 2550M Schedule 5,model_bir_2550m_sch5,base.group_user,1,1,1,1
 access_bir_2550m_sch6,Access BIR 2550M Schedule 6,model_bir_2550m_sch6,base.group_user,1,1,1,1
 access_bir_2550m_sch7,Access BIR 2550M Schedule 7,model_bir_2550m_sch7,base.group_user,1,1,1,1
-access_hr_employee_limited,hr.employee limited access,hr.model_hr_employee,itc_internal_dev.group_limited_employee_access,1,0,0,0
