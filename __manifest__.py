@@ -30,6 +30,7 @@
         'report/bir_1604e_report.xml',
         #Views
         'views/salary_advance_views.xml',
+        'views/expense_sheet.xml',
         'views/expense_view.xml',
         'views/purchase_order.xml',
         'views/account_account_views.xml',

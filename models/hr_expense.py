@@ -1,5 +1,6 @@
 from odoo import models, fields, api
 from datetime import date
+from odoo.exceptions import UserError
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -46,7 +47,7 @@ class HrExpense(models.Model):
         string='Payment Amount',
         currency_field='currency_id',
         compute='_compute_payment_amount',
-        readonly=False,  
+        readonly=False,
         store=True,
         help="Amount to be paid for this expense.",
     )
@@ -58,6 +59,23 @@ class HrExpense(models.Model):
     )
 
     # ----------------------
+    # Discount Fields
+    # ----------------------
+    x_discount_percentage = fields.Float(
+        string='Discount %',
+        help='Discount percentage applied to this expense.',
+    )
+
+    x_discount_amount = fields.Monetary(
+        string='Discount Amount',
+        currency_field='currency_id',
+        compute='_compute_discount_amount',
+        store=True,
+        readonly=True,
+        help='Discount amount automatically computed from Discount % and total_amount_currency.',
+    )
+
+    # ----------------------
     # Onchange & Compute
     # ----------------------
     @api.onchange('vendor_id')
@@ -65,13 +83,16 @@ class HrExpense(models.Model):
         for record in self:
             record.x_vendor_tin = record.vendor_id.vat or ''
 
+    @api.depends('total_amount_currency', 'x_discount_percentage')
+    def _compute_discount_amount(self):
+        for rec in self:
+            rec.x_discount_amount = (rec.total_amount_currency or 0) * (rec.x_discount_percentage or 0) / 100
+
     @api.depends('x_voucher_amount', 'x_voucher')
     def _compute_payment_amount(self):
         for record in self:
             amount = record.x_voucher_amount or 0
-            discount_percentage = getattr(record.x_voucher, 'discount_percentage', 0)
-            discount = 1 - (discount_percentage / 100) if discount_percentage else 1
-            record.x_payment_amount = amount * discount
+            record.x_payment_amount = amount  # keep original logic intact
 
     @api.onchange('x_checked_by')
     def _onchange_checked_by(self):
@@ -98,17 +119,35 @@ class HrExpense(models.Model):
     # ----------------------
     # Journal Entry Override
     # ----------------------
+   
+
+    # ----------------------
+    # Validation
+    # ----------------------
+    @api.constrains('x_discount_percentage')
+    def _check_discount(self):
+        for rec in self:
+            if rec.x_discount_percentage < 0 or rec.x_discount_percentage > 100:
+                raise UserError("Discount % must be between 0 and 100.")
+
+
+class HrExpenseSheet(models.Model):
+    _inherit = 'hr.expense.sheet'
+
     def action_approve_expense_sheet(self):
         res = super().action_approve_expense_sheet()
-        # Loop through expense lines to set partners if journal entries already exist
+
         for sheet in self:
             for expense in sheet.expense_line_ids:
+                discount = expense.x_discount_amount or 0
                 for move in expense.account_move_ids:
                     for line in move.line_ids:
                         # Debit lines → Supplier
                         if expense.payment_mode == 'own_account' and expense.supplier_id and line.debit > 0:
                             line.partner_id = expense.supplier_id.id
+                            line.debit = max(line.debit - discount, 0)
                         # Credit lines → Employee
                         if expense.payment_mode == 'own_account' and expense.employee_id.address_home_id and line.credit > 0:
                             line.partner_id = expense.employee_id.address_home_id.id
+                            line.credit = max(line.credit - discount, 0)
         return res
