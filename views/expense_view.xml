@@ -14,8 +14,8 @@
 
         <xpath expr="//field[@name='vendor_id']" position="after">
             <field name="x_vendor_tin" invisible="not vendor_id or payment_mode == 'own_account'"/>
-            <field name="x_voucher_amount" widget="monetary"/>
-            <field name="x_payment_amount" widget="monetary"/>
+            <field name="x_voucher_amount" widget="monetary" invisible="True"/>
+            <field name="x_payment_amount" widget="monetary" invisible="True"/>
         </xpath>
 
         <!-- Target the group where the payment_mode belogns to and inject the field you wanna add -->

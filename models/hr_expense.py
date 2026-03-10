@@ -19,7 +19,7 @@ class HrExpense(models.Model):
 
     x_vendor_tin = fields.Char(
         string="Vendor TIN",
-        readonly=True,
+        compute="_compute_vendor_tax_id",
         store=True,
         help="Tax Identification Number of the vendor associated with this expense."
     )
@@ -78,8 +78,8 @@ class HrExpense(models.Model):
     # ----------------------
     # Onchange & Compute
     # ----------------------
-    @api.onchange('vendor_id')
-    def _onchange_vendor_id(self):
+    @api.depends('vendor_id')
+    def _compute_vendor_tax_id(self):
         for record in self:
             record.x_vendor_tin = record.vendor_id.vat or ''
 
