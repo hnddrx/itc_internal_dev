@@ -1,0 +1,15 @@
+<odoo>
+
+    <record id="group_limited_employee_access" model="res.groups">
+        <field name="name">Limited Employee Access</field>
+        <field name="category_id" ref="base.module_category_human_resources"/>
+    </record>
+
+    <record id="rule_hr_employee_own_only" model="ir.rule">
+        <field name="name">Employee Own Record Only</field>
+        <field name="model_id" ref="hr.model_hr_employee"/>
+        <field name="groups" eval="[(4, ref('itc_internal_dev.group_limited_employee_access'))]"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+    </record>
+
+</odoo>

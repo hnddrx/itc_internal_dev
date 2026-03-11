@@ -13,7 +13,7 @@
                                     <strong>Use Only</strong> Item: 
                                 </td>
                                 <td style="text-align:left; vertical-align: bottom;">
-                                    <table style="border-collapse: collapse;  margin-left:150px;">
+                                    <table style="border-collapse: collapse;  margin-left:160px;">
                                         <tr>
                                             <td style="vertical-align: bottom; padding-right: 10px;">
                                                 <img src="https://logodix.com/logo/1578333.png"
@@ -271,16 +271,46 @@
                             <tr>
                                 <td style="border: 1px solid black; text-align: center; background-color: #d3d3d3;">Particulars</td>
                                 <td style="border: 1px solid black; text-align: center; background-color: #d3d3d3;">Drawee Bank/Agency</td>
-                                <td style="border: 1px solid black; text-align: center; background-color: #d3d3d3;">Number</td>
+                                <td style="border: 1px solid black; text-align: center; background-color: #d3d3d3; width:16%;">Number</td>
                                 <td style="border: 1px solid black; text-align: center; background-color: #d3d3d3;">Date (MM/DD/YYYY)</td>
                                 <td style="border: 1px solid black; text-align: center; background-color: #d3d3d3; width:30%;">Amount</td>
                             </tr>
                             <tr>
-                                <td style="border: 1px solid black;"><strong>19</strong> Cash/Bank Debit Memo</td>
+                                <td style="border: 1px solid black; text-align: left; background-color: #d3d3d3; padding: 5px 0px;"><strong>19</strong> Cash/Bank Debit Memo</td>
                                 <td style="border: 1px solid black;"></td>
                                 <td style="border: 1px solid black;"></td>
                                 <td style="border: 1px solid black;"></td>
                                 <td style="border: 1px solid black;"></td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid black; text-align: left; background-color: #d3d3d3; padding: 5px 0px;"><strong>20</strong> Check</td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="border: 1px solid black; text-align: left; background-color: #d3d3d3; padding: 5px 0px;"><strong>21</strong> Tax Demo Memo</td>
+                          
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                            </tr>
+
+                            
+                            <tr>
+                                <td colspan="5" style="border: 1px solid black; text-align: left; background-color: #d3d3d3; padding: 5px 0px;"><strong>22</strong> Others <span style="font-style:italic; font-size: 7pt;">(specify below)</span></td>
+                            </tr>
+                             <tr>
+                               
+                                <td colspan="4" style="border: 1px solid black; height: 25px;"></td>
+                                <td style="border: 1px solid black;"></td>
+                            </tr>
+
+                             <tr>
+                        
+                                <td colspan="4" style="border: 1px solid black; height: 150px; font-size: 7pt; vertical-align: top; text-align: center;">Machine Validation/Revenue Official Receipt Details <span style="font-style:italic;">(if not filed with an Authorized Agent Bank)</span> </td>
+                                <td style="border: 1px solid black; font-size: 7pt; vertical-align: top; text-align: center;">Stamp of Receiving Office/AAB and Date of Receipt <br /> <span style="font-style:italic;">(RO's Signature/Bank Teller’s Initial)</span></td>
                             </tr>
 
                         </table>

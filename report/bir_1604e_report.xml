@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Report Action -->
+    <record id="action_report_bir_1604e" model="ir.actions.report">
+        <field name="name">BIR Form 1604-E Report</field>
+        <field name="model">bir.1604e</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">bir_form_1604e.report_bir_1604e_document</field>
+        <field name="report_file">bir_form_1604e.report_bir_1604e_document</field>
+        <field name="binding_model_id" ref="model_bir_1604e"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Report Template -->
+    <template id="report_bir_1604e_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="text-center">
+                            <h2>BIR FORM 1604-E</h2>
+                            <h4>Annual Information Return of Creditable Income Taxes Withheld (Expanded)</h4>
+                            <h4>Income Payments Exempt From Withholding Tax</h4>
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-6">
+                                <strong>Year:</strong> <span t-field="doc.year"/><br/>
+                                <strong>TIN:</strong> <span t-field="doc.tin"/><br/>
+                                <strong>Withholding Agent:</strong> <span t-field="doc.withholding_agent_name"/><br/>
+                                <strong>Registered Address:</strong> <span t-field="doc.registered_address"/><br/>
+                            </div>
+                            <div class="col-6">
+                                <strong>RDO Code:</strong> <span t-field="doc.rdo_code"/><br/>
+                                <strong>Line of Business:</strong> <span t-field="doc.line_of_business"/><br/>
+                                <strong>Amended Return:</strong> <span t-if="doc.amended_return">Yes</span><span t-else="">No</span><br/>
+                                <strong>Sheets Attached:</strong> <span t-field="doc.num_sheets_attached"/><br/>
+                            </div>
+                        </div>
+                        
+                        <h4 class="mt-4">Part II: Summary of Remittances</h4>
+                        
+                        <h5 class="mt-3">Schedule 1: Remittance per BIR Form No. 1601-E</h5>
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Date of Remittance</th>
+                                    <th>Bank Name/Bank Code/ROR No.</th>
+                                    <th class="text-right">Taxes Withheld</th>
+                                    <th class="text-right">Penalties</th>
+                                    <th class="text-right">Total Remitted</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="doc.schedule1_line_ids" t-as="line">
+                                    <td><span t-field="line.month"/></td>
+                                    <td><span t-field="line.date_remittance"/></td>
+                                    <td><span t-field="line.bank_name"/></td>
+                                    <td class="text-right"><span t-field="line.taxes_withheld" t-options="{'widget': 'monetary', 'display_currency': doc.company_id.currency_id}"/></td>
+                                    <td class="text-right"><span t-field="line.penalties" t-options="{'widget': 'monetary', 'display_currency': doc.company_id.currency_id}"/></td>
+                                    <td class="text-right"><span t-field="line.total_remitted" t-options="{'widget': 'monetary', 'display_currency': doc.company_id.currency_id}"/></td>
+                                </tr>
+                                <tr class="font-weight-bold">
+                                    <td colspan="3" class="text-right">TOTAL:</td>
+                                    <td class="text-right"><span t-field="doc.total_1601e_taxes" t-options="{'widget': 'monetary', 'display_currency': doc.company_id.currency_id}"/></td>
+                                    <td class="text-right"><span t-field="doc.total_1601e_penalties" t-options="{'widget': 'monetary', 'display_currency': doc.company_id.currency_id}"/></td>
+                                    <td class="text-right"><span t-field="doc.total_1601e_remitted" t-options="{'widget': 'monetary', 'display_currency': doc.company_id.currency_id}"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <h5 class="mt-3">Schedule 2: Remittance per BIR Form No. 1606</h5>
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Date of Remittance</th>
+                                    <th>Bank Name/Bank Code/ROR No.</th>
+                                    <th class="text-right">Taxes Withheld</th>
+                                    <th class="text-right">Penalties</th>
+                                    <th class="text-right">Total Remitted</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="doc.schedule2_line_ids" t-as="line">
+                                    <td><span t-field="line.month"/></td>
+                                    <td><span t-field="line.date_remittance"/></td>
+                                    <td><span t-field="line.bank_name"/></td>
+                                    <td class="text-right"><span t-field="line.taxes_withheld" t-options="{'widget': 'monetary', 'display_currency': doc.company_id.currency_id}"/></td>
+                                    <td class="text-right"><span t-field="line.penalties" t-options="{'widget': 'monetary', 'display_currency': doc.company_id.currency_id}"/></td>
+                                    <td class="text-right"><span t-field="line.total_remitted" t-options="{'widget': 'monetary', 'display_currency': doc.company_id.currency_id}"/></td>
+                                </tr>
+                                <tr class="font-weight-bold">
+                                    <td colspan="3" class="text-right">TOTAL:</td>
+                                    <td class="text-right"><span t-field="doc.total_1606_taxes" t-options="{'widget': 'monetary', 'display_currency': doc.company_id.currency_id}"/></td>
+                                    <td class="text-right"><span t-field="doc.total_1606_penalties" t-options="{'widget': 'monetary', 'display_currency': doc.company_id.currency_id}"/></td>
+                                    <td class="text-right"><span t-field="doc.total_1606_remitted" t-options="{'widget': 'monetary', 'display_currency': doc.company_id.currency_id}"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <div style="page-break-before: always;"/>
+                        
+                        <h4 class="mt-4">Part III: Alphabetical Lists of Payees</h4>
+                        
+                        <h5 class="mt-3">Schedule 3: Payees Exempt from Withholding Tax</h5>
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Seq</th>
+                                    <th>TIN</th>
+                                    <th>Name of Payee</th>
+                                    <th>ATC</th>
+                                    <th>Nature of Income</th>
+                                    <th class="text-right">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="doc.schedule3_line_ids[:50]" t-as="line">
+                                    <td><span t-field="line.sequence"/></td>
+                                    <td><span t-field="line.tin"/></td>
+                                    <td><span t-field="line.payee_name"/></td>
+                                    <td><span t-field="line.atc_code"/></td>
+                                    <td><span t-field="line.nature_income"/></td>
+                                    <td class="text-right"><span t-field="line.income_payment" t-options="{'widget': 'monetary', 'display_currency': doc.company_id.currency_id}"/></td>
+                                </tr>
+                                <t t-if="len(doc.schedule3_line_ids) > 50">
+                                    <tr>
+                                        <td colspan="6" class="text-center font-italic">
+                                            ... and <t t-esc="len(doc.schedule3_line_ids) - 50"/> more payees (see Excel export for complete list)
+                                        </td>
+                                    </tr>
+                                </t>
+                                <tr class="font-weight-bold">
+                                    <td colspan="5" class="text-right">TOTAL:</td>
+                                    <td class="text-right"><span t-field="doc.total_schedule3_amount" t-options="{'widget': 'monetary', 'display_currency': doc.company_id.currency_id}"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <h5 class="mt-3">Schedule 4: Payees Subject to Expanded Withholding Tax</h5>
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Seq</th>
+                                    <th>TIN</th>
+                                    <th>Name of Payee</th>
+                                    <th>ATC</th>
+                                    <th>Nature of Income</th>
+                                    <th class="text-right">Amount</th>
+                                    <th class="text-right">Tax Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="doc.schedule4_line_ids[:50]" t-as="line">
+                                    <td><span t-field="line.sequence"/></td>
+                                    <td><span t-field="line.tin"/></td>
+                                    <td><span t-field="line.payee_name"/></td>
+                                    <td><span t-field="line.atc_code"/></td>
+                                    <td><span t-field="line.nature_income"/></td>
+                                    <td class="text-right"><span t-field="line.income_payment" t-options="{'widget': 'monetary', 'display_currency': doc.company_id.currency_id}"/></td>
+                                    <td class="text-right"><span t-field="line.tax_rate"/>%</td>
+                                </tr>
+                                <t t-if="len(doc.schedule4_line_ids) > 50">
+                                    <tr>
+                                        <td colspan="7" class="text-center font-italic">
+                                            ... and <t t-esc="len(doc.schedule4_line_ids) - 50"/> more payees (see Excel export for complete list)
+                                        </td>
+                                    </tr>
+                                </t>
+                                <tr class="font-weight-bold">
+                                    <td colspan="5" class="text-right">TOTAL:</td>
+                                    <td class="text-right"><span t-field="doc.total_schedule4_income" t-options="{'widget': 'monetary', 'display_currency': doc.company_id.currency_id}"/></td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <div class="mt-4">
+                            <p><strong>Signatory Name:</strong> <span t-field="doc.signatory_name"/></p>
+                            <p><strong>Title/Position:</strong> <span t-field="doc.signatory_title"/></p>
+                            <p><strong>Report Date:</strong> <span t-field="doc.report_date"/></p>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

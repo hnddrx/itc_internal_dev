@@ -9,11 +9,13 @@
         #Security
         'security/custom_sql_report_security.xml',
         'security/salary_advance_security.xml',
+        #'security/security.xml',
         'security/ir.model.access.csv',
 
         #Data
         'data/salary_advance.xml',
         'data/bir_paperformat.xml',
+        'data/cash_advance_sequence.xml',
 
         #Report
         'report/sales_invoice_report.xml',
@@ -26,8 +28,11 @@
         'report/report_statement_of_account_template.xml',
         'report/acknowledgement_report.xml',
         'report/bir_0619e.xml',
+        'report/bir_1604e_report.xml',
         #Views
-        'views/salary_advance_views.xml',
+        #'views/salary_advance_views.xml',
+        'views/cash_advance_views.xml',
+        'views/expense_sheet.xml',
         'views/expense_view.xml',
         'views/purchase_order.xml',
         'views/account_account_views.xml',
@@ -39,6 +44,9 @@
         'views/bir_1702q_views.xml',
         'views/bir_2550q_views.xml',
         'views/bir_1601eq_views.xml',
+        'views/bir_1604e_views.xml',
+        'views/bir_1601e_views.xml',
+        'views/bir_2550m_views.xml',
         'views/bir_form_view.xml',
     ],
 

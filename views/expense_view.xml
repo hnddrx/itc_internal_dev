@@ -5,20 +5,25 @@
     <field name="inherit_id" ref="hr_expense.hr_expense_view_form"/>
     <field name="arch" type="xml">
 
+
         <xpath expr="//field[@name='employee_id']/.." position="before">
+             <field name="x_discount_percentage" string="Discount %"/>
+            <field name="x_discount_amount" string="Discount Amount" readonly="1" widget="monetary"/>
             <field name="x_voucher" />
         </xpath>
 
         <xpath expr="//field[@name='vendor_id']" position="after">
             <field name="x_vendor_tin" invisible="not vendor_id or payment_mode == 'own_account'"/>
-            <field name="x_voucher_amount" widget="monetary"/>
-            <field name="x_payment_amount" widget="monetary"/>
+            <field name="x_voucher_amount" widget="monetary" invisible="True"/>
+            <field name="x_payment_amount" widget="monetary" invisible="True"/>
         </xpath>
 
         <!-- Target the group where the payment_mode belogns to and inject the field you wanna add -->
          
         <xpath expr="//field[@name='payment_mode']/.." position="after">
             <field name="x_particulars" string="Particulars" placeholder="Enter particulars here..."/>
+            <field name="supplier_id"
+                   invisible="payment_mode != 'own_account'"/>
         </xpath>
 
         <!-- Insert a notebook after the sheet group -->
@@ -50,4 +55,5 @@
         </xpath>
     </field>
   </record>
+  
 </odoo>

@@ -270,10 +270,10 @@ class Bir1601EQ(models.Model):
         if not self.return_period_from or not self.return_period_to:
             raise ValidationError(_("Please set Year and Quarter first."))
 
-        # Remove existing lines safely
-        self.line_ids.unlink()
+        # 1️⃣ Clear existing ATC lines
+        self.write({'line_ids': [(5, 0, 0)]})
 
-        # Search posted moves within period
+        # 2️⃣ Collect posted account moves in the period
         moves = self.env['account.move'].search([
             ('company_id', '=', self.company_id.id),
             ('date', '>=', self.return_period_from),
@@ -282,44 +282,31 @@ class Bir1601EQ(models.Model):
         ])
 
         atc_data = {}
-
         for move in moves:
-            # Only tax lines (much faster than scanning everything)
-            tax_lines = move.line_ids.filtered(lambda l: l.tax_line_id)
-
+            tax_lines = move.line_ids.filtered(
+                lambda l: l.tax_line_id and l.tax_line_id.type_tax_use == 'purchase'
+            )
             for line in tax_lines:
-                tax = line.tax_line_id
-
-                # Only purchase withholding taxes
-                if tax.type_tax_use != 'purchase':
-                    continue
-
-                atc = tax.name or 'Unspecified'
-
+                atc = line.tax_line_id.name or 'Unspecified'
                 if atc not in atc_data:
                     atc_data[atc] = {
                         'atc': atc,
                         'tax_base': 0.0,
-                        'tax_rate': tax.amount or 0.0,
+                        'tax_rate': line.tax_line_id.amount or 0.0,
                         'tax_withheld': 0.0,
                     }
-
                 atc_data[atc]['tax_base'] += abs(line.tax_base_amount or 0.0)
                 atc_data[atc]['tax_withheld'] += abs(line.balance or 0.0)
 
-        # Create lines
-        BirLine = self.env['bir.1601eq.line']
+        # 3️⃣ Create new ATC lines
+        lines_vals = [(0, 0, data) for data in atc_data.values()]
+        if lines_vals:
+            self.write({'line_ids': lines_vals})
 
-        for data in atc_data.values():
-            BirLine.create({
-                'parent_id': self.id,
-                'atc': data['atc'],
-                'tax_base': data['tax_base'],
-                'tax_rate': data['tax_rate'],
-                'tax_withheld': data['tax_withheld'],
-            })
+        # 4️⃣ Recompute totals immediately
+        self._compute_totals()
 
-        # Proper Odoo 18 notification
+        # 5️⃣ Show success notification AND reload form
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
@@ -328,8 +315,11 @@ class Bir1601EQ(models.Model):
                 'message': _('%s withholding tax line(s) generated.') % len(atc_data),
                 'type': 'success',
                 'sticky': False,
-            }
+            },
+            'target': 'self',  # ensures it affects the current view
+            'next': {'type': 'ir.actions.client', 'tag': 'reload'},  # reloads the form
         }
+
 
 
     def action_confirm(self):
