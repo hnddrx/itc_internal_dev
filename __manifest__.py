@@ -15,6 +15,7 @@
         #Data
         'data/salary_advance.xml',
         'data/bir_paperformat.xml',
+        'data/cash_advance_sequence.xml',
 
         #Report
         'report/sales_invoice_report.xml',
@@ -29,7 +30,8 @@
         'report/bir_0619e.xml',
         'report/bir_1604e_report.xml',
         #Views
-        'views/salary_advance_views.xml',
+        #'views/salary_advance_views.xml',
+        'views/cash_advance_views.xml',
         'views/expense_sheet.xml',
         'views/expense_view.xml',
         'views/purchase_order.xml',
