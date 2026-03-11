@@ -29,6 +29,7 @@
         'report/acknowledgement_report.xml',
         'report/bir_0619e.xml',
         'report/bir_1604e_report.xml',
+        'report/cash_advance_report_template.xml',
         #Views
         #'views/salary_advance_views.xml',
         'views/cash_advance_views.xml',

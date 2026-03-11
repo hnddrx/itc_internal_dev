@@ -10,9 +10,9 @@ class CashAdvance(models.Model):
     # Basic Info
     # -----------------------------
     name = fields.Char(string="Reference", default='New', copy=False, tracking=True)
-    employee_id = fields.Many2one('res.partner', string="Employee", required=True)
-    department_id = fields.Many2one('hr.department', string="Department")
+    employee_id = fields.Many2one('res.partner', string="Employee", required=True, tracking=True)
     request_date = fields.Date(string="Request Date", default=fields.Date.today)
+    department_id = fields.Many2one('hr.department', string="Department")
     purpose = fields.Text(string="Purpose", required=True)
 
     # -----------------------------
@@ -30,6 +30,7 @@ class CashAdvance(models.Model):
         'account.account',
         string="Advance Account",
         required=True,
+        domain=[('account_type', '=', 'asset_current'), ('deprecated', '=', False)],
         help="Select a Current Asset account for the cash advance"
     )
     journal_id = fields.Many2one(
