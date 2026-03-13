@@ -30,3 +30,8 @@ access_bir_2550m_sch4,Access BIR 2550M Schedule 4,model_bir_2550m_sch4,base.grou
 access_bir_2550m_sch5,Access BIR 2550M Schedule 5,model_bir_2550m_sch5,base.group_user,1,1,1,1
 access_bir_2550m_sch6,Access BIR 2550M Schedule 6,model_bir_2550m_sch6,base.group_user,1,1,1,1
 access_bir_2550m_sch7,Access BIR 2550M Schedule 7,model_bir_2550m_sch7,base.group_user,1,1,1,1
+access_disbursement_voucher_user,disbursement.voucher user,itc_internal_dev.model_disbursement_voucher,base.group_user,1,1,1,1
+access_disbursement_voucher_line_user,disbursement.voucher.line user,itc_internal_dev.model_disbursement_voucher_line,base.group_user,1,1,1,1
+access_disbursement_payment_detail_user,disbursement.payment.detail user,itc_internal_dev.model_disbursement_payment_detail,base.group_user,1,1,1,1
+access_disbursement_extra_credit_user,disbursement.extra.credit user,itc_internal_dev.model_disbursement_extra_credit,base.group_user,1,1,1,1
+access_disbursement_expense_type_user,disbursement.expense.type user,itc_internal_dev.model_disbursement_expense_type,base.group_user,1,1,1,1

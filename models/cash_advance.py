@@ -98,8 +98,11 @@ class CashAdvance(models.Model):
             raise UserError("Selected journal must have a default account set.")
 
         cash_account_id = self.journal_id.default_account_id.id
-
+         
         move = self.env['account.move'].create({
+            'journal_id': self.journal_id.id,
+            'date': self.request_date,
+            'ref': f"CA-{self.name}",
             'move_type': 'entry',
             'line_ids': [
                 (0, 0, {
@@ -153,8 +156,12 @@ class CashAdvance(models.Model):
     # -----------------------------
     def _create_cash_return_entry(self):
         cash_account_id = self.journal_id.default_account_id.id
+       
         move = self.env['account.move'].create({
+            'journal_id': self.journal_id.id,
             'move_type': 'entry',
+            'date': self.liquidation_line_ids.date,
+            'ref': f"{self.liquidation_line_ids.description}",
             'line_ids': [
                 (0, 0, {'account_id': cash_account_id, 'debit': self.balance, 'credit': 0.0}),
                 (0, 0, {'account_id': self.advance_account_id.id, 'debit': 0.0, 'credit': self.balance}),
@@ -165,6 +172,9 @@ class CashAdvance(models.Model):
     def _create_reimbursement_entry(self):
         cash_account_id = self.journal_id.default_account_id.id
         move = self.env['account.move'].create({
+            'journal_id': self.journal_id.id,
+            'date': self.liquidation_line_ids.date,
+            'ref': f"{self.liquidation_line_ids.description}",
             'move_type': 'entry',
             'line_ids': [
                 (0, 0, {'account_id': self.advance_account_id.id, 'debit': 0.0, 'credit': abs(self.balance)}),
