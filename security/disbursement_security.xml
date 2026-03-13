@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Record rule: users can only see vouchers of their own company -->
+    <record id="rule_disbursement_voucher_user" model="ir.rule">
+        <field name="name">Disbursement Voucher: multi-company rule</field>
+        <field name="model_id" ref="itc_internal_dev.model_disbursement_voucher"/>
+        <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

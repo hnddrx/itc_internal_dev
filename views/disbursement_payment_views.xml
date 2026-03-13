@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Payment details are managed inline within the voucher form.
+         This file is reserved for any standalone payment views. -->
+</odoo>
