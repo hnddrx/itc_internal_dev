@@ -75,6 +75,15 @@ class HrExpense(models.Model):
         help='Discount amount automatically computed from Discount % and total_amount_currency.',
     )
 
+    x_original_amount = fields.Monetary(
+        string='Original Amount',
+        currency_field='currency_id',
+        compute='_compute_discount_amount',
+        store=True,
+        readonly=True,
+        help='Original amount automatically computed from Discount % and total_amount_currency.',
+    )
+
     # ----------------------
     # Onchange & Compute
     # ----------------------
@@ -86,7 +95,16 @@ class HrExpense(models.Model):
     @api.depends('total_amount_currency', 'x_discount_percentage')
     def _compute_discount_amount(self):
         for rec in self:
-            rec.x_discount_amount = (rec.total_amount_currency or 0) * (rec.x_discount_percentage or 0) / 100
+            discounted = rec.total_amount_currency or 0
+            discount_rate = (rec.x_discount_percentage or 0) / 100
+
+            if discount_rate >= 1:
+                rec.x_discount_amount = 0
+                continue
+
+            original_price = discounted / (1 - discount_rate)
+            rec.x_discount_amount = original_price - discounted
+            rec.x_original_amount = original_price
 
     @api.depends('x_voucher_amount', 'x_voucher')
     def _compute_payment_amount(self):

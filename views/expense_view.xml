@@ -8,7 +8,8 @@
 
         <xpath expr="//field[@name='employee_id']/.." position="before">
              <field name="x_discount_percentage" string="Discount %"/>
-            <field name="x_discount_amount" string="Discount Amount" readonly="1" widget="monetary"/>
+            <field name="x_discount_amount" string="Discount Amount" readonly="1" invisible='x_discount_percentage == 0' widget="monetary"/>
+            <field name="x_original_amount" string="Original Amount" readonly="1" invisible='x_discount_percentage == 0' widget="monetary"/>
             <field name="x_voucher" />
         </xpath>
 
