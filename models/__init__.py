@@ -1,5 +1,5 @@
 from . import salary_advance
-from . import cash_advance, disbursement_voucher
+from . import cash_advance, disbursement_voucher, request_for_payment
 from . import hr_expense
 from . import purchase_order
 from . import account_account

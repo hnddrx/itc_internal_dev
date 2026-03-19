@@ -19,6 +19,7 @@
         'data/cash_advance_sequence.xml',
         'data/sequence_data.xml',
         'data/expense_type_data.xml',
+        'data/rfp_sequence.xml',
 
         #Report
         'report/sales_invoice_report.xml',
@@ -33,6 +34,7 @@
         'report/bir_0619e.xml',
         'report/bir_1604e_report.xml',
         'report/cash_advance_report_template.xml',
+        'report/disbursement_voucher_template.xml',
         #Views
         #'views/salary_advance_views.xml',
         'views/cash_advance_views.xml',
@@ -56,7 +58,9 @@
         'views/disbursement_voucher_line_views.xml',
         'views/disbursement_payment_views.xml',
         'views/disbursement_menu.xml',
-        'report/disbursement_voucher_template.xml',
+        'views/request_for_payment_views.xml'
+       
+
     ],
 
     'assets': {
