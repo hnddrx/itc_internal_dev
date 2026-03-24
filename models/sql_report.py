@@ -11,7 +11,7 @@ from markupsafe import Markup
 _logger = logging.getLogger(__name__)
 
 # -------------------------
-# Constants for Selections
+# This is the report names used in the reporting module
 # -------------------------
 REPORT_NAMES = [
     ('sales_subsidiary_journal_rr9', 'Sales Subsidiary Journal RR9'),
@@ -65,8 +65,8 @@ REPORT_NAMES = [
     ('inventory_book', 'Inventory Book'),
 ]
 
-""" Categories for various reports, can be expanded as needed.
- """
+# Categories for various reports, can be expanded as needed.
+
 REPORT_CATEGORIES = [
     ('annex', 'Annex'),
     ('books', 'Books'),
@@ -76,7 +76,7 @@ REPORT_CATEGORIES = [
 ]
 
 # -------------------------
-# SQL Queries Mapping
+# Corresponding SQL Queries Mapping for reports
 # -------------------------
 SQL_QUERIES = {
     'sales_subsidiary_journal_rr9': """
@@ -249,17 +249,18 @@ SQL_QUERIES = {
         '' AS "DISALLOWED INPUT TAX",
         '' AS "DEFERRED INPUT TAX"
 
-    FROM account_move a
-    LEFT JOIN account_move_line l ON a.id = l.move_id
-    left join product_product pp on l.product_id = pp.id 
-    left join product_template pt on pp.product_tmpl_id = pt.id
-    LEFT JOIN res_partner r ON a.partner_id = r.id
-    LEFT JOIN account_move_line_account_tax_rel rel ON l.id = rel.account_move_line_id
-    LEFT JOIN account_tax t ON rel.account_tax_id = t.id
-    WHERE a.move_type = 'in_invoice'
-    AND a.invoice_date BETWEEN %s AND %s
-    GROUP BY a.id, r.name, r.contact_address_complete, r.vat
-    ORDER BY a.invoice_date;
+        FROM account_move a
+        LEFT JOIN account_move_line l ON a.id = l.move_id
+        left join product_product pp on l.product_id = pp.id 
+        left join product_template pt on pp.product_tmpl_id = pt.id
+        LEFT JOIN res_partner r ON a.partner_id = r.id
+        LEFT JOIN account_move_line_account_tax_rel rel ON l.id = rel.account_move_line_id
+        LEFT JOIN account_tax t ON rel.account_tax_id = t.id
+        WHERE a.move_type in ('in_invoice', 'entry')
+        and a.state = 'posted'
+        AND a.invoice_date BETWEEN %s AND %s
+        GROUP BY a.id, r.name, r.contact_address_complete, r.vat
+        ORDER BY a.invoice_date;
     """,
     'disbursement_journal': """
         SELECT DISTINCT ON (he.id)
@@ -292,17 +293,17 @@ SQL_QUERIES = {
             ELSE 'N'
         END AS "INPUT TAX ALLOWED?",
         aa.name->>'en_US' AS "ACCOUNT TITLE"
-    FROM hr_expense_sheet hes
-    INNER JOIN hr_expense he ON hes.id = he.sheet_id
-    INNER JOIN account_payment ap ON hes.journal_id = ap.journal_id
-    LEFT JOIN account_move am ON ap.move_id = am.id
-    LEFT JOIN account_move_line aml ON am.id = aml.move_id
-    LEFT JOIN expense_tax et ON he.id = et.expense_id
-    LEFT JOIN account_tax at ON et.tax_id = at.id
-    LEFT JOIN product_product p ON he.product_id = p.id
-    LEFT JOIN res_partner r ON he.vendor_id = r.id
-    LEFT JOIN account_account aa ON he.account_id = aa.id
-    ORDER BY he.id, hes.accounting_date, he.date, he.x_particulars;
+        FROM hr_expense_sheet hes
+        INNER JOIN hr_expense he ON hes.id = he.sheet_id
+        INNER JOIN account_payment ap ON hes.journal_id = ap.journal_id
+        LEFT JOIN account_move am ON ap.move_id = am.id
+        LEFT JOIN account_move_line aml ON am.id = aml.move_id
+        LEFT JOIN expense_tax et ON he.id = et.expense_id
+        LEFT JOIN account_tax at ON et.tax_id = at.id
+        LEFT JOIN product_product p ON he.product_id = p.id
+        LEFT JOIN res_partner r ON he.vendor_id = r.id
+        LEFT JOIN account_account aa ON he.account_id = aa.id
+        ORDER BY he.id, hes.accounting_date, he.date, he.x_particulars;
 
     """,
     'ap_history': """ 
@@ -364,479 +365,479 @@ SQL_QUERIES = {
 
      """,
      'unpaid_sales_invoice_summary': """SELECT
-    am.name AS "SALES INVOICE NUMBER",
-    am.invoice_date AS "SALES INVOICE DATE",
-    '' AS "BRANCH CODE",
-    COALESCE(rc.name, '') AS "BRANCH NAME",
-    rp.name AS "NAME OF CUSTOMER",
-    sp.name AS "SALES REPRESENTATIVE",
-    am.amount_total AS "INVOICE AMOUNT"
-FROM account_move am
-LEFT JOIN res_partner rp ON am.partner_id = rp.id
-LEFT JOIN res_users ru ON am.invoice_user_id = ru.id
-LEFT JOIN res_partner sp ON ru.partner_id = sp.id
-LEFT JOIN res_company rc ON am.company_id = rc.id
-WHERE am.move_type = 'out_invoice'
-  AND am.state = 'posted'
-  AND am.payment_state IN ('not_paid','partial')
-ORDER BY am.invoice_date DESC;
-""",
-'summary_paid_ap': """
-SELECT
-    am.invoice_date AS "AP DATE",
-    am.name AS "AP ENTRY NUMBER",
-    rp.name AS "NAME OF SUPPLIER",
-    a.name->> 'en_US' AS "ACCOUNT TITLE",
-    am.invoice_date AS "REFERENCE DATE",
-    am.invoice_origin AS "SALES INVOICE",
-    am.amount_total AS "BILLING"
-FROM account_move am
-LEFT JOIN res_partner rp ON am.partner_id = rp.id
-LEFT JOIN account_move_line aal ON aal.move_id = am.id
-left join account_account a on aal.account_id = a.id
-WHERE am.move_type = 'in_invoice'
-  AND am.state = 'posted'
-  AND am.payment_state = 'paid'
-  and a.name->> 'en_US' = 'Accounts Payable'
-  and am.invoice_date between %s and %s
-ORDER BY am.invoice_date DESC;
+            am.name AS "SALES INVOICE NUMBER",
+            am.invoice_date AS "SALES INVOICE DATE",
+            '' AS "BRANCH CODE",
+            COALESCE(rc.name, '') AS "BRANCH NAME",
+            rp.name AS "NAME OF CUSTOMER",
+            sp.name AS "SALES REPRESENTATIVE",
+            am.amount_total AS "INVOICE AMOUNT"
+        FROM account_move am
+        LEFT JOIN res_partner rp ON am.partner_id = rp.id
+        LEFT JOIN res_users ru ON am.invoice_user_id = ru.id
+        LEFT JOIN res_partner sp ON ru.partner_id = sp.id
+        LEFT JOIN res_company rc ON am.company_id = rc.id
+        WHERE am.move_type = 'out_invoice'
+        AND am.state = 'posted'
+        AND am.payment_state IN ('not_paid','partial')
+        ORDER BY am.invoice_date DESC;
+        """,
+        'summary_paid_ap': """
+        SELECT
+            am.invoice_date AS "AP DATE",
+            am.name AS "AP ENTRY NUMBER",
+            rp.name AS "NAME OF SUPPLIER",
+            a.name->> 'en_US' AS "ACCOUNT TITLE",
+            am.invoice_date AS "REFERENCE DATE",
+            am.invoice_origin AS "SALES INVOICE",
+            am.amount_total AS "BILLING"
+        FROM account_move am
+        LEFT JOIN res_partner rp ON am.partner_id = rp.id
+        LEFT JOIN account_move_line aal ON aal.move_id = am.id
+        left join account_account a on aal.account_id = a.id
+        WHERE am.move_type = 'in_invoice'
+        AND am.state = 'posted'
+        AND am.payment_state = 'paid'
+        and a.name->> 'en_US' = 'Accounts Payable'
+        and am.invoice_date between %s and %s
+        ORDER BY am.invoice_date DESC;
 
-""",
-'summary_outstanding_ap': """SELECT
-    am.invoice_date AS "AP DATE",
-    am.name AS "AP ENTRY NUMBER",
-    rp.name AS "NAME OF SUPPLIER",
-    am.name AS "PARTICULARS",
-    aa.name->> 'en_US' AS "ACCOUNT TITLE",
-    am.invoice_date_due AS "DUE DATE",
-    am.invoice_date AS "REFERENCE DATE",
-    am.invoice_origin AS "SALES INVOICE",
-    am.amount_total AS "BILLING",
-    '' AS "OTHERS",
-    am.amount_total AS "AMOUNT",
-    COALESCE(ap.amount, 0) AS "CV AMOUNT",
-    '' AS "EWT",
-    (am.amount_total - COALESCE(ap.amount,0)) AS "PAYABLE AMOUNT",
-    am.amount_total AS "TOTAL",
-    am.payment_state AS "STATUS"
-FROM account_move am
-LEFT JOIN res_partner rp ON am.partner_id = rp.id
-LEFT JOIN account_move_line aml ON aml.move_id = am.id
-LEFT JOIN account_account aa ON aa.id = aml.account_id
-LEFT JOIN (
-    SELECT move_id, SUM(amount) AS amount
-    FROM account_payment
-    WHERE state = 'posted'
-    GROUP BY move_id
-) ap ON ap.move_id = am.id
-WHERE am.move_type = 'in_invoice'
-  AND am.state = 'posted'
-  AND am.payment_state IN ('not_paid','partial')
- and aa.name->> 'en_US' = 'Accounts Payable'
-ORDER BY am.invoice_date DESC;
-""",
-'summary_outstanding_ar': """
-SELECT
-    rp.name AS "NAME OF CUSTOMER",
-    CURRENT_DATE AS "REPORT DATE",
-    sp.name AS "SALES REPRESENTATIVE",
-    am.invoice_date AS "SALES INVOICE DATE",
-    am.name AS "INVOICE NUMBER",
-    STRING_AGG(DISTINCT ap.name, ', ') AS "OR/CR NUMBER",
-    '' AS "DELIVERY RECEIPT NUMBER",
-    '' AS "OTHERS",
-    am.amount_total AS "SALES INVOICE AMOUNT",
-    COALESCE(SUM(aml_credit.amount_currency),0) AS "COLLECTED",
-    (am.amount_total - COALESCE(SUM(aml_credit.amount_currency ),0)) AS "OUTSTANDING BALANCE"
-FROM account_move am
-LEFT JOIN res_partner rp ON am.partner_id = rp.id
-LEFT JOIN res_users ru ON am.invoice_user_id = ru.id
-LEFT JOIN res_partner sp ON ru.partner_id = sp.id
-LEFT JOIN account_partial_reconcile apr ON apr.debit_move_id IN (
-    SELECT id FROM account_move_line WHERE move_id = am.id
-)
-LEFT JOIN account_move_line aml_credit ON aml_credit.id = apr.credit_move_id
-LEFT JOIN account_payment ap ON ap.id = aml_credit.payment_id AND ap.state='posted'
-WHERE am.move_type = 'out_invoice'
-  AND am.state = 'posted'
-  AND am.payment_state IN ('not_paid','partial')
-GROUP BY rp.name, sp.name, am.invoice_date, am.name, am.amount_total
-ORDER BY am.invoice_date DESC;
-""",
-'summary_ap': """
-SELECT
-    am.invoice_date AS "AP DATE",
-    am.name AS "AP ENTRY NUMBER",
-    rp.name AS "NAME OF THE SUPPLIER",
-    aa.name ->> 'en_US'AS "ACCOUNT TITLE",
-    am.invoice_date AS "REFERENCE DATE",
-    am.invoice_origin AS "SALES INVOICE",
-    am.amount_total AS "BILLING",
-    '' AS "OTHERS",
-    COALESCE(am.invoice_payment_term_id, 0) AS "TERMS",
-    am.invoice_date_due AS "DUE DATE",
-    am.amount_total AS "AMOUNT",
-    '' AS "EWT PAYABLE",
-    (am.amount_total - COALESCE(ap.amount,0)) AS "ACCOUNTS PAYABLE",
-    COALESCE(ap.paydate::text,'') AS "CV RELEASED DATE",
-    COALESCE(ap.name,'') AS "CV NUMBER",
-    COALESCE(ap.amount,0) AS "CV AMOUNT",
-    am.payment_state  AS "STATUS"
-FROM account_move am
-LEFT JOIN res_partner rp ON am.partner_id = rp.id
-LEFT JOIN account_move_line aml ON aml.move_id = am.id
-LEFT JOIN account_account aa ON aa.id = aml.account_id
-LEFT JOIN (
-    SELECT aml.move_id, ap.name, ap.date as paydate, SUM(aml.amount_currency ) AS amount
-    FROM account_move_line aml	
-    LEFT JOIN account_payment ap ON ap.id = aml.payment_id
-    WHERE ap.state = 'posted'
-    GROUP BY aml.move_id, ap.name, ap.date
-) ap ON ap.move_id = am.id
-WHERE am.move_type = 'in_invoice'
-  AND am.state = 'posted'
-  and aa.name ->> 'en_US' = 'Accounts Payable'
-ORDER BY am.invoice_date DESC;
-""",
-'or_summary': """
-SELECT
-    ap.date AS "OFFICIAL RECEIPT DATE",
-    ap.name AS "OFFICIAL RECEIPT NO",
-    rc.id AS "BRANCH CODE",
-    rc.name AS "BRANCH NAME",
-    sp.name AS "SALES REPRESENTATIVE",
-    rp.name AS "NAME OF CUSTOMER",
-    am.invoice_date AS "SERVICE INVOICE (SI) DATE"
-FROM account_payment ap
-LEFT JOIN res_partner rp ON ap.partner_id = rp.id
-LEFT JOIN res_users ru ON ap.partner_id = ru.id
-LEFT JOIN res_partner sp ON ru.partner_id = sp.id
-LEFT JOIN account_move am ON am.id = ap.move_id  -- payments applied to invoices
-LEFT JOIN res_company rc ON ap.company_id = rc.id
-WHERE ap.payment_type  = 'inbound'
-  AND ap.state = 'paid'
-ORDER BY ap.date DESC;
-""",
-'lapsing_schedule': """
-SELECT
-    aa.name AS "ASSET NAME",
-    COALESCE(opening.opening_balance,0) AS "BEGINNING BALANCE",
-    COALESCE(additions.added_amount,0) AS "ADDITIONS",
-    (COALESCE(opening.opening_balance,0) + COALESCE(additions.added_amount,0)) AS "TOTAL",
-    COALESCE(disposals.retired_amount,0) AS "DISPOSAL/RETIREMENT",
-    ((COALESCE(opening.opening_balance,0) + COALESCE(additions.added_amount,0)) - COALESCE(disposals.retired_amount,0)) AS "NET TOTAL"
-FROM account_asset aa
--- Opening balance
-LEFT JOIN (
-    SELECT id as asset_id, SUM(original_value) AS opening_balance
-    FROM account_asset
-    WHERE state IN ('draft','open')
-    GROUP BY id
-) opening ON opening.asset_id = aa.id
--- Additions
-LEFT JOIN (
-    SELECT id as asset_id, SUM(original_value) AS added_amount
-    FROM account_asset
-    WHERE state = 'open'
-    GROUP BY id
-) additions ON additions.asset_id = aa.id
--- Retirements / disposals
-LEFT JOIN (
-    SELECT id as asset_id, SUM(original_value) AS retired_amount
-    FROM account_asset
-    WHERE state = 'close'
-    GROUP BY id
-) disposals ON disposals.asset_id = aa.id
-ORDER BY aa.name
+        """,
+        'summary_outstanding_ap': """SELECT
+            am.invoice_date AS "AP DATE",
+            am.name AS "AP ENTRY NUMBER",
+            rp.name AS "NAME OF SUPPLIER",
+            am.name AS "PARTICULARS",
+            aa.name->> 'en_US' AS "ACCOUNT TITLE",
+            am.invoice_date_due AS "DUE DATE",
+            am.invoice_date AS "REFERENCE DATE",
+            am.invoice_origin AS "SALES INVOICE",
+            am.amount_total AS "BILLING",
+            '' AS "OTHERS",
+            am.amount_total AS "AMOUNT",
+            COALESCE(ap.amount, 0) AS "CV AMOUNT",
+            '' AS "EWT",
+            (am.amount_total - COALESCE(ap.amount,0)) AS "PAYABLE AMOUNT",
+            am.amount_total AS "TOTAL",
+            am.payment_state AS "STATUS"
+        FROM account_move am
+        LEFT JOIN res_partner rp ON am.partner_id = rp.id
+        LEFT JOIN account_move_line aml ON aml.move_id = am.id
+        LEFT JOIN account_account aa ON aa.id = aml.account_id
+        LEFT JOIN (
+            SELECT move_id, SUM(amount) AS amount
+            FROM account_payment
+            WHERE state = 'posted'
+            GROUP BY move_id
+        ) ap ON ap.move_id = am.id
+        WHERE am.move_type = 'in_invoice'
+        AND am.state = 'posted'
+        AND am.payment_state IN ('not_paid','partial')
+        and aa.name->> 'en_US' = 'Accounts Payable'
+        ORDER BY am.invoice_date DESC;
+        """,
+        'summary_outstanding_ar': """
+        SELECT
+            rp.name AS "NAME OF CUSTOMER",
+            CURRENT_DATE AS "REPORT DATE",
+            sp.name AS "SALES REPRESENTATIVE",
+            am.invoice_date AS "SALES INVOICE DATE",
+            am.name AS "INVOICE NUMBER",
+            STRING_AGG(DISTINCT ap.name, ', ') AS "OR/CR NUMBER",
+            '' AS "DELIVERY RECEIPT NUMBER",
+            '' AS "OTHERS",
+            am.amount_total AS "SALES INVOICE AMOUNT",
+            COALESCE(SUM(aml_credit.amount_currency),0) AS "COLLECTED",
+            (am.amount_total - COALESCE(SUM(aml_credit.amount_currency ),0)) AS "OUTSTANDING BALANCE"
+        FROM account_move am
+        LEFT JOIN res_partner rp ON am.partner_id = rp.id
+        LEFT JOIN res_users ru ON am.invoice_user_id = ru.id
+        LEFT JOIN res_partner sp ON ru.partner_id = sp.id
+        LEFT JOIN account_partial_reconcile apr ON apr.debit_move_id IN (
+            SELECT id FROM account_move_line WHERE move_id = am.id
+        )
+        LEFT JOIN account_move_line aml_credit ON aml_credit.id = apr.credit_move_id
+        LEFT JOIN account_payment ap ON ap.id = aml_credit.payment_id AND ap.state='posted'
+        WHERE am.move_type = 'out_invoice'
+        AND am.state = 'posted'
+        AND am.payment_state IN ('not_paid','partial')
+        GROUP BY rp.name, sp.name, am.invoice_date, am.name, am.amount_total
+        ORDER BY am.invoice_date DESC;
+        """,
+        'summary_ap': """
+        SELECT
+            am.invoice_date AS "AP DATE",
+            am.name AS "AP ENTRY NUMBER",
+            rp.name AS "NAME OF THE SUPPLIER",
+            aa.name ->> 'en_US'AS "ACCOUNT TITLE",
+            am.invoice_date AS "REFERENCE DATE",
+            am.invoice_origin AS "SALES INVOICE",
+            am.amount_total AS "BILLING",
+            '' AS "OTHERS",
+            COALESCE(am.invoice_payment_term_id, 0) AS "TERMS",
+            am.invoice_date_due AS "DUE DATE",
+            am.amount_total AS "AMOUNT",
+            '' AS "EWT PAYABLE",
+            (am.amount_total - COALESCE(ap.amount,0)) AS "ACCOUNTS PAYABLE",
+            COALESCE(ap.paydate::text,'') AS "CV RELEASED DATE",
+            COALESCE(ap.name,'') AS "CV NUMBER",
+            COALESCE(ap.amount,0) AS "CV AMOUNT",
+            am.payment_state  AS "STATUS"
+        FROM account_move am
+        LEFT JOIN res_partner rp ON am.partner_id = rp.id
+        LEFT JOIN account_move_line aml ON aml.move_id = am.id
+        LEFT JOIN account_account aa ON aa.id = aml.account_id
+        LEFT JOIN (
+            SELECT aml.move_id, ap.name, ap.date as paydate, SUM(aml.amount_currency ) AS amount
+            FROM account_move_line aml	
+            LEFT JOIN account_payment ap ON ap.id = aml.payment_id
+            WHERE ap.state = 'posted'
+            GROUP BY aml.move_id, ap.name, ap.date
+        ) ap ON ap.move_id = am.id
+        WHERE am.move_type = 'in_invoice'
+        AND am.state = 'posted'
+        and aa.name ->> 'en_US' = 'Accounts Payable'
+        ORDER BY am.invoice_date DESC;
+        """,
+        'or_summary': """
+        SELECT
+            ap.date AS "OFFICIAL RECEIPT DATE",
+            ap.name AS "OFFICIAL RECEIPT NO",
+            rc.id AS "BRANCH CODE",
+            rc.name AS "BRANCH NAME",
+            sp.name AS "SALES REPRESENTATIVE",
+            rp.name AS "NAME OF CUSTOMER",
+            am.invoice_date AS "SERVICE INVOICE (SI) DATE"
+        FROM account_payment ap
+        LEFT JOIN res_partner rp ON ap.partner_id = rp.id
+        LEFT JOIN res_users ru ON ap.partner_id = ru.id
+        LEFT JOIN res_partner sp ON ru.partner_id = sp.id
+        LEFT JOIN account_move am ON am.id = ap.move_id  -- payments applied to invoices
+        LEFT JOIN res_company rc ON ap.company_id = rc.id
+        WHERE ap.payment_type  = 'inbound'
+        AND ap.state = 'paid'
+        ORDER BY ap.date DESC;
+        """,
+        'lapsing_schedule': """
+        SELECT
+            aa.name AS "ASSET NAME",
+            COALESCE(opening.opening_balance,0) AS "BEGINNING BALANCE",
+            COALESCE(additions.added_amount,0) AS "ADDITIONS",
+            (COALESCE(opening.opening_balance,0) + COALESCE(additions.added_amount,0)) AS "TOTAL",
+            COALESCE(disposals.retired_amount,0) AS "DISPOSAL/RETIREMENT",
+            ((COALESCE(opening.opening_balance,0) + COALESCE(additions.added_amount,0)) - COALESCE(disposals.retired_amount,0)) AS "NET TOTAL"
+        FROM account_asset aa
+        -- Opening balance
+        LEFT JOIN (
+            SELECT id as asset_id, SUM(original_value) AS opening_balance
+            FROM account_asset
+            WHERE state IN ('draft','open')
+            GROUP BY id
+        ) opening ON opening.asset_id = aa.id
+        -- Additions
+        LEFT JOIN (
+            SELECT id as asset_id, SUM(original_value) AS added_amount
+            FROM account_asset
+            WHERE state = 'open'
+            GROUP BY id
+        ) additions ON additions.asset_id = aa.id
+        -- Retirements / disposals
+        LEFT JOIN (
+            SELECT id as asset_id, SUM(original_value) AS retired_amount
+            FROM account_asset
+            WHERE state = 'close'
+            GROUP BY id
+        ) disposals ON disposals.asset_id = aa.id
+        ORDER BY aa.name
 
-""",
-'disbursement_summary':"""
-SELECT
-    ap.date AS "CV ENTRY DATE",
-    ap.date AS "CV RELEASE DATE",
-    ap.name AS "CV NUMBER",
-    am.invoice_date AS "AP DATE",
-    am.name AS "AP ENTRY NUMBER",
-    rc.id AS "BRANCH CODE",
-    rc.name AS "BRANCH NAME",
-    rp.name AS "NAME OF PAYEE/SUPPLIER",
-    am.invoice_origin AS "PARTICULARS",
-    aa.name AS "ACCOUNT TITLE",
-    am.amount_total AS "GROSS AMOUNT",
-    '' AS "EWT AMOUNT",
-    COALESCE(ap.amount,0) AS "CV AMOUNT",
-    am.payment_state AS "STATUS"
-FROM account_payment ap
-LEFT JOIN account_move am ON am.id = ap.move_id  -- payments applied to invoices
-LEFT JOIN res_partner rp ON am.partner_id = rp.id
-LEFT JOIN res_company rc ON ap.company_id = rc.id
-LEFT JOIN account_move_line aml ON aml.move_id = am.id
-LEFT JOIN account_account aa ON aa.id = aml.account_id
-WHERE ap.payment_type = 'outbound'
-  AND ap.state = 'posted'
-  AND am.move_type = 'in_invoice'
-ORDER BY ap.date DESC;
+        """,
+        'disbursement_summary':"""
+        SELECT
+            ap.date AS "CV ENTRY DATE",
+            ap.date AS "CV RELEASE DATE",
+            ap.name AS "CV NUMBER",
+            am.invoice_date AS "AP DATE",
+            am.name AS "AP ENTRY NUMBER",
+            rc.id AS "BRANCH CODE",
+            rc.name AS "BRANCH NAME",
+            rp.name AS "NAME OF PAYEE/SUPPLIER",
+            am.invoice_origin AS "PARTICULARS",
+            aa.name AS "ACCOUNT TITLE",
+            am.amount_total AS "GROSS AMOUNT",
+            '' AS "EWT AMOUNT",
+            COALESCE(ap.amount,0) AS "CV AMOUNT",
+            am.payment_state AS "STATUS"
+        FROM account_payment ap
+        LEFT JOIN account_move am ON am.id = ap.move_id  -- payments applied to invoices
+        LEFT JOIN res_partner rp ON am.partner_id = rp.id
+        LEFT JOIN res_company rc ON ap.company_id = rc.id
+        LEFT JOIN account_move_line aml ON aml.move_id = am.id
+        LEFT JOIN account_account aa ON aa.id = aml.account_id
+        WHERE ap.payment_type = 'outbound'
+        AND ap.state = 'posted'
+        AND am.move_type = 'in_invoice'
+        ORDER BY ap.date DESC;
 
-""",
-'check_collection_summary': """
-SELECT
-    rp.name AS "NAME OF CUSTOMER",
+        """,
+        'check_collection_summary': """
+        SELECT
+            rp.name AS "NAME OF CUSTOMER",
 
-    am.amount_total AS "CR/OR AMOUNT",
-    am.invoice_date AS "CR/OR DATE",
-    am.name AS "CR/OR NUMBER",
+            am.amount_total AS "CR/OR AMOUNT",
+            am.invoice_date AS "CR/OR DATE",
+            am.name AS "CR/OR NUMBER",
 
-    ap.date AS "CHECK DATE",
-    ap.check_number AS "CHECK NO",
-    '' AS "BANK NAME",
+            ap.date AS "CHECK DATE",
+            ap.check_number AS "CHECK NO",
+            '' AS "BANK NAME",
 
-    ap.amount AS "CHECK AMOUNT"
+            ap.amount AS "CHECK AMOUNT"
 
-FROM account_payment ap
+        FROM account_payment ap
 
-LEFT JOIN res_partner rp ON rp.id = ap.partner_id
+        LEFT JOIN res_partner rp ON rp.id = ap.partner_id
 
--- Link OR/CR (account_move) that sourced the payment
-LEFT JOIN account_move am ON am.id = ap.move_id
+        -- Link OR/CR (account_move) that sourced the payment
+        LEFT JOIN account_move am ON am.id = ap.move_id
 
-WHERE ap.state = 'posted'
-  AND ap.payment_method_line_id IS NOT NULL
-  AND ap.payment_type = 'inbound'  -- collections only
-  AND ap.check_number IS NOT NULL  -- only check payments
-    AND ap.payment_method_line_id IN (
-      SELECT id 
-      FROM account_payment_method_line 
-      WHERE name ILIKE '%%Checks%%'            
-  )
+        WHERE ap.state = 'posted'
+        AND ap.payment_method_line_id IS NOT NULL
+        AND ap.payment_type = 'inbound'  -- collections only
+        AND ap.check_number IS NOT NULL  -- only check payments
+            AND ap.payment_method_line_id IN (
+            SELECT id 
+            FROM account_payment_method_line 
+            WHERE name ILIKE '%%Checks%%'            
+        )
 
 
-ORDER BY ap.date, rp.name; """,
-'cash_collection_summary': """ 
-SELECT
-    rp.name AS "NAME OF CUSTOMER",
+        ORDER BY ap.date, rp.name; """,
+        'cash_collection_summary': """ 
+        SELECT
+            rp.name AS "NAME OF CUSTOMER",
 
-    am.amount_total AS "CR/OR AMOUNT",
-    am.invoice_date AS "CR/OR DATE",
-    am.name AS "CR/OR NUMBER",
+            am.amount_total AS "CR/OR AMOUNT",
+            am.invoice_date AS "CR/OR DATE",
+            am.name AS "CR/OR NUMBER",
 
-    ap.date AS "CHECK DATE",
-    ap.check_number AS "CHECK NO",
-    '' AS "BANK NAME",
+            ap.date AS "CHECK DATE",
+            ap.check_number AS "CHECK NO",
+            '' AS "BANK NAME",
 
-    ap.amount AS "CHECK AMOUNT"
+            ap.amount AS "CHECK AMOUNT"
 
-FROM account_payment ap
+        FROM account_payment ap
 
-LEFT JOIN res_partner rp ON rp.id = ap.partner_id
+        LEFT JOIN res_partner rp ON rp.id = ap.partner_id
 
--- Link OR/CR (account_move) that sourced the payment
-LEFT JOIN account_move am ON am.id = ap.move_id
+        -- Link OR/CR (account_move) that sourced the payment
+        LEFT JOIN account_move am ON am.id = ap.move_id
 
-WHERE ap.state = 'posted'
-  AND ap.payment_method_line_id IS NOT NULL
-  AND ap.payment_type = 'inbound'  -- collections only
-  AND ap.check_number is NULL  -- only check payments
+        WHERE ap.state = 'posted'
+        AND ap.payment_method_line_id IS NOT NULL
+        AND ap.payment_type = 'inbound'  -- collections only
+        AND ap.check_number is NULL  -- only check payments
 
-ORDER BY ap.date, rp.name;
- """,
-'general_journal': """
-SELECT
-    aml.date AS DATE,
-    am.name AS "JOURNAL BATCH ID",
-    aml.name AS "DESCTIPTION",
-    '' AS "ACCOUNT CODE",
-    aa.name->>'en_US' AS "ACCOUNT TITLE",
-    aml.ref AS "REF NUMBER",
-    aml.debit AS "DEBIT",
-    aml.credit AS "CREDIT"
-FROM account_move_line aml
-join account_account aa on aml.account_id = aa.id
-LEFT JOIN account_move am ON aml.move_id = am.id
-WHERE am.state = 'posted'
-ORDER BY aml.date, am.name, aml.id;
-""",
-'inventory_book': """
-SELECT
-    sm.date::date AS "DATE",
-    pt.name->> 'en_US' AS "PRODUCT NAME",
-    sm.description_picking AS "DESCRIPTION",
-    uom.name->>'en_US' AS "UNIT",
+        ORDER BY ap.date, rp.name;
+        """,
+        'general_journal': """
+        SELECT
+            aml.date AS DATE,
+            am.name AS "JOURNAL BATCH ID",
+            aml.name AS "DESCTIPTION",
+            '' AS "ACCOUNT CODE",
+            aa.name->>'en_US' AS "ACCOUNT TITLE",
+            aml.ref AS "REF NUMBER",
+            aml.debit AS "DEBIT",
+            aml.credit AS "CREDIT"
+        FROM account_move_line aml
+        join account_account aa on aml.account_id = aa.id
+        LEFT JOIN account_move am ON aml.move_id = am.id
+        WHERE am.state = 'posted'
+        ORDER BY aml.date, am.name, aml.id;
+        """,
+        'inventory_book': """
+        SELECT
+            sm.date::date AS "DATE",
+            pt.name->> 'en_US' AS "PRODUCT NAME",
+            sm.description_picking AS "DESCRIPTION",
+            uom.name->>'en_US' AS "UNIT",
 
-    -- Price per unit (from stock valuation layer)
-    svl.unit_cost AS "PRICE PER UNIT",
+            -- Price per unit (from stock valuation layer)
+            svl.unit_cost AS "PRICE PER UNIT",
 
-    -- Amount = Qty * Unit Cost
-    (svl.quantity * svl.unit_cost) AS "AMOUNT"
+            -- Amount = Qty * Unit Cost
+            (svl.quantity * svl.unit_cost) AS "AMOUNT"
 
-FROM stock_move sm
-LEFT JOIN product_product pp ON sm.product_id = pp.id
-LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
-LEFT JOIN uom_uom uom ON sm.product_uom = uom.id
-LEFT JOIN stock_valuation_layer svl ON svl.stock_move_id = sm.id
-where pt.name  is not null
-ORDER BY sm.date;
-""",
-'vat_summary_purchase': """
-SELECT
-    am.name AS "SEQUENCE NUMBER",
-    rp.vat AS "TAX PAYER IDENTIFICATION NUMBER",
-    rp.name AS "REGISTERED NAME",
-    -- Supplier Name: LAST, FIRST, MIDDLE (adjust fields if you have them in partner)
-   ''
-        AS "NAME OF SUPPLIER(LAST NAME, FIRST NAME, MIDDLE NAME)",
-    rp.contact_address_complete AS "SUPPLIER ADDRESS",
+        FROM stock_move sm
+        LEFT JOIN product_product pp ON sm.product_id = pp.id
+        LEFT JOIN product_template pt ON pp.product_tmpl_id = pt.id
+        LEFT JOIN uom_uom uom ON sm.product_uom = uom.id
+        LEFT JOIN stock_valuation_layer svl ON svl.stock_move_id = sm.id
+        where pt.name  is not null
+        ORDER BY sm.date;
+        """,
+        'vat_summary_purchase': """
+        SELECT
+            am.name AS "SEQUENCE NUMBER",
+            rp.vat AS "TAX PAYER IDENTIFICATION NUMBER",
+            rp.name AS "REGISTERED NAME",
+            -- Supplier Name: LAST, FIRST, MIDDLE (adjust fields if you have them in partner)
+        ''
+                AS "NAME OF SUPPLIER(LAST NAME, FIRST NAME, MIDDLE NAME)",
+            rp.contact_address_complete AS "SUPPLIER ADDRESS",
 
-    -- Amounts
-    am.amount_untaxed + am.amount_tax AS "AMOUNT OF GROSS PURCHASE",
-    0.0 AS "AMOUNT OF EXEMPT PURCHASE",       -- placeholder
-    0.0 AS "AMOUNT OF ZERO RATED PURCHASE",   -- placeholder
-    am.amount_untaxed AS "AMOUNT OF TAXABLE PURCHASE",
+            -- Amounts
+            am.amount_untaxed + am.amount_tax AS "AMOUNT OF GROSS PURCHASE",
+            0.0 AS "AMOUNT OF EXEMPT PURCHASE",       -- placeholder
+            0.0 AS "AMOUNT OF ZERO RATED PURCHASE",   -- placeholder
+            am.amount_untaxed AS "AMOUNT OF TAXABLE PURCHASE",
 
-    -- Purchase types (you may need custom fields or tags to separate these)
-    0.0 AS "AMOUNT OF PURCHASE OF SERVICES",           -- placeholder
-    0.0 AS "AMOUNT OF PURCHASE OF CAPITAL GOODS",     -- placeholder
-    0.0 AS "AMOUNT OF PURCHASE OF OTHER THAN CAPITAL GOODS", -- placeholder
+            -- Purchase types (you may need custom fields or tags to separate these)
+            0.0 AS "AMOUNT OF PURCHASE OF SERVICES",           -- placeholder
+            0.0 AS "AMOUNT OF PURCHASE OF CAPITAL GOODS",     -- placeholder
+            0.0 AS "AMOUNT OF PURCHASE OF OTHER THAN CAPITAL GOODS", -- placeholder
 
-    -- VAT
-    am.amount_tax AS "AMOUNT OF INPUT TAX",
+            -- VAT
+            am.amount_tax AS "AMOUNT OF INPUT TAX",
 
-    -- Gross taxable purchase (for VAT computation)
-    am.amount_untaxed AS "AMOUNT OF GROSS TAXABLE PURCHASE"
+            -- Gross taxable purchase (for VAT computation)
+            am.amount_untaxed AS "AMOUNT OF GROSS TAXABLE PURCHASE"
 
-FROM account_move am
-LEFT JOIN res_partner rp ON am.partner_id = rp.id
-WHERE am.move_type = 'in_invoice'
-  AND am.state = 'posted'
-ORDER BY am.invoice_date, am.name;
+        FROM account_move am
+        LEFT JOIN res_partner rp ON am.partner_id = rp.id
+        WHERE am.move_type = 'in_invoice'
+        AND am.state = 'posted'
+        ORDER BY am.invoice_date, am.name;
 
-""",
-'vat_summary_sales': """
-SELECT
-    TO_CHAR(am.invoice_date, 'MM/YYYY') AS "TAXABLE MONTH",
-    rp.vat AS "TAX PAYER IDENTIFICATION NUMBER",
-    rp.name AS "REGISTERED NAME",
-    -- Customer Name: LAST, FIRST, MIDDLE (adjust fields if available)
-  ''
-        AS "NAME OF CUSTOMER",
-    rp.contact_address_complete AS "CUSTOMER ADDRESS",
+        """,
+        'vat_summary_sales': """
+        SELECT
+            TO_CHAR(am.invoice_date, 'MM/YYYY') AS "TAXABLE MONTH",
+            rp.vat AS "TAX PAYER IDENTIFICATION NUMBER",
+            rp.name AS "REGISTERED NAME",
+            -- Customer Name: LAST, FIRST, MIDDLE (adjust fields if available)
+        ''
+                AS "NAME OF CUSTOMER",
+            rp.contact_address_complete AS "CUSTOMER ADDRESS",
 
-    -- Amounts
-    am.amount_untaxed + am.amount_tax AS "AMOUNT OF GROSS SALES",
-    0.0 AS "AMOUNT OF EXEMPT SALES",       -- placeholder, requires exemption logic
-    0.0 AS "AMOUNT OF ZERO RATED SALES",   -- placeholder, requires zero-rated logic
-    am.amount_untaxed AS "AMOUNT OF TAXABLE SALES",
-    am.amount_tax AS "AMOUNT OF OUTPUT TAX",
-    am.amount_untaxed AS "AMOUNT OF GROSS TAXABLE SALES"
+            -- Amounts
+            am.amount_untaxed + am.amount_tax AS "AMOUNT OF GROSS SALES",
+            0.0 AS "AMOUNT OF EXEMPT SALES",       -- placeholder, requires exemption logic
+            0.0 AS "AMOUNT OF ZERO RATED SALES",   -- placeholder, requires zero-rated logic
+            am.amount_untaxed AS "AMOUNT OF TAXABLE SALES",
+            am.amount_tax AS "AMOUNT OF OUTPUT TAX",
+            am.amount_untaxed AS "AMOUNT OF GROSS TAXABLE SALES"
 
-FROM account_move am
-LEFT JOIN res_partner rp ON am.partner_id = rp.id
-WHERE am.move_type = 'out_invoice'
-  AND am.state = 'posted'
-ORDER BY am.invoice_date, am.name;
+        FROM account_move am
+        LEFT JOIN res_partner rp ON am.partner_id = rp.id
+        WHERE am.move_type = 'out_invoice'
+        AND am.state = 'posted'
+        ORDER BY am.invoice_date, am.name;
 
-""",
-'semestral_suppliers': """
-WITH supplier_invoices AS (
-    SELECT
-        p.id AS partner_id,
-        p.vat AS tax_payer_id,
-        p.branch_code AS branch_code,
-        '' AS corporation,
-        p.name AS last_name,          -- assuming single name field
-        '' AS first_name,             -- if you have separate first name
-        '' AS middle_name,            -- optional
-        '' AS atc_code,
-        l.debit AS amount_of_income_payment,
-        t.amount AS tax_rate,
-        l.tax_line_id AS tax_line_id,
-        l.credit AS amount_of_tax_withheld,
-        am.date AS invoice_date
-    FROM account_move_line l
-    JOIN account_move am ON l.move_id = am.id
-    JOIN res_partner p ON am.partner_id = p.id
-    LEFT JOIN account_tax t ON l.tax_line_id = t.id
-    WHERE am.move_type = 'in_invoice'  -- supplier invoices
-      AND am.state = 'posted'
-)
-SELECT
-    ROW_NUMBER() OVER (ORDER BY invoice_date) AS sequence_number,
-    tax_payer_id AS "TAX PAYER IDENTIFICATION NUMBER",
-    branch_code AS "BRANCH CODE",
-    corporation AS "CORPORATION",
-    last_name AS "LAST NAME",
-    first_name AS "FIRST NAME",
-    middle_name AS "MIDDLE NAME",
-    atc_code AS "ATC CODE",
-    amount_of_income_payment AS "AMOUNT OF INCOME PAYMENT",
-    tax_rate AS "TAX RATE",
-    amount_of_tax_withheld AS "AMOUNT OF TAX WITHHELD"
-FROM supplier_invoices
-WHERE invoice_date >= date_trunc('year', CURRENT_DATE) 
-  AND invoice_date < date_trunc('month', CURRENT_DATE) - INTERVAL '6 months'  -- last 6 months
-ORDER BY invoice_date;
+        """,
+        'semestral_suppliers': """
+        WITH supplier_invoices AS (
+            SELECT
+                p.id AS partner_id,
+                p.vat AS tax_payer_id,
+                p.branch_code AS branch_code,
+                '' AS corporation,
+                p.name AS last_name,          -- assuming single name field
+                '' AS first_name,             -- if you have separate first name
+                '' AS middle_name,            -- optional
+                '' AS atc_code,
+                l.debit AS amount_of_income_payment,
+                t.amount AS tax_rate,
+                l.tax_line_id AS tax_line_id,
+                l.credit AS amount_of_tax_withheld,
+                am.date AS invoice_date
+            FROM account_move_line l
+            JOIN account_move am ON l.move_id = am.id
+            JOIN res_partner p ON am.partner_id = p.id
+            LEFT JOIN account_tax t ON l.tax_line_id = t.id
+            WHERE am.move_type = 'in_invoice'  -- supplier invoices
+            AND am.state = 'posted'
+        )
+        SELECT
+            ROW_NUMBER() OVER (ORDER BY invoice_date) AS sequence_number,
+            tax_payer_id AS "TAX PAYER IDENTIFICATION NUMBER",
+            branch_code AS "BRANCH CODE",
+            corporation AS "CORPORATION",
+            last_name AS "LAST NAME",
+            first_name AS "FIRST NAME",
+            middle_name AS "MIDDLE NAME",
+            atc_code AS "ATC CODE",
+            amount_of_income_payment AS "AMOUNT OF INCOME PAYMENT",
+            tax_rate AS "TAX RATE",
+            amount_of_tax_withheld AS "AMOUNT OF TAX WITHHELD"
+        FROM supplier_invoices
+        WHERE invoice_date >= date_trunc('year', CURRENT_DATE) 
+        AND invoice_date < date_trunc('month', CURRENT_DATE) - INTERVAL '6 months'  -- last 6 months
+        ORDER BY invoice_date;
 
-""",
-'map_summary': """
-WITH invoice_data AS (
-    SELECT
-        ROW_NUMBER() OVER (ORDER BY am.id) AS sequence_number,
-        rp.vat AS taxpayer_identification_number,
-        CASE WHEN rp.is_company THEN aml.debit ELSE 0 END AS corporation,
-        CASE WHEN NOT rp.is_company THEN aml.debit ELSE 0 END AS individual,
-        '' AS atc_code,
-        atc.name->>'en_US' AS nature_of_payment,
-        aml.debit AS amount_of_income_payment,
-        '' AS tax_rate,
-        aml.credit AS amount_of_tax_withheld
-    FROM account_move_line aml
-    JOIN account_move am ON aml.move_id = am.id
-    JOIN res_partner rp ON am.partner_id = rp.id
-    LEFT JOIN account_tax atc ON aml.tax_line_id = atc.id
-    WHERE am.move_type IN ('out_invoice', 'out_refund') -- customer invoices
-      AND am.state = 'posted'
-)
-SELECT
-    sequence_number,
-    taxpayer_identification_number,
-    SUM(corporation) AS corporation,
-    SUM(individual) AS individual,
-    atc_code,
-    nature_of_payment,
-    SUM(amount_of_income_payment) AS amount_of_income_payment,
-    tax_rate,
-    SUM(amount_of_tax_withheld) AS amount_of_tax_withheld
-FROM invoice_data
-GROUP BY
-    sequence_number,
-    taxpayer_identification_number,
-    atc_code,
-    nature_of_payment,
-    tax_rate
-ORDER BY sequence_number;
+        """,
+        'map_summary': """
+        WITH invoice_data AS (
+            SELECT
+                ROW_NUMBER() OVER (ORDER BY am.id) AS sequence_number,
+                rp.vat AS taxpayer_identification_number,
+                CASE WHEN rp.is_company THEN aml.debit ELSE 0 END AS corporation,
+                CASE WHEN NOT rp.is_company THEN aml.debit ELSE 0 END AS individual,
+                '' AS atc_code,
+                atc.name->>'en_US' AS nature_of_payment,
+                aml.debit AS amount_of_income_payment,
+                '' AS tax_rate,
+                aml.credit AS amount_of_tax_withheld
+            FROM account_move_line aml
+            JOIN account_move am ON aml.move_id = am.id
+            JOIN res_partner rp ON am.partner_id = rp.id
+            LEFT JOIN account_tax atc ON aml.tax_line_id = atc.id
+            WHERE am.move_type IN ('out_invoice', 'out_refund') -- customer invoices
+            AND am.state = 'posted'
+        )
+        SELECT
+            sequence_number,
+            taxpayer_identification_number,
+            SUM(corporation) AS corporation,
+            SUM(individual) AS individual,
+            atc_code,
+            nature_of_payment,
+            SUM(amount_of_income_payment) AS amount_of_income_payment,
+            tax_rate,
+            SUM(amount_of_tax_withheld) AS amount_of_tax_withheld
+        FROM invoice_data
+        GROUP BY
+            sequence_number,
+            taxpayer_identification_number,
+            atc_code,
+            nature_of_payment,
+            tax_rate
+        ORDER BY sequence_number;
 
-""",
-'general_ledger': """
-SELECT
-    am.date AS "DATE",
-    am.name AS "REFERENCE",
-    aml.name AS "DESCRIPTION",
-    (aa.code_store ->> '1') || ' - ' || (aa.name ->> 'en_US') AS "ACCOUNT TITLE",
-    aml.debit AS "DEBIT",
-    aml.credit AS "CREDIT",
-    SUM(aml.debit - aml.credit)
-        OVER (
-            PARTITION BY aml.account_id
-            ORDER BY aml.id
-            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
-        ) AS "BALANCE"
-FROM account_move_line aml
-JOIN account_move am
-    ON am.id = aml.move_id
-JOIN account_account aa
-    ON aa.id = aml.account_id
-WHERE am.state = 'posted'
-ORDER BY aa.id, aml.id;
-"""
+        """,
+        'general_ledger': """
+        SELECT
+            am.date AS "DATE",
+            am.name AS "REFERENCE",
+            aml.name AS "DESCRIPTION",
+            (aa.code_store ->> '1') || ' - ' || (aa.name ->> 'en_US') AS "ACCOUNT TITLE",
+            aml.debit AS "DEBIT",
+            aml.credit AS "CREDIT",
+            SUM(aml.debit - aml.credit)
+                OVER (
+                    PARTITION BY aml.account_id
+                    ORDER BY aml.id
+                    ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+                ) AS "BALANCE"
+        FROM account_move_line aml
+        JOIN account_move am
+            ON am.id = aml.move_id
+        JOIN account_account aa
+            ON aa.id = aml.account_id
+        WHERE am.state = 'posted'
+        ORDER BY aa.id, aml.id;
+        """
 }
 
 """ Start of the class """
@@ -913,8 +914,6 @@ class SqlReport(models.Model):
         """Return unique values of the selected filter column."""
         #self.ensure_one()
 
-        if not self.filter_column:
-            return []
 
         unique_vals = set()
 
@@ -957,13 +956,17 @@ class SqlReport(models.Model):
         if self.report_category not in ['books', 'annex', 'other_reports', 'tax_returns']:
             raise ValidationError("Please select a valid report category.")
 
+        # Get the sql queries based on selected report
         sql = SQL_QUERIES.get(self.name)
         if not sql:
             raise ValidationError("Please select a valid report.")
 
         try:
+            # Execute queries
             self.env.cr.execute(sql, (self.from_date, self.to_date))
+            # Get columns based on description
             columns = [desc[0] for desc in self.env.cr.description]
+            # fetch all rows based on the query
             rows = self.env.cr.fetchall()
 
             serializable_rows, row_html_parts = [], []
@@ -1237,8 +1240,11 @@ class SqlReportLine(models.Model):
     _description = 'Custom SQL Report Line'
 
     report_id = fields.Many2one('custom.sql.report', string="Report", ondelete="cascade")
-    data = fields.Text("Row Data")  # JSON string
-    html_result = fields.Html("Details")  # HTML table
+    data = fields.Text("Row Data", help="Json data for the sql query")  # JSON string
+    html_result = fields.Html("Details", help="Details fetched from data")  # HTML table
+
+
+    # Create html table presenting the raw data
 
     def get_filtered_html(self, column, value):
         if not self.data:
