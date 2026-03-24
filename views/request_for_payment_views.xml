@@ -259,7 +259,7 @@
 
                 <searchpanel>
                     <field name="status" string="Status" enable_counters="1"/>
-                    <field name="due_date" string="Due Date" enable_counters="1" />
+                    <field name="supplier" string="Supplier"/>
                 </searchpanel>
 
             </search>
