@@ -1,0 +1,28 @@
+<odoo>
+    <record id="view_account_payment_form_inherit_expense" model="ir.ui.view">
+        <field name="name">account.payment.form.expense.type</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                    <button name="%(action_report_custom_acknowledgement_receipt)d"
+                            string="Print Acknowledgement"
+                            type="action"
+                            class="oe_highlight"
+                            invisible="partner_type != 'customer'"/>
+                    <button name="%(report_disbursement_voucher_custom)d"
+                            string="Print Disbursement Voucher"
+                            type="action"
+                            class="oe_highlight"
+                            invisible="partner_type != 'supplier'"/>
+                    
+                    
+            </xpath>
+            <!-- Add after payment method -->
+            <xpath expr="//field[@name='payment_type']" position="after">
+                <field name="expense_type" invisible="partner_type != 'supplier'" domain="[('can_be_expensed', '=', True)]"/>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

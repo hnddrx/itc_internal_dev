@@ -1,0 +1,21 @@
+<odoo>
+
+    <!-- Sales Invoice (Customer Invoice) -->
+    <record id="seq_account_move_si" model="ir.sequence">
+        <field name="name">Sales Invoice Sequence</field>
+        <field name="code">account.move.si</field>
+        <field name="prefix">SI</field>
+        <field name="padding">12</field>
+        <field name="number_next">1</field>
+    </record>
+
+    <!-- Vendor Bill -->
+    <record id="seq_account_move_dv" model="ir.sequence">
+        <field name="name">Disbursement Voucher Sequence</field>
+        <field name="code">account.move.dv</field>
+        <field name="prefix">DV</field>
+        <field name="padding">12</field>
+        <field name="number_next">1</field>
+    </record>
+
+</odoo>
