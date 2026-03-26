@@ -96,7 +96,7 @@ SQL_QUERIES = {
         WHERE a.invoice_date BETWEEN %s AND %s;
     """,
     'sales_journal': """
-        SELECT 
+        SELECT 		
             a.invoice_date AS "DATE",
             r.name AS "NAME OF CLIENT",
             r.contact_address_complete AS "ADDRESS",
@@ -108,14 +108,14 @@ SQL_QUERIES = {
             '' AS "DISCOUNT AMOUNT",
             a.amount_total AS "SALES AMOUNT",
             CASE 
-                WHEN s.x_invoice_type = 'consu' THEN a.amount_untaxed 
+                WHEN a.x_invoice_type = 'consu' THEN a.amount_untaxed 
                 ELSE 0 
             END AS "GOODS DOMESTIC SALES",
             CASE 
-                WHEN s.x_invoice_type = 'service' THEN a.amount_untaxed 
+                WHEN a.x_invoice_type = 'service' THEN a.amount_untaxed 
                 ELSE 0 
             END AS "SERVICE DOMESTIC SALES",
-            s.amount_untaxed AS "TOTAL DOMESTIC SALES",
+            a.amount_untaxed AS "TOTAL DOMESTIC SALES",
             case 
                 when a.amount_tax > 0 then a.amount_untaxed 
                 else 0
@@ -123,12 +123,12 @@ SQL_QUERIES = {
             0 AS "GOVERNMENT",
             ABS(
                 COALESCE(
-                    CASE WHEN s.x_invoice_type = 'service' THEN a.amount_untaxed ELSE 0 END, 
+                    CASE WHEN a.x_invoice_type = 'service' THEN a.amount_untaxed ELSE 0 END, 
                     0
                 )
                 -
                 COALESCE(
-                    CASE WHEN s.x_invoice_type = 'consu' THEN a.amount_untaxed ELSE 0 END, 
+                    CASE WHEN a.x_invoice_type = 'consu' THEN a.amount_untaxed ELSE 0 END, 
                     0
                 )
             ) AS "TOTAL",
@@ -147,12 +147,10 @@ SQL_QUERIES = {
             0 AS "7%% STANDARD INPUT VAT",
             0 AS "BIR FORM VAT 2307 AMOUNT",
             0 AS "BIR FORM EWT 2307 AMOUNT"
-        FROM sale_order s
-        INNER JOIN account_move a 
-            ON s.name = a.invoice_origin
+        FROM account_move a
         LEFT JOIN res_partner r 
-            ON s.partner_id = r.id
-        WHERE a.invoice_date BETWEEN %s AND %s;
+            ON a.partner_id = r.id
+        WHERE a.state = 'posted' and a.invoice_date BETWEEN %s AND %s;
     """,
     'purchase_subsidiary_journal_rr9': """ 
         select 
