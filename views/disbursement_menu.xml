@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ── Root Menu ───────────────────────────────────────────────────────── -->
+    <menuitem id="menu_disbursement_root"
+              name="Disbursement"
+              sequence="85"
+              web_icon="disbursement_voucher,static/description/icon.png"/>
+
+    <!-- ── Transactions ────────────────────────────────────────────────────── -->
+    <menuitem id="menu_disbursement_transactions"
+              name="Transactions"
+              parent="menu_disbursement_root"
+              sequence="10"/>
+
+    <menuitem id="menu_disbursement_all_vouchers"
+              name="All Disbursement Vouchers"
+              parent="menu_disbursement_transactions"
+              action="action_disbursement_voucher"
+              sequence="10"/>
+
+    <menuitem id="menu_disbursement_for_approval"
+              name="For Approval"
+              parent="menu_disbursement_transactions"
+              action="action_disbursement_for_approval"
+              sequence="20"/>
+
+    <menuitem id="menu_disbursement_payable_entry"
+              name="Payable Voucher Entry"
+              parent="menu_disbursement_transactions"
+              action="action_disbursement_payable_entry"
+              sequence="30"/>
+
+    <menuitem id="menu_disbursement_voucher_entry"
+              name="Disbursement Voucher Entry"
+              parent="menu_disbursement_transactions"
+              action="action_disbursement_voucher_entry"
+              sequence="40"/>
+
+    <menuitem id="menu_disbursement_released"
+              name="Released Vouchers"
+              parent="menu_disbursement_transactions"
+              action="action_disbursement_released"
+              sequence="50"/>
+
+    <!-- ── Configuration ───────────────────────────────────────────────────── -->
+    <menuitem id="menu_disbursement_config"
+              name="Configuration"
+              parent="menu_disbursement_root"
+              sequence="90"/>
+
+    <menuitem id="menu_disbursement_expense_types"
+              name="Expense Types"
+              parent="menu_disbursement_config"
+              action="action_disbursement_expense_type"
+              sequence="10"/>
+
+</odoo>

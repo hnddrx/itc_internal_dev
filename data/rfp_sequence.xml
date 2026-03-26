@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="seq_request_for_payment" model="ir.sequence">
+        <field name="name">Request for Payment Sequence</field>
+        <field name="code">request.for.payment</field>
+        <field name="prefix">RFP-</field>
+        <field name="padding">12</field>
+        <field name="number_increment">1</field>
+        <field name="number_next">1</field>
+        <field name="company_id" eval="False"/>
+    </record>
+</odoo>

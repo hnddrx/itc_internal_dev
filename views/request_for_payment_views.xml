@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ====================================================================
+         REQUEST FOR PAYMENT — FORM VIEW
+    ==================================================================== -->
+    <record id="view_request_for_payment_form" model="ir.ui.view">
+        <field name="name">request.for.payment.form</field>
+        <field name="model">request.for.payment</field>
+        <field name="arch" type="xml">
+            <form string="Request for Payment">
+
+                <header>
+                    <button name="action_submit"
+                            string="Submit"
+                            type="object"
+                            class="btn-primary"
+                            invisible="status != 'draft'"
+                            confirm="Are you sure you want to submit this Request for Payment?"/>
+                    <button name="action_approve"
+                            string="Approve"
+                            type="object"
+                            class="btn-primary"
+                            invisible="status != 'submitted'"/>
+                    <button name="action_reset_to_draft"
+                            string="Reset to Draft"
+                            type="object"
+                            invisible="status == 'approved'"/>
+                    <field name="status"
+                           widget="statusbar"
+                           statusbar_visible="draft,submitted,approved"/>
+                </header>
+
+                <sheet>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1" placeholder="RFP Number"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Payment Party">
+
+                            <field name="payee_type" widget="radio"/>
+                            <field name="supplier"
+                                   invisible="payee_type != 'supplier'"
+                                   options="{'no_create_edit': True}"/>
+                            <field name="employee"
+                                   invisible="payee_type != 'employee'"/>
+                        </group>
+
+                        <group string="Document Info">
+                            <field name="rfp_date"/>
+                            <field name="reference_number"/>
+                            <field name="reference_date"/>
+                            <field name="due_date"/>
+                            <field name="currency_id" options="{'no_create': True}"/>
+                            <field name="currency_rate"
+                                   invisible="currency_id == False"
+                                   digits="[12,6]"/>
+                        </group>
+                    </group>
+
+                    <group string="Signatories">
+                        <group>
+                            <field name="requested_by" options="{'no_create': True}"/>
+                            <field name="prepared_by"  options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="noted_by" options="{'no_create': True}"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+
+                        <page string="Payment Details" name="payment_details">
+                            <field name="rfp_line_ids" widget="one2many" mode="list">
+                                <list string="Payment Details"
+                                      editable="bottom"
+                                      optional_columns="purchase_order_id,vat_type,untaxed_amount,tax_amount,ewt_code,rate,ewt_amount">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="purchase_order_id"
+                                           optional="show"
+                                           options="{'no_create': True}"
+                                           domain="[('partner_id', '=', parent.supplier)]"/>
+                                    <field name="particulars"/>
+                                    <field name="vat_type" optional="show"/>
+                                    <field name="amount" sum="Gross Total"/>
+                                    <field name="untaxed_amount"
+                                           optional="show"
+                                           sum="Subtotal"
+                                           readonly="1"/>
+                                    <field name="tax_amount"
+                                           optional="show"
+                                           sum="Total VAT"
+                                           readonly="1"/>
+                                    <field name="ewt_code"
+                                           optional="show"
+                                           options="{'no_create': True}"/>
+                                    <field name="rate"
+                                           optional="show"
+                                           string="EWT Rate (%)"/>
+                                    <field name="ewt_amount"
+                                           optional="show"
+                                           sum="Total EWT"/>
+                                    <field name="net_amount" sum="Net Amount"/>
+                                    <field name="currency_id" column_invisible="True"/>
+                                </list>
+                            </field>
+
+                            <!-- Totals Footer -->
+                            <div class="oe_subtotal_footer oe_right">
+                                <div class="oe_subtotal_footer_separator">
+                                    <label for="amount_untaxed" string="Subtotal"/>
+                                    <field name="amount_untaxed" nolabel="1" readonly="1"/>
+                                </div>
+                                <div class="oe_subtotal_footer_separator">
+                                    <label for="tax_amount" string="VAT"/>
+                                    <field name="tax_amount" nolabel="1" readonly="1"/>
+                                </div>
+                                <div class="oe_subtotal_footer_separator">
+                                    <label for="amount_ewt" string="Total EWT"/>
+                                    <field name="amount_ewt" nolabel="1" readonly="1"/>
+                                </div>
+                                <div class="oe_subtotal_footer_separator oe_subtotal_footer_total">
+                                    <label for="amount_net" string="Net Amount"/>
+                                    <field name="amount_net"
+                                           nolabel="1"
+                                           readonly="1"
+                                           class="oe_subtotal_footer_total"/>
+                                </div>
+                            </div>
+                        </page>
+
+                        <page string="Remarks" name="remarks">
+                            <field name="remarks"
+                                   placeholder="Enter any remarks or notes for this request..."/>
+                        </page>
+
+                    </notebook>
+
+                </sheet>
+
+                <chatter/>
+
+            </form>
+        </field>
+    </record>
+
+
+    <!-- ====================================================================
+         REQUEST FOR PAYMENT — LIST VIEW
+    ==================================================================== -->
+    <record id="view_request_for_payment_list" model="ir.ui.view">
+        <field name="name">request.for.payment.list</field>
+        <field name="model">request.for.payment</field>
+        <field name="arch" type="xml">
+            <list string="Requests for Payment"
+                  decoration-info="status == 'draft'"
+                  decoration-warning="status == 'submitted'"
+                  decoration-success="status == 'approved'"
+                  multi_edit="1">
+                <field name="name"/>
+                <field name="rfp_date"/>
+                <field name="supplier"         optional="show"/>
+                <field name="employee"         optional="show"/>
+                <field name="reference_number" optional="show"/>
+                <field name="due_date"
+                       optional="show"
+                       decoration-danger="due_date and due_date &lt; context_today()"/>
+                <field name="currency_id"      optional="hide"/>
+                <field name="amount_untaxed"
+                       string="Subtotal"
+                       optional="show"
+                       sum="Subtotal"/>
+                <field name="tax_amount"
+                       string="VAT"
+                       optional="show"
+                       sum="Total VAT"/>
+                <field name="amount_ewt"
+                       optional="show"
+                       sum="Total EWT"/>
+                <field name="amount_net" sum="Net Amount"/>
+                <field name="requested_by"
+                       optional="show"
+                       widget="many2one_avatar_user"/>
+                <field name="status"
+                       widget="badge"
+                       decoration-info="status == 'draft'"
+                       decoration-warning="status == 'submitted'"
+                       decoration-success="status == 'approved'"/>
+            </list>
+        </field>
+    </record>
+
+
+    <!-- ====================================================================
+         REQUEST FOR PAYMENT — SEARCH VIEW
+    ==================================================================== -->
+    <record id="view_request_for_payment_search" model="ir.ui.view">
+        <field name="name">request.for.payment.search</field>
+        <field name="model">request.for.payment</field>
+        <field name="arch" type="xml">
+            <search string="Search Requests for Payment">
+
+                <field name="name"
+                       string="RFP Number"
+                       filter_domain="[('name','ilike',self)]"/>
+                <field name="supplier"
+                       filter_domain="[('supplier','child_of',self)]"/>
+                <field name="employee"/>
+                <field name="reference_number"
+                       filter_domain="[('reference_number','ilike',self)]"/>
+                <field name="requested_by"/>
+
+                <separator/>
+
+                <filter name="filter_draft"     string="Draft"
+                        domain="[('status','=','draft')]"/>
+                <filter name="filter_submitted" string="Submitted"
+                        domain="[('status','=','submitted')]"/>
+                <filter name="filter_approved"  string="Approved"
+                        domain="[('status','=','approved')]"/>
+
+                <separator/>
+
+                <filter name="filter_rfp_date_today"
+                        string="Today"
+                        domain="[('rfp_date','=',context_today().strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_overdue"
+                        string="Overdue"
+                        domain="[('due_date','&lt;',context_today().strftime('%Y-%m-%d')),
+                                  ('status','!=','approved')]"/>
+
+                <separator/>
+
+                <filter name="filter_my_rfp"
+                        string="My Requests"
+                        domain="[('requested_by','=',uid)]"/>
+
+                <group expand="0" string="Group By">
+                    <filter name="group_by_status"
+                            string="Status"
+                            context="{'group_by': 'status'}"/>
+                    <filter name="group_by_supplier"
+                            string="Supplier"
+                            context="{'group_by': 'supplier'}"/>
+                    <filter name="group_by_employee"
+                            string="Employee"
+                            context="{'group_by': 'employee'}"/>
+                    <filter name="group_by_rfp_date"
+                            string="RFP Date"
+                            context="{'group_by': 'rfp_date:month'}"/>
+                    <filter name="group_by_requested_by"
+                            string="Requested By"
+                            context="{'group_by': 'requested_by'}"/>
+                </group>
+
+                <searchpanel>
+                    <field name="status" string="Status" enable_counters="1"/>
+                    <field name="supplier" string="Supplier"/>
+                </searchpanel>
+
+            </search>
+        </field>
+    </record>
+
+
+    <!-- ====================================================================
+         ACTION
+    ==================================================================== -->
+    <record id="action_request_for_payment" model="ir.actions.act_window">
+        <field name="name">Requests for Payment</field>
+        <field name="res_model">request.for.payment</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_request_for_payment_search"/>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Request for Payment
+            </p>
+            <p>
+                Use this form to request payment for suppliers or employee
+                reimbursements, track approval status, and manage VAT and EWT deductions.
+            </p>
+        </field>
+    </record>
+
+
+    <!-- ====================================================================
+         MENU ITEMS
+         Adjust sequence and parent to fit your module's menu structure.
+         Option A — standalone top-level menu (no parent module)
+         Option B — nested under Accounting / Purchase / your custom app
+    ==================================================================== -->
+
+    <!-- ── Root menu (top navigation bar) ────────────────────────────── -->
+    <menuitem id="menu_rfp_root"
+              name="Requests for Payment"
+              sequence="90"/>
+
+    <!-- ── First-level: main grouping ────────────────────────────────── -->
+    <menuitem id="menu_rfp_main"
+              name="Requests for Payment"
+              parent="menu_rfp_root"
+              sequence="10"/>
+
+    <!-- ── Second-level: the actual list view ────────────────────────── -->
+    <menuitem id="menu_rfp_list"
+              name="All Requests"
+              parent="menu_rfp_main"
+              action="action_request_for_payment"
+              sequence="10"/>
+
+    <!--
+        ── ALTERNATIVE: nest under an existing app instead ───────────────
+        If you want the menu inside Accounting or Purchase, comment out the
+        three menuitems above and uncomment ONE of the blocks below.
+
+        Under Accounting ▶ Vendors:
+        <menuitem id="menu_rfp_under_accounting"
+                  name="Requests for Payment"
+                  parent="account.menu_finance_payables"
+                  action="action_request_for_payment"
+                  sequence="50"/>
+
+        Under Purchase ▶ Orders:
+        <menuitem id="menu_rfp_under_purchase"
+                  name="Requests for Payment"
+                  parent="purchase.menu_purchase_order_form_action2"
+                  action="action_request_for_payment"
+                  sequence="50"/>
+    -->
+
+</odoo>

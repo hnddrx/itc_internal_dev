@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="expense_type_import_request" model="disbursement.expense.type">
+        <field name="name">Import Request For Payment</field>
+        <field name="code">IRP</field>
+    </record>
+    <record id="expense_type_direct_payment" model="disbursement.expense.type">
+        <field name="name">Direct Payment</field>
+        <field name="code">DP</field>
+    </record>
+    <record id="expense_type_petty_cash" model="disbursement.expense.type">
+        <field name="name">Petty Cash Replenishment</field>
+        <field name="code">PCR</field>
+    </record>
+    <record id="expense_type_payroll" model="disbursement.expense.type">
+        <field name="name">Payroll Disbursement</field>
+        <field name="code">PAY</field>
+    </record>
+    <record id="expense_type_utility" model="disbursement.expense.type">
+        <field name="name">Utility Payment</field>
+        <field name="code">UTIL</field>
+    </record>
+    <record id="expense_type_professional_fee" model="disbursement.expense.type">
+        <field name="name">Professional Fee</field>
+        <field name="code">PF</field>
+    </record>
+    <record id="expense_type_reimbursement" model="disbursement.expense.type">
+        <field name="name">Reimbursement</field>
+        <field name="code">REIMB</field>
+    </record>
+</odoo>

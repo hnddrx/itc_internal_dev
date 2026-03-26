@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<template id="report_disbursement_voucher_doc">
+    <t t-call="web.html_container">
+        <t t-foreach="docs" t-as="o">
+            <t t-call="web.external_layout">
+                <div class="page">
+
+                    <!-- ── Header ─────────────────────────────────────────── -->
+                    <div class="row mb-4">
+                        <div class="col-12 text-center">
+                            <h2 style="font-weight:bold; text-transform:uppercase;">
+                                DISBURSEMENT VOUCHER
+                            </h2>
+                            <p class="text-muted">Check Voucher</p>
+                        </div>
+                    </div>
+
+                    <!-- ── Voucher Meta ───────────────────────────────────── -->
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <table class="table table-sm table-borderless">
+                                <tr>
+                                    <td><strong>Branch:</strong></td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Voucher No.:</strong></td>
+                                    <td><t t-esc="o.voucher_number"/></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Voucher Date:</strong></td>
+                                    <td><t t-esc="o.voucher_date"/></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Expense Type:</strong></td>
+                                    <td><t t-esc="o.expense_type_id.name"/></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-6">
+                            <table class="table table-sm table-borderless">
+                                <tr>
+                                    <td><strong>Supplier/Payee:</strong></td>
+                                    <td><t t-esc="o.partner_id.name or ''"/></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>TIN:</strong></td>
+                                    <td><t t-esc="o.supplier_tin or ''"/></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Payment Date:</strong></td>
+                                    <td><t t-esc="o.payment_date or ''"/></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Status:</strong></td>
+                                    <td><t t-esc="dict(o._fields['status'].selection).get(o.status)"/></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ── Particulars ───────────────────────────────────── -->
+                    <div class="row mb-3" t-if="o.particulars">
+                        <div class="col-12">
+                            <strong>Particulars:</strong>
+                            <p><t t-esc="o.particulars"/></p>
+                        </div>
+                    </div>
+
+                    <!-- ── Voucher Details Table ──────────────────────────── -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <h5 class="border-bottom pb-1">Voucher Details</h5>
+                            <table class="table table-sm table-bordered">
+                                <thead style="background-color:#1a3a5c; color:white;">
+                                    <tr>
+                                        <th>Expense Type</th>
+                                        <th>Purchase Category</th>
+                                        <th>Supplier/Payee</th>
+                                        <th>Description</th>
+                                        <th>Account</th>
+                                        <th>VAT Type</th>
+                                        <th class="text-right">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="o.voucher_line_ids" t-as="line">
+                                        <tr>
+                                            <td><t t-esc="line.expense_type_id.name"/></td>
+                                            <td><t t-esc="dict(line._fields['purchase_category'].selection).get(line.purchase_category)"/></td>
+                                            <td><t t-esc="line.partner_id.name or ''"/></td>
+                                            <td><t t-esc="line.description or ''"/></td>
+                                            <td><t t-esc="line.account_id.name or ''"/></td>
+                                            <td><t t-esc="dict(line._fields['vat_type'].selection).get(line.vat_type)"/></td>
+                                            <td class="text-right">
+                                                <t t-esc="'{:,.2f}'.format(line.amount)"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="6" class="text-right"><strong>TOTAL:</strong></td>
+                                        <td class="text-right">
+                                            <strong>
+                                                <t t-esc="o.currency_id.symbol"/>
+                                                <t t-esc="'{:,.2f}'.format(o.voucher_amount)"/>
+                                            </strong>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ── Amount Summary ────────────────────────────────── -->
+                    <div class="row mb-3">
+                        <div class="col-6 offset-6">
+                            <table class="table table-sm table-borderless">
+                                <tr>
+                                    <td><strong>Voucher Amount:</strong></td>
+                                    <td class="text-right">
+                                        <t t-esc="o.currency_id.name"/>
+                                        <t t-esc="'{:,.2f}'.format(o.voucher_amount)"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>F/X Rate:</strong></td>
+                                    <td class="text-right"><t t-esc="o.fx_rate"/></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Amount in PHP:</strong></td>
+                                    <td class="text-right">
+                                        <strong>PHP <t t-esc="'{:,.2f}'.format(o.amount_in_php)"/></strong>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ── Remarks ───────────────────────────────────────── -->
+                    <div class="row mb-4" t-if="o.remarks or o.detailed_remarks">
+                        <div class="col-6" t-if="o.remarks">
+                            <strong>Remarks:</strong>
+                            <p><t t-esc="o.remarks"/></p>
+                        </div>
+                        <div class="col-6" t-if="o.detailed_remarks">
+                            <strong>Detailed Remarks:</strong>
+                            <p><t t-esc="o.detailed_remarks"/></p>
+                        </div>
+                    </div>
+
+                    <!-- ── Signature Block ───────────────────────────────── -->
+                    <div class="row mt-5">
+                        <div class="col-3 text-center">
+                            <div class="border-top mt-4 pt-1">
+                                <strong>Prepared By</strong>
+                                <p><t t-esc="o.prepared_by_id.name or ''"/></p>
+                            </div>
+                        </div>
+                        <div class="col-3 text-center">
+                            <div class="border-top mt-4 pt-1">
+                                <strong>Checked By</strong>
+                                <p><t t-esc="o.checked_by_id.name or ''"/></p>
+                            </div>
+                        </div>
+                        <div class="col-3 text-center">
+                            <div class="border-top mt-4 pt-1">
+                                <strong>Approved By</strong>
+                                <p>&#160;</p>
+                            </div>
+                        </div>
+                        <div class="col-3 text-center">
+                            <div class="border-top mt-4 pt-1">
+                                <strong>Received By</strong>
+                                <p>&#160;</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── Footer Note ───────────────────────────────────── -->
+                    <div class="row mt-3">
+                        <div class="col-12 text-center text-muted" style="font-size:10px;">
+                            <t t-esc="o.voucher_number"/> | Entry Date: <t t-esc="o.entry_date"/> | Printed: <t t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M')"/>
+                        </div>
+                    </div>
+
+                </div>
+            </t>
+        </t>
+    </t>
+</template>
+ <record id="action_report_disbursement_voucher" model="ir.actions.report">
+        <field name="name">Disbursement Voucher</field>
+        <field name="model">disbursement.voucher</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">itc_internal_dev.report_disbursement_voucher_doc</field>
+        <field name="report_file">itc_internal_dev.report_disbursement_voucher_doc</field>
+        <field name="print_report_name">'DV - %s' % (object.voucher_number)</field>
+        <field name="binding_model_id" ref="model_disbursement_voucher"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="base.paperformat_us"/>
+    </record>
+</odoo>

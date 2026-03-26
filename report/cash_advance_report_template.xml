@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+  
+
+    <!-- QWeb Template -->
+    <template id="report_cash_advance">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <main>
+                    <div class="page">
+                        <style>
+                            .ca-wrapper {
+                                font-family: Arial, sans-serif;
+                                font-size: 11px;
+                                width: 100%;
+                                max-width: 680px;
+                                margin: 0 auto;
+                                border: 1px solid black;
+                                padding: 0;
+                            }
+                            .ca-header {
+                                text-align: center;
+                                border-bottom: 1px solid black;
+                                padding: 10px 5px;
+                            }
+                            .ca-header h2 {
+                                margin: 0;
+                                font-size: 16px;
+                                font-weight: bold;
+                                text-transform: uppercase;
+                            }
+                            .ca-header p {
+                                margin: 2px 0;
+                                font-size: 10px;
+                            }
+                            .ca-meta {
+                                display: table;
+                                width: 100%;
+                                border-bottom: 1px solid black;
+                            }
+                            .ca-meta-left, .ca-meta-right {
+                                display: table-cell;
+                                width: 50%;
+                                padding: 6px 10px;
+                                vertical-align: top;
+                            }
+                            .ca-meta-right {
+                                border-left: 1px solid black;
+                            }
+                            .ca-meta table {
+                                width: 100%;
+                            }
+                            .ca-meta td {
+                                padding: 2px 0;
+                                font-size: 11px;
+                            }
+                            .ca-meta td:first-child {
+                                font-weight: bold;
+                                white-space: nowrap;
+                                padding-right: 6px;
+                            }
+                            .ca-particulars-header {
+                                display: table;
+                                width: 100%;
+                                color: #fff;
+                                font-weight: bold;
+                                font-size: 11px;
+                            }
+                            .ca-col-particulars, .ca-col-amount {
+                                display: table-cell;
+                                padding: 5px 10px;
+                            }
+                            .ca-col-amount {
+                                text-align: right;
+                                border-left: 1px solid white;
+                                width: 150px;
+                            }
+                            .ca-line {
+                                display: table;
+                                width: 100%;
+                                height:700px;
+                                border-bottom: 1px solid #ccc;
+                            }
+                            .ca-line-desc {
+                                display: table-cell;
+                                padding: 5px 10px;
+                            }
+                            .ca-line-amt {
+                                display: table-cell;
+                                text-align: right;
+                                padding: 5px 10px;
+                                width: 150px;
+                                border-left: 1px solid black;
+                            }
+                            .ca-total {
+                                display: table;
+                                width: 100%;
+                                border-top: 2px solid black;
+                                border-bottom: 2px solid black;
+                                font-weight: bold;
+                            }
+                            .ca-total-label {
+                                display: table-cell;
+                                padding: 5px 10px;
+                            }
+                            .ca-total-amt {
+                                display: table-cell;
+                                text-align: right;
+                                padding: 5px 10px;
+                                width: 150px;
+                                border-left: 1px solid black;
+                            }
+                            .ca-signatories {
+                                display: table;
+                                width: 100%;
+                                border-top: 1px solid black;
+                            }
+                            .ca-sig-cell {
+                                display: table-cell;
+                                width: 25%;
+                                padding: 10px;
+                                border-right: 1px solid black;
+                                vertical-align: top;
+                                font-size: 10px;
+                            }
+                            .ca-sig-cell:last-child {
+                                border-right: none;
+                            }
+                            .ca-sig-label {
+                                font-weight: bold;
+                                margin-bottom: 4px;
+                            }
+                            .ca-sig-name {
+                                margin-top: 20px;
+                                border-top: 1px solid black;
+                                padding-top: 3px;
+                                font-size: 10px;
+                                min-height: 18px;
+                            }
+                            .ca-sig-date {
+                                margin-top: 4px;
+                                font-size: 10px;
+                            }
+                        </style>
+
+                        <div class="ca-wrapper">
+
+                            <!-- Meta Info -->
+                            <div class="ca-meta">
+                                <div class="ca-meta-left">
+                                    <table>
+                                        <tr>
+                                            <td>Claimant Name:</td>
+                                            <td><t t-esc="doc.employee_id.name"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Branch</td>
+                                            <td>HEAD OFFICE</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="ca-meta-right">
+                                    <table>
+                                        <tr>
+                                            <td>Cash Advance No.:</td>
+                                            <td><t t-esc="doc.name"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td>CA Date:</td>
+                                            <td><t t-esc="doc.request_date"/></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Particulars Header -->
+                            <div class="ca-particulars-header">
+                                <span class="ca-col-particulars">PARTICULARS</span>
+                                <span class="ca-col-amount">AMOUNT</span>
+                            </div>
+
+                            <!-- Particulars Lines -->
+                            <div class="ca-line">
+                                <div class="ca-line-desc">
+                                    <t t-esc="doc.purpose"/>
+                                </div>
+                                <div class="ca-line-amt">
+                                    <t t-esc="'{:,.2f}'.format(doc.amount_requested)"/>
+                                </div>
+                            </div>
+
+                            <!-- Total -->
+                            <div class="ca-total">
+                                <div class="ca-total-label">Total Amount :</div>
+                                <div class="ca-total-amt">
+                                    <t t-esc="'{:,.2f}'.format(doc.amount_requested)"/>
+                                </div>
+                            </div>
+
+                            <!-- Signatories -->
+                            <div class="ca-signatories">
+                                <div class="ca-sig-cell">
+                                    <div class="ca-sig-label">Prepared By :</div>
+                                    <div class="ca-sig-name">&#160;</div>
+                                    <div class="ca-sig-date">Date :</div>
+                                </div>
+                                <div class="ca-sig-cell">
+                                    <div class="ca-sig-label">Approved By :</div>
+                                    <div class="ca-sig-name">&#160;</div>
+                                    <div class="ca-sig-date">Date :</div>
+                                </div>
+                                <div class="ca-sig-cell">
+                                    <div class="ca-sig-label">Released By :</div>
+                                    <div class="ca-sig-name">&#160;</div>
+                                    <div class="ca-sig-date">Date :</div>
+                                </div>
+                                <div class="ca-sig-cell">
+                                    <div class="ca-sig-label">Received By :</div>
+                                    <div class="ca-sig-name"><t t-esc="doc.employee_id.name"/></div>
+                                    <div class="ca-sig-date">Date :</div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    </main>
+                </t>
+            </t>
+       
+    </template>
+
+      <!-- Report Action -->
+    <record id="action_report_cash_advance" model="ir.actions.report">
+        <field name="name">Cash Advance</field>
+        <field name="model">cash.advance</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">itc_internal_dev.report_cash_advance</field>
+        <field name="report_file">itc_internal_dev.report_cash_advance</field>
+        <field name="binding_model_id" ref="model_cash_advance"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>
