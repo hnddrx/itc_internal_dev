@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+  <!-- DISBURSEMENT VOUCHER TEMPLATE -->
+ 
+  <template id="custom_disbursement_voucher_report">
+    <t t-call="web.html_container">
+      <t t-foreach="docs" t-as="doc">
+        <div class="page" style="font-family: Arial; font-size:16pt; padding:30px;">
+            <div style="width:100%; margin-buttom:30px;">
+                <div style="display:inline-block; width:60%; vertical-align:top; font-weight:20pt;">
+                    <strong style="margin-buttom:10px;"><t t-esc="doc.company_id.name"/></strong><br/>
+                    <span>Philam Life Village Park, 4th Floor Vista Mall I.T. HUB Alabang-Zapote Road Cor. C.V Starr Avenue</span><br/>
+                    <span>VAT REG TIN: <t t-esc="doc.company_id.vat"/></span><br/>
+                    <span>Telephone No. 380-3000</span>
+                </div>
+
+                <div style="display:inline-block; width:39%; text-align:right; vertical-align:top; font-size:30pt:">
+                    <h2 style="margin:0;">DISBURSEMENT VOUCHER</h2>
+                </div>
+
+            </div>
+            <div style="height:30px;"></div>
+
+
+          <!-- ================= SUPPLIER + VOUCHER INFO ================= -->
+          <table style="width:100%; border:1px solid black; border-collapse:collapse;">
+            <tr>
+              <td style="width:50%; border:1px solid black; padding:5px;">
+                <strong>SUPPLIER:</strong><br/>
+                <hr/>
+                <t t-esc="doc.partner_id.name"/>
+              </td>
+
+              <td style="width:50%; border:1px solid black;">
+                <table style="width:100%; border-collapse:collapse;">
+                  <tr>
+                    <td style="border:1px solid black; padding:5px;">Voucher No.</td>
+                    <td style="border:1px solid black; padding:5px;"><t t-esc="doc.name"/></td>
+                  </tr>
+                  <tr>
+                    <td style="border:1px solid black; padding:5px;">Voucher Date</td>
+                    <td style="border:1px solid black; padding:5px;"><t t-esc="doc.date"/></td>
+                  </tr>
+                  <tr>
+                    <td style="border:1px solid black; padding:5px;">Voucher Amount</td>
+                    <td style="border:1px solid black; padding:5px;"><t t-esc="doc.amount"/></td>
+                  </tr>
+                  <tr>
+                    <td style="border:1px solid black; padding:5px;">Released Date</td>
+                    <td style="border:1px solid black; padding:5px;"><t t-esc="doc.date"/></td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+
+          <!-- ================= AMOUNT + PARTICULARS ================= -->
+          <table style="width:100%; border:1px solid black; border-collapse:collapse; margin-top:20px;">
+            <tr>
+              <td style="border:1px solid black; width:20%; padding:5px;"><strong>Amount</strong></td>
+              <td style="border:1px solid black; padding:5px;">
+                <t t-esc="doc.check_amount_in_words"/>
+              </td>
+            </tr>
+            <tr>
+              <td style="border:1px solid black; padding:5px; verticial-align:top; font">Particulars</td>
+              <td style="border:1px solid black; padding:5px; height:70px; vertical-align:top;">
+                <t t-esc="doc.memo"/>
+              </td>
+            </tr>
+          </table>
+
+     
+
+          <!-- ================= ACCOUNTING TABLE ================= -->
+          <table style="width:100%; border:1px solid black; border-collapse:collapse;">
+            <thead>
+              <tr>
+                <th style="border:1px solid black;">Account Code</th>
+                <th style="border:1px solid black;">Account Title</th>
+                <th style="border:1px solid black;">Debit</th>
+                <th style="border:1px solid black;">Credit</th>
+              </tr>
+            </thead>
+            <tbody>
+              <t t-foreach="doc.move_id.line_ids.filtered(lambda l: l.debit or l.credit)" t-as="line">
+                  <tr>
+                      <td style="border:1px solid black;">
+                          <t t-esc="line.account_id.code"/>
+                      </td>
+                      <td style="border:1px solid black;">
+                          <t t-esc="line.account_id.name"/>
+                      </td>
+                      <td style="border:1px solid black; text-align:right;">
+                          <t t-esc="'{:,.2f}'.format(line.debit or 0.0)"/>
+                      </td>
+                      <td style="border:1px solid black; text-align:right;">
+                          <t t-esc="'{:,.2f}'.format(line.credit or 0.0)"/>
+                      </td>
+                  </tr>
+              </t>
+
+              <!-- TOTAL -->
+              <tr>
+                  <td style="border:1px solid black;"></td>
+                  <td style="border:1px solid black; text-align:right; font-weight:bold;">
+                      Total Amount:
+                  </td>
+
+                  <!-- TOTAL DEBIT -->
+                  <td style="border:1px solid black; text-align:right; font-weight:bold;">
+                      <t t-set="total_debit" t-value="sum(doc.move_id.line_ids.filtered(lambda l: l.debit).mapped('debit'))"/>
+                      <t t-esc="'{:,.2f}'.format(total_debit)"/>
+                  </td>
+
+                  <!-- TOTAL CREDIT -->
+                  <td style="border:1px solid black; text-align:right; font-weight:bold;">
+                      <t t-set="total_credit" t-value="sum(doc.move_id.line_ids.filtered(lambda l: l.credit).mapped('credit'))"/>
+                      <t t-esc="'{:,.2f}'.format(total_credit)"/>
+                  </td>
+              </tr>
+           </tbody>
+          </table>
+
+          <br/>
+
+
+          <br/><br/>
+
+          <!-- ================= SIGNATORIES ================= -->
+          <table style="width:100%;">
+            <tr>
+              <td>Prepared By:</td>
+              <td>Checked By:</td>
+              <td>Approved By:</td>
+              <td>Received By:</td>
+            </tr>
+            <tr>
+              <td>Date:</td>
+              <td>Date:</td>
+              <td>Date:</td>
+              <td>Date:</td>
+            </tr>
+          </table>
+
+        </div>
+      </t>
+    </t>
+  </template>
+
+
+  <!-- REPORT ACTION -->
+  <record id="report_disbursement_voucher_custom" model="ir.actions.report">
+    <field name="name">Disbursement Voucher</field>
+    <field name="model">account.payment</field>
+    <field name="report_type">qweb-pdf</field>
+    <field name="report_name">itc_internal_dev.custom_disbursement_voucher_report</field>
+    <field name="print_report_name">'Disbursement Voucher %s' % (object.name)</field>
+    <field name="binding_model_id" ref="account.model_account_payment"/>
+    <field name="binding_type">report</field>
+    <field name="paperformat_id" ref="a4_paperformat"/>
+  </record>
+
+</odoo>
