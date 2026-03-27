@@ -24,23 +24,12 @@ class Account(models.Model):
         store=True,
     )
 
-    x_reference_number = fields.Char(string="Reference Number")
+    x_reference_number = fields.Char(string="Reference Number", tracking=True)
 
-    
-    def _post(self, soft=True):
-        moves = super()._post(soft)
-
-        for move in moves:
-            if move.move_type == 'out_invoice':
-                move.name = self.env['ir.sequence'].next_by_code('account.move.si')
-            elif move.move_type == 'in_invoice':
-                move.name = self.env['ir.sequence'].next_by_code('account.move.dv')
-
-        return moves
 
     def _get_default_sequence_number(self):
         # Only override for customer/vendor invoices
-        self.ensure_one()
+        self.ensure_one()   
         if self.move_type == 'out_invoice':
             return self.env['ir.sequence'].next_by_code('account.move.si')
         elif self.move_type == 'in_invoice':
@@ -49,7 +38,10 @@ class Account(models.Model):
 
     @api.model
     def create(self, vals):
+        self.payment_reference = self.name
+        self.x_reference_number = self.name
         move = super().create(vals)
+        
         if move.invoice_origin:
             sale_order = self.env['sale.order'].search(
                 [('name', '=', move.invoice_origin)], limit=1

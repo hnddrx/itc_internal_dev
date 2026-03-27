@@ -39,7 +39,6 @@
         'report/disbursement_voucher_report.xml',
         #Views
         #'views/salary_advance_views.xml',
-        'views/cash_advance_views.xml',
         'views/expense_sheet.xml',
         'views/expense_view.xml',
         'views/purchase_order.xml',
@@ -56,12 +55,14 @@
         'views/bir_1601e_views.xml',
         'views/bir_2550m_views.xml',
         'views/bir_form_view.xml',
-        'views/disbursement_voucher_views.xml',
-        'views/disbursement_voucher_line_views.xml',
-        'views/disbursement_payment_views.xml',
-        'views/disbursement_menu.xml',
-        'views/request_for_payment_views.xml',
-        'views/account_payment_view.xml'
+        'views/account_payment_view.xml',
+        # Change Request modules
+        #'views/cash_advance_views.xml',
+        #'views/disbursement_voucher_views.xml',
+        #'views/disbursement_voucher_line_views.xml',
+        #'views/disbursement_payment_views.xml',
+        #'views/disbursement_menu.xml',
+        #'views/request_for_payment_views.xml',
        
 
     ],
