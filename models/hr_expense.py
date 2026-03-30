@@ -76,6 +76,7 @@ class HrExpense(models.Model):
         help='Discount amount automatically computed from Discount % and total_amount_currency.',
     )
 
+
     x_original_amount = fields.Monetary(
         string='Original Amount',
         currency_field='currency_id',
@@ -83,7 +84,7 @@ class HrExpense(models.Model):
         store=True,
         readonly=True,
         help='Original amount automatically computed from Discount % and total_amount_currency.',
-    )
+    ) 
 
     def _inverse_vendor_tin(self):
         # Allow manual edits to be saved without being overwritten
