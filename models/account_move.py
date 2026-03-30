@@ -26,6 +26,17 @@ class Account(models.Model):
 
     x_reference_number = fields.Char(string="Reference Number", tracking=True)
 
+    def _post(self, soft=True):
+        moves = super()._post(soft)
+
+        for move in moves:
+            if move.move_type == 'out_invoice':
+                move.name = self.env['ir.sequence'].next_by_code('account.move.si')
+            elif move.move_type == 'in_invoice':
+                move.name = self.env['ir.sequence'].next_by_code('account.move.dv')
+
+        return moves
+
 
     def _get_default_sequence_number(self):
         # Only override for customer/vendor invoices
