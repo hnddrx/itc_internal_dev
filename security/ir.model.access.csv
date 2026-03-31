@@ -37,3 +37,4 @@ access_disbursement_extra_credit_user,disbursement.extra.credit user,itc_interna
 access_disbursement_expense_type_user,disbursement.expense.type user,itc_internal_dev.model_disbursement_expense_type,base.group_user,1,1,1,1
 access_request_for_payment_user,request.for.payment user,itc_internal_dev.model_request_for_payment,base.group_user,1,1,1,1
 access_request_for_payment_line_user,request.for.payment.line user,itc_internal_dev.model_request_for_payment_line,base.group_user,1,1,1,1
+access_payment_register_tax_line_user,account.payment.register.tax.line user,model_account_payment_register_tax_line,base.group_user,1,1,1,1

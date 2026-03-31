@@ -23,6 +23,12 @@
                             type="action"
                             class="oe_highlight"
                             invisible="True"/>
+                            
+                    <button name="%(action_report_custom_acknowledgement_receipt)d"
+                            string="Print Acknowledgement Receipt"
+                            type="action"
+                            class="oe_highlight"
+                            invisible="payment_state != 'paid' or move_type != 'out_invoice'"/>
                     
                 </xpath>
 
