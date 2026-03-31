@@ -57,6 +57,7 @@
         'views/bir_form_view.xml',
         'views/account_payment_view.xml',
         # Change Request modules
+        #'views/account_payment_register_views.xml',
         #'views/cash_advance_views.xml',
         #'views/disbursement_voucher_views.xml',
         #'views/disbursement_voucher_line_views.xml',
