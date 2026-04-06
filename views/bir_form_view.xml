@@ -1,4 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
+    <!-- ========================= -->
+    <!-- KANBAN VIEW -->
+    <!-- ========================= -->
     <record id="view_bir_model_kanban" model="ir.ui.view">
         <field name="name">bir.model.kanban</field>
         <field name="model">bir.model</field>
@@ -7,29 +12,28 @@
 
                 <field name="name"/>
                 <field name="description"/>
-                <field name="image_url"/>
                 <field name="action_id"/>
 
                 <templates>
                     <t t-name="kanban-box">
                         <div class="o_kanban_record o_kanban_dashboard_box">
-
                             <div class="o_kanban_details">
-
                                 <h3>
                                     <t t-esc="record.name.value"/>
                                 </h3>
 
-                                <!-- Dynamic Action -->
-                                <button type="object"
+                                <p>
+                                    <t t-esc="record.description.value"/>
+                                </p>
+
+                               <button type="object"
                                         name="open_action"
-                                        class="btn btn-primary mt-2"
-                                        >
-                                    Open
+                                        class="btn btn-sm btn-primary o-kanban-icon-btn"
+                                        t-att-title="'Open ' + record.name.value">
+                                    <i class="fa fa-external-link"></i>
                                 </button>
 
                             </div>
-
                         </div>
                     </t>
                 </templates>
@@ -39,63 +43,100 @@
     </record>
 
 
+    <!-- ========================= -->
+    <!-- BIR FORMS DATA -->
+    <!-- ========================= -->
+
+    <!-- 0619-E -->
     <record id="bir_demo_0619e" model="bir.model">
-        <field name="name">BIR 0619E</field>
+        <field name="name">BIR 0619-E</field>
         <field name="category">monthly</field>
-        <field name="description">Monthly Remittance of Creditable Withholding Tax</field>
+        <field name="description">
+            Monthly Remittance Form of Creditable Income Taxes Withheld (Expanded).
+            Used to remit expanded withholding taxes (EWT) deducted from suppliers.
+            Filing Deadline: On or before the 10th day of the following month.
+        </field>
         <field name="action_id" ref="action_bir_0619e"/>
     </record>
 
+    <!-- 2550M -->
     <record id="bir_demo_2550m" model="bir.model">
         <field name="name">BIR 2550M</field>
         <field name="category">monthly</field>
-        <field name="description">Monthly Remittance of Creditable Withholding Tax</field>
+        <field name="description">
+            Monthly Value-Added Tax (VAT) Declaration.
+            Used by VAT-registered taxpayers to declare monthly VAT transactions.
+            Filing Deadline: On or before the 20th day following the end of each month.
+        </field>
         <field name="action_id" ref="action_bir_2550m"/>
     </record>
 
+    <!-- 1601-EQ -->
     <record id="bir_demo_1601eq" model="bir.model">
         <field name="name">BIR 1601-EQ</field>
         <field name="category">quarterly</field>
-        <field name="description">Quarterly Return of Withholding Tax</field>
+        <field name="description">
+            Quarterly Remittance Return of Creditable Income Taxes Withheld (Expanded).
+            Summarizes all monthly 0619-E remittances for the quarter.
+            Filing Deadline: On or before the last day of the month following the close of the quarter.
+        </field>
         <field name="action_id" ref="action_bir_1601eq"/>
     </record>
 
+    <!-- 1702-Q -->
     <record id="bir_demo_1702q" model="bir.model">
         <field name="name">BIR 1702-Q</field>
         <field name="category">quarterly</field>
-        <field name="description">Quarterly Return of Withholding Tax</field>
+        <field name="description">
+            Quarterly Income Tax Return for Corporations, Partnerships, and Other Non-Individual Taxpayers.
+            Used to declare quarterly corporate income tax.
+            Filing Deadline: Within 60 days after the close of each taxable quarter.
+        </field>
         <field name="action_id" ref="action_bir_1702q"/>
     </record>
 
+    <!-- 2550-Q -->
     <record id="bir_demo_2550q" model="bir.model">
         <field name="name">BIR 2550-Q</field>
         <field name="category">quarterly</field>
-        <field name="description">Quarterly Return of Withholding Tax</field>
+        <field name="description">
+            Quarterly Value-Added Tax (VAT) Return.
+            Used to summarize VAT declarations for the quarter.
+            Filing Deadline: On or before the 25th day following the close of the taxable quarter.
+        </field>
         <field name="action_id" ref="action_bir_2550q"/>
     </record>
 
+    <!-- 1604-E -->
     <record id="bir_demo_1604eq" model="bir.model">
-        <field name="name">BIR 1604-E-Q</field>
+        <field name="name">BIR 1604-E</field>
         <field name="category">annual</field>
-        <field name="description">Annual Return of Withholding Tax</field>
+        <field name="description">
+            Annual Information Return of Creditable Income Taxes Withheld (Expanded).
+            Reports summary of all expanded withholding taxes for the year.
+            Filing Deadline: On or before January 31 of the following year.
+        </field>
         <field name="action_id" ref="action_bir_1604e"/>
     </record>
 
-     <record id="bir_demo_1702c" model="bir.model">
-        <field name="name">BIR 1702 (Corporation)</field>
-        <field name="category">annual</field>
-        <field name="description">Annual Return of Withholding Tax</field>
-        <!-- <field name="action_id" ref="action_bir_1702c"/> -->
-    </record>
-
-     <record id="bir_demo_1601e" model="bir.model">
+    <!-- 1601-E Annual -->
+    <record id="bir_demo_1601e" model="bir.model">
         <field name="name">BIR 1601-E</field>
         <field name="category">annual</field>
-        <field name="description">Annual Return of Withholding Tax</field>
+        <field name="description">
+            Annual Return of Creditable Income Taxes Withheld (Expanded).
+            Used to reconcile all quarterly 1601-EQ filings for the taxable year.
+            Filing Deadline: On or before January 31 of the following year.
+        </field>
         <field name="action_id" ref="action_bir_1601e"/>
     </record>
-        
 
+    
+
+
+    <!-- ========================= -->
+    <!-- ACTION -->
+    <!-- ========================= -->
     <record id="action_bir_model" model="ir.actions.act_window">
         <field name="name">BIR Forms</field>
         <field name="res_model">bir.model</field>
@@ -104,10 +145,14 @@
         <field name="target">current</field>
     </record>
 
+    <!-- ========================= -->
+    <!-- MENU -->
+    <!-- ========================= -->
     <menuitem
         id="menu_bir_model"
         name="BIR Forms"
-        parent="menu_custom_sql_report"
         action="action_bir_model"
-        sequence="20"/>
+        sequence="20"
+        web_icon="itc_internal_dev,static/icon/form.png"/>
+
 </odoo>

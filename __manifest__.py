@@ -37,6 +37,7 @@
         'report/bir_1604e_report.xml',
         'report/cash_advance_report_template.xml',
         'report/disbursement_voucher_report.xml',
+        'report/bir_1702q_report.xml',
         #Views
         #'views/salary_advance_views.xml',
         'views/expense_sheet.xml',

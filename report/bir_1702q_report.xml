@@ -1,0 +1,165 @@
+<odoo>
+    <template id="report_bir_1702_document" name="BIR Form 1702Q">
+          <!-- REQUIRED: External layout wrapper -->
+        <t t-call="web.external_layout">
+            <main>
+        <t t-foreach="docs" t-as="o">
+        
+        <div class="page" style="font-size:11px; position:relative; width:210mm; height:297mm; margin:0; padding:0;">
+            <!-- Background image -->
+            <img class="background-img" 
+                src="https://res.cloudinary.com/dnb0wqyr8/image/upload/v1771462800/1702Q_2018ENCS_final2_page-0001_y6e1lw.jpg" 
+                style="position:absolute; top:0; left:0; width: 794px; height: 1051px; z-index:0;" />
+
+            <!-- Example placeholder fields -->
+            <div style="position:absolute; top:57mm; left:75mm; font-size:15pt; z-index:10; letter-spacing: 10px;" ><t t-esc="o.tin"/></div>
+            <div style="position:absolute; top:46.5mm; left:13mm; font-size:13pt; z-index:10; letter-spacing: 7px;" >02</div>
+            <div style="position:absolute; top:43.5mm; left:50mm; font-size:13pt; z-index:10; " ><t t-if="o.quarter == '1'">
+                /
+            </t></div>
+            <div style="position:absolute; top:42.5mm; left:70mm; font-size:13pt; z-index:10; " ><t t-if="o.quarter == '2'">
+                /
+            </t></div>
+            <div style="position:absolute; top:42.5mm; left:90mm; font-size:13pt; z-index:10; " ><t t-if="o.quarter == '3'">
+                /
+            </t></div>
+
+            <div style="position:absolute; top:46.5mm; left:30mm; font-size:13pt; z-index:10; letter-spacing: 7px;" >26</div>
+
+            <div style="position:absolute; top:57mm; left:185mm; font-size:15pt; z-index:10; letter-spacing: 7px;" >263</div>
+            
+            <div style="position:absolute; top:67mm; left:7mm; font-size:15pt; width: 120mm; z-index:10; width: 120mm;
+            white-space: normal; line-height: 1; text-align: left;"><t t-esc="o.company_id.name"/></div>
+            <div style="position:absolute; top:82mm; left:7mm; font-size:15pt; z-index:10; width: 190mm;
+            white-space: normal; line-height: 1; text-align: left;"><t t-esc="o.company_id.street"/></div>
+            <div style="position:absolute; top:88mm; left:185mm; font-size:15pt; z-index:10; letter-spacing: 7px;" ><t t-esc="o.company_id.zip"/></div>
+            <div style="position:absolute; top:97mm; left:7mm; font-size:15pt; z-index:10; letter-spacing: 10px;" ><t t-esc="o.company_id.phone"/></div>
+            <div style="position:absolute; top:97mm; left:65mm; font-size:15pt; z-index:10; letter-spacing: 7px;" ><t t-esc="o.company_id.email"/></div>
+            <div style="position:absolute; top:121mm; left:85mm; font-size:15pt; z-index:10; letter-spacing: 10px;
+            width:120mm; text-align: right;" >777777777</div>
+            <div style="position:absolute; top:127mm; left:85mm; font-size:15pt; z-index:10; letter-spacing: 10px;
+            width:120mm; text-align: right;" >999999999</div>
+            <div style="position:absolute; top:127mm; left:85mm; font-size:15pt; z-index:10; letter-spacing: 10px;
+            width:120mm; text-align: right;" >333333333</div>
+            <div style="position:absolute; top:133mm; left:85mm; font-size:15pt; z-index:10; letter-spacing: 10px;
+            width:120mm; text-align: right;" >555555555</div>
+            <div style="position:absolute; top:140mm; left:85mm; font-size:15pt; z-index:10; letter-spacing: 10px;
+            width:120mm; text-align: right;" >444444444</div>
+            <div style="position:absolute; top:145.5mm; left:85mm; font-size:15pt; z-index:10; letter-spacing: 10px;
+            width:120mm; text-align: right;" >333333333</div>
+            <div style="position:absolute; top:152mm; left:85mm; font-size:15pt; z-index:10; letter-spacing: 10px;
+            width:120mm; text-align: right;" >222222222</div>
+            <div style="position:absolute; top:158mm; left:85mm; font-size:15pt; z-index:10; letter-spacing: 10px;
+            width:120mm; text-align: right;" >111111111</div>
+            <div style="position:absolute; top:164mm; left:85mm; font-size:15pt; z-index:10; letter-spacing: 10px;
+            width:120mm; text-align: right;" >111111111</div>
+            <div style="position:absolute; top:170mm; left:85mm; font-size:15pt; z-index:10; letter-spacing: 10px;
+            width:120mm; text-align: right;" >111111111</div>
+            <div style="position:absolute; top: 176.5mm; left:85mm; font-size:15pt; z-index:10; letter-spacing: 10px;
+            width:120mm; text-align: right;" >111111111</div>
+            <div style="position:absolute; top:182.5mm; left:85mm; font-size:15pt; z-index:10; letter-spacing: 10px;
+            width:120mm; text-align: right;" >080980980</div>
+            <div style="position:absolute; top:189.5mm; left:85mm; font-size:15pt; z-index:10; letter-spacing: 10px;
+            width:120mm; text-align: right;" >456456456</div>
+            <div style="position:absolute; top:235.5mm; left:48mm; font-size:14pt; z-index:10; letter-spacing: 8px;" >12345</div>
+            <div style="position:absolute; top:235.5mm; left:73mm; font-size:14pt; z-index:10; letter-spacing: 8px;" >1234567</div>
+            <div style="position:absolute; top:235.5mm; left: 106mm; font-size:14pt; z-index:10; letter-spacing: 10px;" >02192026</div>
+            <div style="position:absolute; top:235.5mm; left:85mm; font-size:15pt; z-index:10; letter-spacing: 8px;
+            width:120mm; text-align: right;" >456456456</div>
+            <div style="position:absolute; top:242mm; left:48mm; font-size:14pt; z-index:10; letter-spacing: 8px;" >12345</div>
+            <div style="position:absolute; top:242mm; left:73mm; font-size:14pt; z-index:10; letter-spacing: 8px;" >1234567</div>
+            <div style="position:absolute; top:242mm; left: 106mm; font-size:14pt; z-index:10; letter-spacing: 10px;" >02192026</div>
+            <div style="position:absolute; top:242mm; left:85mm; font-size:15pt; z-index:10; letter-spacing: 8px;
+            width:120mm; text-align: right;" >456456456</div>
+            <div style="position:absolute; top: 248.5mm; left:73mm; font-size:14pt; z-index:10; letter-spacing: 8px;" >1234567</div>
+            <div style="position:absolute; top: 248.5mm; left: 106mm; font-size:14pt; z-index:10; letter-spacing: 10px;" >02192026</div>
+            <div style="position:absolute; top:248.5mm; left:85mm; font-size:15pt; z-index:10; letter-spacing: 8px;
+            width:120mm; text-align: right;" >456456456</div>   
+            <div style="position:absolute; top:242mm; left: 106mm; font-size:14pt; z-index:10; letter-spacing: 10px;" >02192026</div>
+            <div style="position:absolute; top:242mm; left:85mm; font-size:15pt; z-index:10; letter-spacing: 8px;
+            width:120mm; text-align: right;" >456456456</div>
+            <div style="position:absolute; top: 248.5mm; left:73mm; font-size:14pt; z-index:10; letter-spacing: 8px;" >1234567</div>
+            <div style="position:absolute; top: 248.5mm; left: 106mm; font-size:14pt; z-index:10; letter-spacing: 10px;" >02192026</div>
+            <div style="position:absolute; top:248.5mm; left:85mm; font-size:15pt; z-index:10; letter-spacing: 8px;
+            width:120mm; text-align: right;" >456456456</div>
+            </div>
+            
+                    <!-- Force page break -->
+        <div style="page-break-after: always;"></div>
+        <div class="page" style="font-size:11px; position:relative; width:210mm; height:297mm; margin:0; padding:0;">
+        <img class="background-img" 
+                src="https://res.cloudinary.com/dnb0wqyr8/image/upload/v1771462815/1702Q_2018ENCS_final2_page-0002_y0jsim.jpg" 
+                style="position:absolute; top:0; left:0; width:210mm; height:297mm; z-index:0;" />
+            <div style="position:absolute; top:29mm; left:7mm; font-size:15pt; z-index:10; letter-spacing: 10px;" ><t t-esc="o.tin"/></div>
+            <div style="position:absolute; top:30mm; left:80mm; font-size:15pt; width: 120mm; z-index:10; width: 120mm;
+            white-space: normal; line-height: 1; text-align: left;"><t t-esc="o.company_id.name"/></div>
+            <div style="position:absolute; top:44mm; left:80mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:44mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:49mm; left:80mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:49mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:54mm; left:80mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:54mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:60mm; left:80mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:60mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:65mm; left:80mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:65mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:71mm; left:80mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:71mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:76mm; left:80mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:76mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:81mm; left:80mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:81mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:87mm; left:80mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:87mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:98mm; left:80mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:98mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:104mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:110mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:121mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:126mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:131mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:136mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:142mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:147mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:153mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:158mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:164mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:169mm; left:190mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >07</div>
+            <div style="position:absolute; top:175mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:180mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:186mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:197mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:202mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:207mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:212mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:218mm; left:190mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >7</div>
+            <div style="position:absolute; top:224mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:224mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:235mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:241mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:246mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:252mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:257mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:262mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:273mm; left:18mm; font-size:10pt; z-index:10;" >SAMPLE FIELD</div>
+            <div style="position:absolute; top:278mm; left:18mm; font-size:10pt; z-index:10;" >SAMPLE FIELD</div>
+            <div style="position:absolute; top:271.5mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:276.5mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+            <div style="position:absolute; top:282.5mm; left:143mm; font-size:15pt; z-index:10; letter-spacing: 10px;" >00816807</div>
+
+    </div>
+    </t>
+    </main>
+    </t>
+</template>
+
+    <record id="action_report_bir_1702q" model="ir.actions.report">
+        <field name="name">BIR Form 1702Q</field>
+        <field name="model">bir.1702q</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">itc_internal_dev.report_bir_1702_document</field>
+        <field name="report_file">itc_internal_dev.report_bir_1702_document</field>
+        <field name="paperformat_id" ref="a4_paperformat"/>
+        <field name="print_report_name">'BIR_1702Q_%s' % (object.name)</field>
+    </record>
+</odoo>
