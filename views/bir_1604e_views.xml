@@ -25,8 +25,6 @@
                 <header>
                     <button name="action_generate_data" string="Generate Data" type="object" 
                             class="oe_highlight" invisible="state != 'draft'"/>
-                    <button name="action_export_excel" string="Export to Excel" type="object" 
-                            class="oe_highlight" invisible="state == 'draft'"/>
                     <button name="action_submit" string="Mark as Submitted" type="object" 
                             invisible="state != 'computed'"/>
                     <button name="action_reset_to_draft" string="Reset to Draft" type="object" 
@@ -35,11 +33,17 @@
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button name="action_export_excel" type="object" class="oe_stat_button" icon="fa-download" 
-                                invisible="excel_file == False">
-                            <field name="excel_filename" widget="statinfo" string="Download"/>
+                        <button name="action_generate_pdf" 
+                                type="object" 
+                                class="oe_stat_button" 
+                                icon="fa-print">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Print</span>
+                                <span class="o_stat_text">Report</span>
+                            </div>
                         </button>
                     </div>
+                    
                     <div class="oe_title">
                         <h1>
                             <field name="name" readonly="1"/>

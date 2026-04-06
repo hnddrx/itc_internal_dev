@@ -8,6 +8,12 @@ from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 
 
+import os
+from pypdf import PdfReader, PdfWriter
+from pypdf.generic import NameObject, DictionaryObject, NumberObject, create_string_object
+import pypdf
+
+
 class BIR1604E(models.Model):
     _name = 'bir.1604e'
     _description = 'BIR Form 1604-E - Annual Information Return'
@@ -334,276 +340,321 @@ class BIR1604E(models.Model):
                 'tax_rate': tax_rate,
             })
             seq += 1
-    
-    def action_export_excel(self):
-        """Export to Excel matching BIR 1604-E format"""
+     ####################
+     # Generate pdf start
+     ###################
+    def _fmt_date(self, d):
+        """Format a date value as MM/DD/YYYY for BIR forms."""
+        if not d:
+            return ''
+        if isinstance(d, str):
+            from datetime import datetime
+            try:
+                d = datetime.strptime(d, '%Y-%m-%d').date()
+            except ValueError:
+                return d
+        return d.strftime('%m/%d/%Y')
+ 
+    def _fmt_amt(self, value):
+        """Format a float as a comma-separated number string."""
+        if not value:
+            return ''
+        return f'{value:,.2f}'
+ 
+    def _build_pdf_field_map(self):
+       
         self.ensure_one()
-        
-        # Create Excel file in memory
-        output = BytesIO()
-        workbook = xlsxwriter.Workbook(output, {'in_memory': True})
-        
-        # Define formats
-        header_format = workbook.add_format({
-            'bold': True,
-            'align': 'center',
-            'valign': 'vcenter',
-            'border': 1,
-            'bg_color': '#D3D3D3'
+        c = self.company_id
+        tin_clean = (c.vat or '').replace('-', '').replace(' ', '')
+ 
+        # ── Helpers ───────────────────────────────────────────────────────
+        # Your schedule1 lines use a month Selection field (JAN/FEB/…/DEC).
+        # The BIR form uses QUARTERLY rows in Schedule 1, so we aggregate.
+        # (If you actually store quarterly data, adjust _aggregate_quarterly below.)
+        q_data = self._aggregate_quarterly_s1()
+ 
+        # Your schedule2 lines are monthly — key them by the month code
+        monthly = {line.month: line for line in self.schedule2_line_ids}
+ 
+        # ── Build map ─────────────────────────────────────────────────────
+        field_map = {
+            # Part I
+            'Text9':    str(self.year),
+            'Text166':  str(self.num_sheets_attached) if self.num_sheets_attached else '',
+            'Button168': '/Yes' if self.amended_return else '/Off',
+            'Button169': '/Off' if self.amended_return else '/Yes',
+            'Text4':    tin_clean,
+            'Text167':  self.rdo_code or '',
+            'Text1':    c.name or '',
+            'Text2':    (c.street or '') + (' ' + (c.street2 or '') if c.street2 else ''),
+            'Text3':    (c.city or '') + (f', {c.state_id.name}' if c.state_id else ''),
+            'Text7':    c.zip or '',
+            'Text6':    c.phone or '',
+            'Text8':    c.email or '',
+ 
+            # Schedule 1 – Quarterly
+            # Q1
+            'Text10': self._fmt_date(q_data['Q1']['date']),
+            'Text11': q_data['Q1']['bank'],
+            'Text14': q_data['Q1']['tra'],
+            'Text19': self._fmt_amt(q_data['Q1']['tax']),
+            'Text39': self._fmt_amt(q_data['Q1']['pen']),
+            'Text45': self._fmt_amt(q_data['Q1']['total']),
+            # Q2
+            'Text32': self._fmt_date(q_data['Q2']['date']),
+            'Text33': q_data['Q2']['bank'],
+            'Text15': q_data['Q2']['tra'],
+            'Text20': self._fmt_amt(q_data['Q2']['tax']),
+            'Text17': self._fmt_amt(q_data['Q2']['pen']),
+            'Text44': self._fmt_amt(q_data['Q2']['total']),
+            # Q3
+            'Text12': self._fmt_date(q_data['Q3']['date']),
+            'Text34': q_data['Q3']['bank'],
+            'Text16': q_data['Q3']['tra'],
+            'Text21': self._fmt_amt(q_data['Q3']['tax']),
+            'Text41': self._fmt_amt(q_data['Q3']['pen']),
+            'Text43': self._fmt_amt(q_data['Q3']['total']),
+            # Q4
+            'Text13': self._fmt_date(q_data['Q4']['date']),
+            'Text35': q_data['Q4']['bank'],
+            'Text31': q_data['Q4']['tra'],
+            'Text36': self._fmt_amt(q_data['Q4']['tax']),
+            'Text40': self._fmt_amt(q_data['Q4']['pen']),
+            'Text42': self._fmt_amt(q_data['Q4']['total']),
+            # S1 Totals
+            'Text37': self._fmt_amt(self.total_1601e_taxes),
+            'Text38': self._fmt_amt(self.total_1601e_penalties),
+            'Text18': self._fmt_amt(self.total_1601e_remitted),
+ 
+            # Signature
+            'Text23': f'{self.signatory_name or ""} / {self.signatory_title or ""}',
+            'Text24': f'{self.signatory_name or ""} / {self.signatory_title or ""}',
+            'Text25': '',   # Tax agent accreditation — add a field if needed
+            'Text26': '',   # Date of issue
+            'Text27': '',   # Date of expiry
+        }
+ 
+        # ── Schedule 2 – Monthly ──────────────────────────────────────────
+        # Maps your month Selection codes to the correct PDF field groups
+        MONTHLY_PDF_FIELDS = {
+            'JAN':  ('Text22', 'Text82',  'Text69', 'Text57',  'Text95',  'Text108'),
+            'FEB':  ('Text46', 'Text58',  'Text70', 'Text83',  'Text96',  'Text109'),
+            'MAR':  ('Text47', 'Text59',  'Text71', 'Text84',  'Text97',  'Text110'),
+            'APR':  ('Text48', 'Text60',  'Text72', 'Text85',  'Text98',  'Text111'),
+            'MAY':  ('Text49', 'Text61',  'Text73', 'Text86',  'Text99',  'Text112'),
+            'JUN':  ('Text50', 'Text62',  'Text74', 'Text87',  'Text100', 'Text113'),
+            'JUL':  ('Text51', 'Text63',  'Text75', 'Text88',  'Text101', 'Text114'),
+            'AUG':  ('Text52', 'Text64',  'Text76', 'Text89',  'Text102', 'Text115'),
+            'SEPT': ('Text53', 'Text65',  'Text77', 'Text90',  'Text103', 'Text116'),
+            'OCT':  ('Text54', 'Text66',  'Text78', 'Text91',  'Text104', 'Text117'),
+            'NOV':  ('Text55', 'Text67',  'Text79', 'Text92',  'Text105', 'Text118'),
+            'DEC':  ('Text56', 'Text68',  'Text80', 'Text93',  'Text106', 'Text119'),
+        }
+ 
+        total_m_tax = 0.0
+        total_m_pen = 0.0
+        for month_code, keys in MONTHLY_PDF_FIELDS.items():
+            date_k, bank_k, tra_k, tax_k, pen_k, total_k = keys
+            line = monthly.get(month_code)
+            if line:
+                total_m_tax += line.taxes_withheld
+                total_m_pen += line.penalties
+                field_map[date_k]  = self._fmt_date(line.date_remittance)
+                field_map[bank_k]  = line.bank_name or ''
+                field_map[tra_k]   = ''   # Add tra_number field to schedule2 if needed
+                field_map[tax_k]   = self._fmt_amt(line.taxes_withheld)
+                field_map[pen_k]   = self._fmt_amt(line.penalties)
+                field_map[total_k] = self._fmt_amt(line.total_remitted)
+            else:
+                for k in keys:
+                    field_map[k] = ''
+ 
+        field_map['Text94']  = self._fmt_amt(total_m_tax)
+        field_map['Text107'] = self._fmt_amt(total_m_pen)
+        field_map['Text120'] = self._fmt_amt(total_m_tax + total_m_pen)
+ 
+        # ── Page 2, Schedule 3 = your schedule4_line_ids (EWT Alphalist) ──
+        # The PDF template only has 4 visible rows.
+        # Full list must be e-submitted separately per BIR rules.
+        EWT_PDF_ROWS = [
+            ('Text28',  'Text123', 'Text126', 'Text129', 'Text132', 'Text136', 'Text139'),
+            ('Text121', 'Text124', 'Text127', 'Text130', 'Text133', 'Text137', 'Text140'),
+            ('Text122', 'Text125', 'Text128', 'Text131', 'Text134', 'Text138', 'Text141'),
+            (None,       None,      None,      None,      'Text135',  None,     'Text142'),
+        ]
+        ewt_lines = self.schedule4_line_ids
+        for i, row_keys in enumerate(EWT_PDF_ROWS):
+            seq_k, tin_k, name_k, atc_k, amt_k, rate_k, tax_k = row_keys
+            line = ewt_lines[i] if i < len(ewt_lines) else None
+            if line:
+                tax_withheld = line.income_payment * (line.tax_rate / 100)
+                if seq_k:   field_map[seq_k]  = str(line.sequence)
+                if tin_k:   field_map[tin_k]  = line.tin or ''
+                if name_k:  field_map[name_k] = line.payee_name or ''
+                if atc_k:   field_map[atc_k]  = line.atc_code or ''
+                if amt_k:   field_map[amt_k]  = self._fmt_amt(line.income_payment)
+                if rate_k:  field_map[rate_k] = str(line.tax_rate)
+                if tax_k:   field_map[tax_k]  = self._fmt_amt(tax_withheld)
+            else:
+                for k in row_keys:
+                    if k:
+                        field_map[k] = ''
+ 
+        # ── Page 2, Schedule 4 = your schedule3_line_ids (Exempt Alphalist) ─
+        EXEMPT_PDF_ROWS = [
+            ('Text29',  'Text146', 'Text150', 'Text154', 'Text158', 'Text162'),
+            ('Text143', 'Text147', 'Text151', 'Text155', 'Text159', 'Text164'),
+            ('Text144', 'Text148', 'Text152', 'Text156', 'Text160', 'Text163'),
+            ('Text145', 'Text149', 'Text153', 'Text157', 'Text161', 'Text165'),
+        ]
+        exempt_lines = self.schedule3_line_ids
+        for i, row_keys in enumerate(EXEMPT_PDF_ROWS):
+            seq_k, tin_k, name_k, atc_k, nature_k, amt_k = row_keys
+            line = exempt_lines[i] if i < len(exempt_lines) else None
+            if line:
+                field_map[seq_k]    = str(line.sequence)
+                field_map[tin_k]    = line.tin or ''
+                field_map[name_k]   = line.payee_name or ''
+                field_map[atc_k]    = line.atc_code or ''
+                field_map[nature_k] = line.nature_income or ''
+                field_map[amt_k]    = self._fmt_amt(line.income_payment)
+            else:
+                for k in row_keys:
+                    field_map[k] = ''
+ 
+        return field_map
+ 
+    def _aggregate_quarterly_s1(self):
+     
+        QUARTER_MAP = {
+            'Q1': ['JAN', 'FEB', 'MAR'],
+            'Q2': ['APR', 'MAY', 'JUN'],
+            'Q3': ['JUL', 'AUG', 'SEPT'],
+            'Q4': ['OCT', 'NOV', 'DEC'],
+        }
+        result = {}
+        month_lookup = {line.month: line for line in self.schedule1_line_ids}
+ 
+        for quarter, months in QUARTER_MAP.items():
+            lines = [month_lookup[m] for m in months if m in month_lookup]
+            if lines:
+                # Use the last month's remittance date and bank as the quarter's value;
+                # sum taxes and penalties across the 3 months.
+                last = lines[-1]
+                tax  = sum(l.taxes_withheld for l in lines)
+                pen  = sum(l.penalties for l in lines)
+                result[quarter] = {
+                    'date':  last.date_remittance,
+                    'bank':  last.bank_name or '',
+                    'tra':   '',   # Add a TRA field to schedule1 if needed
+                    'tax':   tax,
+                    'pen':   pen,
+                    'total': tax + pen,
+                }
+            else:
+                result[quarter] = {'date': None, 'bank': '', 'tra': '',
+                                   'tax': 0.0, 'pen': 0.0, 'total': 0.0}
+        return result
+
+    def action_generate_pdf(self):
+
+        self.ensure_one()
+        import base64, io, os
+        from pypdf import PdfReader, PdfWriter
+        from pypdf.generic import NameObject, DictionaryObject, NumberObject, create_string_object
+
+        # Locate the template — stored in the module's static/pdf folder
+        module_path = os.path.dirname(os.path.abspath(__file__))
+        template_path = os.path.join(module_path, '..', 'static', 'src','pdf', '1604E.pdf')
+        template_path = os.path.normpath(template_path)
+
+        if not os.path.exists(template_path):
+            raise UserError(_(
+                'BIR 1604-E PDF template not found.\n\n'
+                'Please place the official BIR Form 1604-E PDF at:\n'
+                '  %s'
+            ) % template_path)
+
+        # Build the field → value mapping from your model data
+        field_map = self._build_pdf_field_map()
+
+        # Fill the PDF
+        reader = PdfReader(template_path)
+        writer = PdfWriter()
+        writer.append(reader)
+
+        # Apply letter spacing per field via /DA (Tc = character spacing)
+        SPACED_FIELDS = {
+            'Text4':   ('14 Tc',  9.2),  # TIN
+            'Text9':   ('14 Tc',  9.2),  # Year
+            'Text166': ('4 Tc',  9.2),  # Sheets attached
+            'Text167': ('4 Tc',  9.2),  # RDO Code
+            'Text1':   ('6 Tc',  9.2),  # Withholding agent name
+            'Text2':   ('6 Tc',  9.2),  # Address line 1
+            'Text3':   ('6 Tc',  9.2),  # Address line 2
+            'Text6':   ('6 Tc',  9.2),  # Contact number
+            'Text8':   ('6 Tc',  9.2),  # Email address
+        }
+
+        for page in writer.pages:
+            if '/Annots' in page:
+                for annot in page['/Annots']:
+                    obj = annot.get_object()
+                    if obj.get('/Subtype') == '/Widget':
+                        name = str(obj.get('/T', ''))
+                        if name in SPACED_FIELDS:
+                            tc, fs = SPACED_FIELDS[name]
+                            new_da = f'.2666667 .2666667 .2666667 rg\n{tc}\n/F0 {fs} Tf\n'
+                            obj[NameObject('/DA')] = create_string_object(new_da)
+
+        # Remove text field borders and make backgrounds transparent
+        for page in writer.pages:
+            if '/Annots' in page:
+                for annot in page['/Annots']:
+                    obj = annot.get_object()
+                    if obj.get('/Subtype') == '/Widget':
+                        # Set border width to 0
+                        obj[NameObject('/BS')] = DictionaryObject({
+                            NameObject('/W'): NumberObject(0)
+                        })
+                        # Remove both /BC (border color) and /BG (background color)
+                        if '/MK' in obj:
+                            mk = obj['/MK'].get_object()
+                            new_mk = DictionaryObject()
+                            for k, v in mk.items():
+                                if k not in ('/BC', '/BG'):
+                                    new_mk[NameObject(k)] = v
+                            obj[NameObject('/MK')] = new_mk
+
+        # Fill fields after removing borders
+        for page in writer.pages:
+            writer.update_page_form_field_values(page, field_map)
+
+        # Write to bytes buffer
+        buf = io.BytesIO()
+        writer.write(buf)
+        pdf_bytes = buf.getvalue()
+
+        # Attach the filled PDF to this record
+        filename = f'BIR_1604E_{self.year}_{self.company_id.name}.pdf'
+        attachment = self.env['ir.attachment'].create({
+            'name': filename,
+            'type': 'binary',
+            'datas': base64.b64encode(pdf_bytes),
+            'res_model': self._name,
+            'res_id': self.id,
+            'mimetype': 'application/pdf',
         })
-        
-        title_format = workbook.add_format({
-            'bold': True,
-            'font_size': 12,
-            'align': 'center',
-            'valign': 'vcenter'
-        })
-        
-        label_format = workbook.add_format({
-            'bold': True,
-            'align': 'left',
-            'border': 1
-        })
-        
-        data_format = workbook.add_format({
-            'align': 'right',
-            'border': 1,
-            'num_format': '#,##0.00'
-        })
-        
-        text_format = workbook.add_format({
-            'align': 'left',
-            'border': 1
-        })
-        
-        center_format = workbook.add_format({
-            'align': 'center',
-            'border': 1
-        })
-        
-        # Main Sheet
-        sheet = workbook.add_worksheet('BIR Form 1604-E')
-        sheet.set_column('A:A', 8)
-        sheet.set_column('B:C', 12)
-        sheet.set_column('D:P', 15)
-        
-        row = 0
-        
-        # Header
-        sheet.write(row, 0, '(To be filled up by the BIR)', text_format)
-        row += 1
-        sheet.write(row, 1, 'DLN:', label_format)
-        sheet.write(row, 24, 'PSOC:', label_format)
-        row += 2
-        
-        # Instructions
-        sheet.write(row, 0, 'Fill in all applicable spaces. Mark all appropriate boxes with an "X".', text_format)
-        row += 1
-        
-        # Basic Info Row
-        sheet.write(row, 0, '1', center_format)
-        sheet.write(row, 1, 'For the Year', label_format)
-        sheet.write(row, 12, '2', center_format)
-        sheet.write(row, 13, 'Amended Return?', label_format)
-        sheet.write(row, 24, '3', center_format)
-        sheet.write(row, 25, 'No of Sheets Attached', label_format)
-        row += 1
-        
-        sheet.write(row, 1, str(self.year), center_format)
-        sheet.write(row, 20, 'X' if self.amended_return else '', center_format)
-        sheet.write(row, 23, 'X' if not self.amended_return else '', center_format)
-        sheet.write(row, 25, self.num_sheets_attached, center_format)
-        row += 1
-        
-        # Part I: Background Information
-        sheet.merge_range(row, 0, row, 4, 'Part I - Background Information', title_format)
-        row += 1
-        
-        sheet.write(row, 0, '4', center_format)
-        sheet.write(row, 1, 'TIN', label_format)
-        sheet.write(row, 17, '5', center_format)
-        sheet.write(row, 18, 'RDO Code', label_format)
-        sheet.write(row, 23, '6', center_format)
-        sheet.write(row, 24, 'Line of Business/Occupation', label_format)
-        row += 1
-        
-        sheet.write(row, 1, self.tin or '', text_format)
-        sheet.write(row, 18, self.rdo_code or '', text_format)
-        sheet.write(row, 24, self.line_of_business or '', text_format)
-        row += 2
-        
-        sheet.write(row, 0, '7', center_format)
-        sheet.write(row, 1, 'Withholding Agent Name', label_format)
-        row += 1
-        sheet.merge_range(row, 1, row, 10, self.withholding_agent_name or '', text_format)
-        row += 2
-        
-        sheet.write(row, 0, '9', center_format)
-        sheet.write(row, 1, 'Registered Address', label_format)
-        row += 1
-        sheet.merge_range(row, 1, row, 15, self.registered_address or '', text_format)
-        row += 2
-        
-        sheet.write(row, 0, '11', center_format)
-        sheet.write(row, 1, 'Category of Withholding Agent', label_format)
-        sheet.write(row, 12, 'X' if self.category_private else '', center_format)
-        sheet.write(row, 13, 'Private', text_format)
-        sheet.write(row, 16, 'X' if self.category_government else '', center_format)
-        sheet.write(row, 17, 'Government', text_format)
-        row += 2
-        
-        # Part II: Summary of Remittances
-        sheet.merge_range(row, 0, row, 10, 'Part II - Summary of Remittances', title_format)
-        row += 1
-        
-        # Schedule 1: Form 1601-E
-        sheet.write(row, 0, 'Schedule 1', label_format)
-        sheet.merge_range(row, 5, row, 10, 'Remittance per BIR Form No. 1601-E', title_format)
-        row += 1
-        
-        # Schedule 1 Headers
-        sheet.write(row, 0, 'MONTH', header_format)
-        sheet.merge_range(row, 3, row, 3, 'DATE OF REMITTANCE', header_format)
-        sheet.merge_range(row, 7, row, 15, 'NAME OF BANK/BANKCODE/ROR NO., IF ANY', header_format)
-        sheet.merge_range(row, 16, row, 23, 'TAXES WITHHELD', header_format)
-        sheet.merge_range(row, 24, row, 27, 'PENALTIES', header_format)
-        sheet.merge_range(row, 28, row, 30, 'TOTAL AMOUNT REMITTED', header_format)
-        row += 1
-        
-        # Schedule 1 Data
-        for line in self.schedule1_line_ids:
-            sheet.write(row, 0, line.month, text_format)
-            sheet.write(row, 3, line.date_remittance.strftime('%m/%d/%Y') if line.date_remittance else '', text_format)
-            sheet.write(row, 7, line.bank_name or '', text_format)
-            sheet.write(row, 16, line.taxes_withheld, data_format)
-            sheet.write(row, 24, line.penalties, data_format)
-            sheet.write(row, 28, line.total_remitted, data_format)
-            row += 1
-        
-        # Schedule 1 Total
-        sheet.write(row, 0, 'Total', label_format)
-        sheet.write(row, 16, self.total_1601e_taxes, data_format)
-        sheet.write(row, 24, self.total_1601e_penalties, data_format)
-        sheet.write(row, 28, self.total_1601e_remitted, data_format)
-        row += 2
-        
-        # Schedule 2: Form 1606
-        sheet.write(row, 0, 'Schedule 2', label_format)
-        sheet.merge_range(row, 5, row, 10, 'Remittance per BIR Form No. 1606', title_format)
-        row += 1
-        
-        # Schedule 2 Headers
-        sheet.write(row, 0, 'MONTH', header_format)
-        sheet.merge_range(row, 3, row, 3, 'DATE OF REMITTANCE', header_format)
-        sheet.merge_range(row, 7, row, 15, 'NAME OF BANK/BANKCODE/ROR NO., IF ANY', header_format)
-        sheet.merge_range(row, 16, row, 23, 'TAXES WITHHELD', header_format)
-        sheet.merge_range(row, 24, row, 27, 'PENALTIES', header_format)
-        sheet.merge_range(row, 28, row, 30, 'TOTAL AMOUNT REMITTED', header_format)
-        row += 1
-        
-        # Schedule 2 Data
-        for line in self.schedule2_line_ids:
-            sheet.write(row, 0, line.month, text_format)
-            sheet.write(row, 3, line.date_remittance.strftime('%m/%d/%Y') if line.date_remittance else '', text_format)
-            sheet.write(row, 7, line.bank_name or '', text_format)
-            sheet.write(row, 16, line.taxes_withheld, data_format)
-            sheet.write(row, 24, line.penalties, data_format)
-            sheet.write(row, 28, line.total_remitted, data_format)
-            row += 1
-        
-        # Schedule 2 Total
-        sheet.write(row, 0, 'Total', label_format)
-        sheet.write(row, 16, self.total_1606_taxes, data_format)
-        sheet.write(row, 24, self.total_1606_penalties, data_format)
-        sheet.write(row, 28, self.total_1606_remitted, data_format)
-        row += 2
-        
-        # Signatory Section
-        sheet.write(row, 2, '12', center_format)
-        sheet.write(row, 4, self.signatory_name or '', text_format)
-        sheet.write(row, 21, '13', center_format)
-        sheet.write(row, 22, self.signatory_title or '', text_format)
-        row += 1
-        sheet.merge_range(row, 3, row, 15, "Taxpayer/Authorized Agent Signature over Printed Name", label_format)
-        sheet.merge_range(row, 22, row, 27, "Title/Position of Signatory", label_format)
-        
-        # Sheet 2: Schedule 3
-        sheet3 = workbook.add_worksheet('Schedule 3')
-        sheet3.set_column('A:A', 6)
-        sheet3.set_column('B:G', 12)
-        sheet3.set_column('H:R', 20)
-        
-        row3 = 0
-        sheet3.merge_range(row3, 0, row3, 30, 'Schedule 3: ALPHALIST OF OTHER PAYEES WHOSE INCOME PAYMENTS ARE EXEMPT FROM WITHHOLDING TAX', title_format)
-        row3 += 1
-        
-        # Headers
-        sheet3.write(row3, 0, 'SEQ NO.', header_format)
-        sheet3.merge_range(row3, 2, row3, 7, 'Taxpayer Identification Number (TIN)', header_format)
-        sheet3.merge_range(row3, 8, row3, 17, 'NAME OF PAYEES', header_format)
-        sheet3.write(row3, 18, 'ATC', header_format)
-        sheet3.merge_range(row3, 21, row3, 25, 'NATURE OF INCOME PAYMENT', header_format)
-        sheet3.merge_range(row3, 27, row3, 30, 'AMOUNT OF INCOME PAYMENT', header_format)
-        row3 += 1
-        
-        # Schedule 3 Data
-        for line in self.schedule3_line_ids:
-            sheet3.write(row3, 0, line.sequence, center_format)
-            sheet3.write(row3, 2, line.tin or '', text_format)
-            sheet3.write(row3, 8, line.payee_name, text_format)
-            sheet3.write(row3, 18, line.atc_code, text_format)
-            sheet3.write(row3, 21, line.nature_income, text_format)
-            sheet3.write(row3, 27, line.income_payment, data_format)
-            row3 += 1
-        
-        # Sheet 3: Schedule 4
-        sheet4 = workbook.add_worksheet('Schedule 4')
-        sheet4.set_column('A:A', 6)
-        sheet4.set_column('B:G', 12)
-        sheet4.set_column('H:R', 20)
-        
-        row4 = 0
-        sheet4.merge_range(row4, 0, row4, 30, 'Schedule 4: Alphalist of Payees Subject to Expanded Withholding Tax', title_format)
-        row4 += 1
-        
-        # Headers
-        sheet4.write(row4, 0, 'SEQ NO.', header_format)
-        sheet4.merge_range(row4, 2, row4, 7, 'TAXPAYER IDENTIFICATION NUMBER (TIN)', header_format)
-        sheet4.merge_range(row4, 8, row4, 17, 'NAME OF PAYEES', header_format)
-        sheet4.write(row4, 18, 'ATC', header_format)
-        sheet4.merge_range(row4, 21, row4, 25, 'NATURE OF INCOME PAYMENT', header_format)
-        sheet4.merge_range(row4, 27, row4, 30, 'AMOUNT OF INCOME PAYMENT', header_format)
-        sheet4.write(row4, 31, 'RATE OF TAX', header_format)
-        row4 += 1
-        
-        # Schedule 4 Data
-        for line in self.schedule4_line_ids:
-            sheet4.write(row4, 0, line.sequence, center_format)
-            sheet4.write(row4, 2, line.tin or '', text_format)
-            sheet4.write(row4, 8, line.payee_name, text_format)
-            sheet4.write(row4, 18, line.atc_code, text_format)
-            sheet4.write(row4, 21, line.nature_income, text_format)
-            sheet4.write(row4, 27, line.income_payment, data_format)
-            sheet4.write(row4, 31, line.tax_rate, data_format)
-            row4 += 1
-        
-        # Close workbook and save
-        workbook.close()
-        output.seek(0)
-        
-        # Save to record
-        filename = f'BIR_1604E_{self.year}_{self.company_id.name}.xlsx'
-        self.write({
-            'excel_file': base64.b64encode(output.read()),
-            'excel_filename': filename
-        })
-        
-        # Return download action
+
         return {
             'type': 'ir.actions.act_url',
-            'url': f'/web/content/bir.1604e/{self.id}/excel_file/{filename}?download=true',
+            'url': f'/web/content/{attachment.id}?download=true',
             'target': 'self',
         }
+   
+    #####################
+    # Generate pdf End
+    ########################
     
     def action_reset_to_draft(self):
         self.state = 'draft'

@@ -65,7 +65,17 @@
                     </header>
 
                     <sheet>
-                       
+                       <div class="oe_button_box" name="button_box">
+                            <button name="action_generate_pdf" 
+                                    type="object" 
+                                    class="oe_stat_button" 
+                                    icon="fa-print">
+                                <div class="o_stat_info">
+                                    <span class="o_stat_text">Print</span>
+                                    <span class="o_stat_text">Report</span>
+                                </div>
+                            </button>
+                        </div>
 
                         <!-- ========== PART I - BACKGROUND INFO ========== -->
                         <group string="Part I - Background Information">
