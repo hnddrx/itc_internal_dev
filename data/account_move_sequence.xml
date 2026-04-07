@@ -6,6 +6,7 @@
         <field name="code">account.move.si</field>
         <field name="prefix">SI</field>
         <field name="padding">12</field>
+        <field name="number_increment">1</field>
         <field name="number_next">1</field>
     </record>
 
@@ -13,8 +14,9 @@
     <record id="seq_account_move_dv" model="ir.sequence">
         <field name="name">Disbursement Voucher Sequence</field>
         <field name="code">account.move.dv</field>
-        <field name="prefix">DV</field>
+        <field name="prefix">CV</field>
         <field name="padding">12</field>
+        <field name="number_increment">1</field>
         <field name="number_next">1</field>
     </record>
 
