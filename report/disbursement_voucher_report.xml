@@ -36,7 +36,7 @@
                 <table style="width:100%; border-collapse:collapse;">
                   <tr>
                     <td style="border:1px solid black; padding:5px;">Voucher No.</td>
-                    <td style="border:1px solid black; padding:5px;"><t t-esc="doc.name"/></td>
+                    <td style="border:1px solid black; padding:5px;"><t t-esc="doc.memo"/></td>
                   </tr>
                   <tr>
                     <td style="border:1px solid black; padding:5px;">Voucher Date</td>
