@@ -29,16 +29,6 @@
                             <span>Export</span>
 
                         </button>
-
-
-
-                        
-                        <!-- Export PDF -->
-                        <!--<button type="object"
-                                name="action_export_pdf"
-                                class="btn btn-outline-danger o_btn_icon"
-                                icon="fa fa-file-pdf"
-                                string="Export to PDF"/> -->
                     </div>
                 </header>
 
@@ -47,17 +37,15 @@
                     <!-- =========================
                         Report Info
                     ========================= -->
-                    <group>
+                    <group groups="itc_internal_dev.group_sql_report_manager">
                         <group>
-                            <field name="name" widget="selection" groups="itc_internal_dev.group_sql_report_manager"/>
-                            <field name="report_category" groups="itc_internal_dev.group_sql_report_manager"/>
+                            <field name="name" widget="selection" />
+                            <field name="report_category"/>
                         </group>
                         <group>
                             <field name="description" colspan="2" class="o_field_full_width"/>
                         </group>
                         <group>
-                            <field name="generated_by" readonly="1"/>
-                            <field name="generated_on" readonly="1"/>
                             <field name="sql_query" invisible="1" nolabel="1" class="o_sql_query_field"/>
                         </group>
                     </group>
@@ -68,17 +56,14 @@
                     <group string="Filters" class="o_group o_group_box" colspan="2">
                         <group>
                             <!-- Date or Year Filter -->
-                            <field name="filter_by_year" widget="toggle"/>
-                            <field name="from_date" invisible="filter_by_year == True"/>
-                            <field name="to_date" invisible="filter_by_year == True"/>
+                            <field name="filter_by_year" widget="boolean_toggle"/>
                             <field name="year" invisible="filter_by_year == False"/>
                         </group>
-
                         <group>
-                            <!-- Dynamic Column Filter -->
-                            <field name="filter_column" colspan="2" class="o_field_full_width" placeholder="Select column to filter"/>
-                            <field name="filter_value" colspan="2" class="o_field_full_width" placeholder="Enter value to filter"/>
+                            <field name="from_date" invisible="filter_by_year == True"/>
+                            <field name="to_date" invisible="filter_by_year == True"/>
                         </group>
+
                     </group>
 
                     <!-- =========================
@@ -86,11 +71,9 @@
                     ========================= -->
                     <notebook>
                         <page string="Result">
-                            <field name="result_ids" create="false" edit="false" delete="false">
-                                <list string="Query Results" edit="false" create="false" delete="false" class="o_list_view">
-                                    <field name="html_result" readonly="1" class="o_field_full_width"/>
-                                </list>
-                                <form string="Query Result Line" edit="false" create="false" delete="false"> 
+                            <field name="result_ids" create="false" edit="false" delete="false" no_open="1">
+                               
+                                <form string="Query Result Line" edit="false" create="false" delete="false" open="false"> 
                                     <field name="html_result" readonly="1" class="o_field_full_width">
                                         <div class="o_sql_report_result"/>
                                     </field>
@@ -110,14 +93,52 @@
                     <!-- =========================
                         Export Info
                     ========================= -->
-                    <group colspan="2" string="Export Info" class="o_group_box o_group_bottom">
-                        <field name="exported_on" readonly="1"/>
-                        <field name="exported_by" readonly="1"/>
+                    <group string="Audit">
+                        <group string="Generated">
+                            <field name="generated_by" readonly="1"/>
+                            <field name="generated_on" readonly="1"/>
+                        </group>
+                        <group string="Exported">
+                            <field name="exported_by" readonly="1"/>
+                            <field name="exported_on" readonly="1"/>
+                        </group>
                     </group>
                 </sheet>
 
                 <chatter/>
             </form>
+        </field>
+    </record>
+
+    <record id="view_sql_report_search" model="ir.ui.view">
+        <field name="name">custom.sql.report.search</field>
+        <field name="model">custom.sql.report</field>
+        <field name="arch" type="xml">
+            <search string="Search Reports">
+
+                <!-- Search fields -->
+                <field name="name" string="Report Name"/>
+                <field name="report_category" string="Category"/>
+
+                <!-- Quick filters -->
+                <filter name="filter_my_reports"
+                        string="My Reports"
+                        domain="[('generated_by', '=', uid)]"/>
+
+                <separator/>
+
+                <!-- Group By -->
+                <filter name="group_by_category"
+                        string="Category"
+                        context="{'group_by': 'report_category'}"/>
+                <filter name="group_by_generated_by"
+                        string="Generated By"
+                        context="{'group_by': 'generated_by'}"/>
+                <filter name="group_by_generated_on"
+                        string="Generated On"
+                        context="{'group_by': 'generated_on:month'}"/>
+
+            </search>
         </field>
     </record>
 
@@ -128,7 +149,7 @@
         <field name="name">custom.sql.report.line.list</field>
         <field name="model">custom.sql.report.line</field>
         <field name="arch" type="xml">
-            <list string="Query Results" create="false" edit="false" delete="false">
+            <list string="Query Results" create="false" edit="false" delete="false" >
                 <field name="html_result"/>
             </list>
         </field>
