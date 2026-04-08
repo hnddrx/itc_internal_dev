@@ -862,7 +862,7 @@ class SqlReport(models.Model):
     sql_query = fields.Text("SQL Query")
     
     result_columns = fields.Text("Result Columns")  # JSON array
-    filter_by_year = fields.Boolean(string="Filter By year", tracking=True, default=True ,help="Checking this will allow you to filter by year.")
+    filter_by_year = fields.Boolean(string="Filter By year", tracking=True, default=False ,help="Checking this will allow you to filter by year.")
     year = fields.Selection(
         [(str(y), str(y)) for y in range(2000, 2051)],
         string="Year",
