@@ -29,6 +29,12 @@
                             type="action"
                             class="oe_highlight"
                             invisible="payment_state != 'paid' or move_type != 'out_invoice'"/>
+
+                    <button name="action_print"
+                            string="Print BIR 2307"
+                            type="object"
+                            class="oe_highlight"
+                            invisible="move_type == 'out_invoice'"/>
                     
                 </xpath>
 
