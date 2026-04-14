@@ -15,4 +15,25 @@
         <field name="header_spacing">0</field>
         <field name="dpi">90</field>
     </record>
+
+    <record id="paperformat_bir_2307" model="report.paperformat">
+        <field name="name">BIR 2307 Folio Paper</field>
+        <field name="default" eval="False"/>
+        <!-- Remove "A4" and define custom dimensions for Folio (8.5x13 inches) -->
+        <!-- Width: 216 mm, Height: 330 mm -->
+        <field name="format">custom</field>
+        <field name="page_width">216</field>
+        <field name="page_height">330</field>
+        <field name="orientation">Portrait</field>
+
+        <!-- Margins are kept at 5mm as requested -->
+        <field name="margin_top">5</field>
+        <field name="margin_bottom">5</field>
+        <field name="margin_left">5</field>
+        <field name="margin_right">5</field>
+
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+    </record>
 </odoo>

@@ -1,4 +1,5 @@
 from odoo import api, fields, models, _
+from odoo.exceptions import ValidationError, UserError
 
 class AccountPayment(models.Model):
     _inherit = "account.payment"
@@ -29,6 +30,72 @@ class AccountPayment(models.Model):
         copy=False,
     )
  
+    
+    def get_2307_details(self):
+        self.ensure_one()
+
+        move = self.move_id
+        if not move:
+            return []
+
+        corp_dict = {}
+
+        # ✅ NO FILTER HERE
+        for line in move.line_ids:
+
+            corp = self.company_id
+
+            if corp not in corp_dict:
+                corp_dict[corp] = {
+                    'corporation': corp,
+                    'lines': [],
+                    'gross_amount': 0.0,
+                    'tax_withheld': 0.0,
+                    'net_amount': 0.0,
+                }
+
+            gross = abs(line.debit or line.credit)
+
+            # basic safe tax handling
+            tax_amount = abs(line.balance) if line.tax_line_id else 0.0
+
+            net = gross - tax_amount
+
+            corp_entry = {
+                'description': line.name or '',
+                'atc': line.tax_line_id.name if line.tax_line_id else '',
+                'rate': line.tax_line_id.amount if line.tax_line_id else 0.0,
+                'month': move.date.month if move.date else False,
+                'gross_amount': gross,
+                'tax_withheld': tax_amount,
+                'net_amount': net,
+                'tax_type': '',
+                'payment_term': self.payment_type or '',
+                'currency': move.currency_id.name,
+                'conversion_rate': 1.0,
+            }
+
+            corp_dict[corp]['lines'].append(corp_entry)
+
+            corp_dict[corp]['gross_amount'] += gross
+            corp_dict[corp]['tax_withheld'] += tax_amount
+            corp_dict[corp]['net_amount'] += net
+
+        return list(corp_dict.values())
+    def get_2307_business_details(self):
+        """
+        SAME mapping (you had 2 sections)
+        """
+        return self.get_2307_details()
+
+    def action_print(self):
+        self.ensure_one()
+
+        if self.state != 'paid':
+            raise UserError("Payment must be POSTED before generating BIR 2307.")
+
+        return self.env.ref('itc_internal_dev.action_report_bir_2307').report_action(self)
+
     # ------------------------------------------------------------------
     # Override: inject tax lines into the journal entry move lines
     # ------------------------------------------------------------------
