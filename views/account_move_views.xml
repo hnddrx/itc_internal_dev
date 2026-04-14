@@ -30,6 +30,13 @@
                             class="oe_highlight"
                             invisible="payment_state != 'paid' or move_type != 'out_invoice'"/>
 
+                    <button name="%(action_report_custom_official_receipt)d"
+                            string="Print Official Receipt"
+                            type="action"
+                            class="oe_highlight"
+                            invisible="payment_state != 'paid' or move_type != 'out_invoice'"/>
+                            
+
                     <button name="action_print"
                             string="Print BIR 2307"
                             type="object"
