@@ -23,6 +23,25 @@
                             type="action"
                             class="oe_highlight"
                             invisible="True"/>
+                            
+                    <button name="%(action_report_custom_acknowledgement_receipt)d"
+                            string="Print Acknowledgement Receipt"
+                            type="action"
+                            class="oe_highlight"
+                            invisible="payment_state != 'paid' or move_type != 'out_invoice'"/>
+
+                    <button name="%(action_report_custom_official_receipt)d"
+                            string="Print Official Receipt"
+                            type="action"
+                            class="oe_highlight"
+                            invisible="payment_state != 'paid' or move_type != 'out_invoice'"/>
+                            
+
+                    <button name="action_print"
+                            string="Print BIR 2307"
+                            type="object"
+                            class="oe_highlight"
+                            invisible="move_type == 'out_invoice'"/>
                     
                 </xpath>
 
@@ -31,7 +50,7 @@
                     <group>
                         <field name="x_invoice_type" widget="selection"/>
                         <field name="x_reference_number"/>
-                        <field name="x_partner_tin"/>
+                        <field name="x_partner_tin" invisible="not partner_id"/>
                     </group>
                 </xpath>
 
@@ -43,7 +62,7 @@
              ========================================================= -->
         <menuitem
             id="menu_custom_sales_invoice_root"
-            name="Sales Invoice"
+            name="Service Invoice"
             sequence="51"
             web_icon="itc_internal_dev,static/description/vendor_payment.png"
         />
@@ -121,7 +140,7 @@
 
         <!-- Sales Payments -->
         <record id="action_sales_payments" model="ir.actions.act_window">
-            <field name="name">Sales Payments</field>
+            <field name="name">Invoice Payments</field>
             <field name="res_model">account.payment</field>
             <field name="view_mode">list,form</field>
             <field name="domain">[('payment_type','=','inbound')]</field>

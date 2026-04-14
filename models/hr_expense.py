@@ -20,6 +20,7 @@ class HrExpense(models.Model):
     x_vendor_tin = fields.Char(
         string="Vendor TIN",
         compute="_compute_vendor_tax_id",
+        inverse="_inverse_vendor_tin", 
         store=True,
         help="Tax Identification Number of the vendor associated with this expense."
     )
@@ -75,6 +76,7 @@ class HrExpense(models.Model):
         help='Discount amount automatically computed from Discount % and total_amount_currency.',
     )
 
+
     x_original_amount = fields.Monetary(
         string='Original Amount',
         currency_field='currency_id',
@@ -82,8 +84,11 @@ class HrExpense(models.Model):
         store=True,
         readonly=True,
         help='Original amount automatically computed from Discount % and total_amount_currency.',
-    )
+    ) 
 
+    def _inverse_vendor_tin(self):
+        # Allow manual edits to be saved without being overwritten
+        pass
     # ----------------------
     # Onchange & Compute
     # ----------------------
