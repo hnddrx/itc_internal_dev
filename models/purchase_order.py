@@ -89,3 +89,86 @@ class Purchase(models.Model):
             if vals.get('x_noted_by') and not rec.x_noted_by_date:
                 vals['x_noted_by_date'] = date.today()
         return super().write(vals)
+
+class PurchaseOrderLine(models.Model):
+    _inherit = 'purchase.order.line'
+
+    display_tax_ids = fields.Many2many(
+        'account.tax',
+        compute='_compute_split_taxes',
+        inverse='_inverse_display_tax_ids',
+        string='Taxes',
+        domain=[('type_tax_use', '=', 'purchase')],
+    )
+
+    withholding_tax_ids = fields.Many2many(
+        'account.tax',
+        compute='_compute_split_taxes',
+        inverse='_inverse_withholding_tax_ids',
+        string='Withholding Tax',
+        domain=[('type_tax_use', '=', 'purchase')],
+    )
+
+    def _is_withholding_tax(self, tax):
+        """Placeholder criterion — amount < 0.
+        TODO: replace with finalized identification logic (tax group / flag)."""
+        return tax.amount < 0
+
+    @api.depends('taxes_id')
+    def _compute_split_taxes(self):
+        for line in self:
+            wht = line.taxes_id.filtered(line._is_withholding_tax)
+            line.withholding_tax_ids = wht
+            line.display_tax_ids = line.taxes_id - wht
+
+    def _inverse_display_tax_ids(self):
+        for line in self:
+            line.taxes_id = line.display_tax_ids + line.withholding_tax_ids
+
+    def _inverse_withholding_tax_ids(self):
+        for line in self:
+            line.taxes_id = line.display_tax_ids + line.withholding_tax_ids
+
+    @api.onchange('display_tax_ids', 'withholding_tax_ids')
+    def _onchange_split_taxes(self):
+        for line in self:
+            line.taxes_id = line.display_tax_ids + line.withholding_tax_ids
+
+class AccountMoveLine(models.Model):
+    _inherit = 'account.move.line'
+
+    display_tax_ids = fields.Many2many(
+        'account.tax',
+        compute='_compute_split_taxes',
+        inverse='_inverse_display_tax_ids',
+        string='Taxes',
+        domain=[('type_tax_use', '=', 'purchase')],
+    )
+
+    withholding_tax_ids = fields.Many2many(
+        'account.tax',
+        compute='_compute_split_taxes',
+        inverse='_inverse_withholding_tax_ids',
+        string='Withholding Taxes',
+        domain=[('type_tax_use', '=', 'purchase')],
+    )
+
+    def _is_withholding_tax(self, tax):
+        """Placeholder criterion — amount < 0.
+        TODO: replace with finalized identification logic (tax group / flag)."""
+        return tax.amount < 0
+
+    @api.depends('tax_ids')
+    def _compute_split_taxes(self):
+        for line in self:
+            wht = line.tax_ids.filtered(line._is_withholding_tax)
+            line.withholding_tax_ids = wht
+            line.display_tax_ids = line.tax_ids - wht
+
+    def _inverse_display_tax_ids(self):
+        for line in self:
+            line.tax_ids = line.display_tax_ids + line.withholding_tax_ids
+
+    def _inverse_withholding_tax_ids(self):
+        for line in self:
+            line.tax_ids = line.display_tax_ids + line.withholding_tax_ids
