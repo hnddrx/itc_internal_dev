@@ -359,6 +359,157 @@ class Bir1601EQ(models.Model):
             return ''
         return f'{value:,.2f}'
 
+
+    def _fmt_atc(self, value, max_width=12):
+        """
+        Format ATC code for Text21-26 with proper character spacing.
+        Each character gets a space between them, plus a space on the right side.
+        
+        """
+        if not value:
+            return ''
+        
+        # Convert to string and strip
+        atc = str(value).strip().upper()
+        
+        # Add space between each character
+        spaced = '    '.join(atc)
+        
+        # Add space sa PINAKA-RIGHT SIDE (after last character)
+        spaced = spaced + ' '
+        
+        # Right-align with leading spaces
+        if len(spaced) < max_width:
+            return ' ' * (max_width - len(spaced)) + spaced
+        
+        return spaced
+
+
+    def _fmt_box_tax_base(self, value, max_width=18):
+        """
+        Format tax base amount for Text27-32 only.
+        Iba ang spacing - 2 spaces lang between characters.
+        """
+        if not value or value == 0:
+            return ''
+        
+        amt_str = f'{abs(value) :,.2f}'
+        digits = amt_str.replace(',', '').replace('.', ' ')
+        
+        char_count = len(digits)
+        if value < 0:
+            char_count += 1
+        
+        spaces_between = char_count - 1
+        total_len = char_count + spaces_between
+        
+        if value < 0:
+            total_len += 1
+        
+        if total_len < max_width:
+            leading_spaces = max_width - total_len
+        else:
+            leading_spaces = 0
+        
+        char_list = list(digits)
+        spaced_parts = []
+        total_digits = len(char_list)
+        
+        adjust_from_right = [2, 5, 8, 11]  # 5th at 8th digit from right
+        
+        for i, char in enumerate(char_list):
+            pos_from_right = total_digits - 1 - i
+            
+            if i == 0:
+                spaced_parts.append(str(char))
+            elif pos_from_right in adjust_from_right:
+                spaced_parts.append(' ' + str(char))  # 1 space lang (bawas ng 1)
+            else:
+                spaced_parts.append('  ' + str(char))  # 2 spaces (normal)
+        
+        spaced = '  '.join(spaced_parts)
+        
+        if value < 0:
+            spaced = f'- {spaced}'
+        
+        result = '  ' * leading_spaces + spaced + ' '
+        
+        return result
+
+
+    def _fmt_box_amt(self, value, max_width=18):
+        """
+        Format amount for normal fields (Text45-57, payment fields, etc.)
+        """
+        if not value or value == 0:
+            return ''
+
+        value = self._fmt_amt(value).replace(',', '').replace('.', ' ')
+
+        decimal = value[-3:]       # 00
+        units = value[-6:-3]       # 000
+        thousand = value[-9:-6]    # 000
+        million = value[-12:-9]    # 000
+        billion = value[:-12]      # 100
+
+        result = (
+            '    '.join(billion)
+            + '  '
+            + '    '.join(million)
+            + '   '
+            + '    '.join(thousand)
+            + '   '
+            + '    '.join(units)
+            + '     '
+            + '    '.join(decimal)
+        ) + '  '
+
+        return result
+
+    def _fmt_box_payment(self, value, max_width=18, char_spacing=3, right_padding=2):
+        """
+        Format payment amount fields (Text74-77).
+        May adjustment sa specific digits from right.
+        """
+        if not value or value == 0:
+            return ''
+        
+        amt_str = f'{abs(value):,.2f}'
+        digits = amt_str.replace(',', '')
+        
+        char_list = list(digits)
+        spaced_parts = []
+        total_digits = len(char_list)
+        
+        # IKAW ANG BAHALA KUNG ANUNG DIGITS ANG BABAWASAN NG SPACE
+        # Halimbawa: bawas sa 3rd, 6th, 9th, 12th from right
+        adjust_from_right = [2, 8]
+        
+        for i, char in enumerate(char_list):
+            pos_from_right = total_digits - 1 - i
+            
+            if i == 0:
+                spaced_parts.append(str(char))
+            elif pos_from_right in adjust_from_right:
+                # Bawasan ng 1 space (e.g., 2 spaces instead of 3)
+                spaced_parts.append(' ' * (char_spacing - 1) + str(char))
+            else:
+                spaced_parts.append(' ' * char_spacing + str(char))
+        
+        spaced = ' '.join(spaced_parts)
+        
+        if value < 0:
+            spaced = f'- {spaced}'
+        
+        # Add right padding
+        spaced = spaced + (' ' * right_padding)
+        
+        # Right-align
+        if len(spaced) < max_width:
+            return ' ' * (max_width - len(spaced)) + spaced
+        
+        return spaced
+
     def _format_tin_for_pdf(self, tin_raw):
         """
         Format TIN for the 1601-EQ PDF field.
@@ -371,7 +522,7 @@ class Bir1601EQ(models.Model):
         seg2 = digits[3:6]    # 3 digits before second /
         seg3 = digits[6:9]    # 3 digits before third /
         seg4 = digits[9:]     # branch code (up to 5 digits)
-        return f'{seg1} {seg2} {seg3} {seg4}'
+        return f'{seg1}  {seg2}  {seg3}  {seg4}'
 
     # ========================================================
     # PDF FIELD MAP
@@ -410,33 +561,33 @@ class Bir1601EQ(models.Model):
 
             # Item 1 – For the Year
             # P1 | y=827 | x=30
-            'Text1': str(self.year) if self.year else '',
+            'Text1': ' ' + '    '.join(str(self.year) if self.year else ''),
 
             # Item 2 – Quarter checkboxes (enter 'X' to mark)
             # P1 | y=823 | x=118  → 1st Quarter
-            'Text2': 'X' if self.quarter == '1' else '',
+            'Text2': ' ' + 'X' if self.quarter == '1' else '',
             # P1 | y=822 | x=162  → 2nd Quarter
-            'Text3': 'X' if self.quarter == '2' else '',
+            'Text3': ' ' + 'X' if self.quarter == '2' else '',
             # P1 | y=822 | x=204  → 3rd Quarter
-            'Text4': 'X' if self.quarter == '3' else '',
+            'Text4': ' ' + 'X' if self.quarter == '3' else '',
             # P1 | y=823 | x=248  → 4th Quarter
-            'Text5': 'X' if self.quarter == '4' else '',
+            'Text5': ' ' + 'X' if self.quarter == '4' else '',
 
             # Item 3 – Amended Return? (enter 'X' to mark)
             # P1 | y=822 | x=306  → Yes
-            'Text6': 'X' if self.is_amended else '',
+            'Text6': ' ' + 'X' if self.is_amended else '',
             # P1 | y=822 | x=349  → No
-            'Text7': '' if self.is_amended else 'X',
+            'Text7': ' ' + '' if self.is_amended else 'X',
 
             # Item 4 – Any Taxes Withheld? (enter 'X' to mark)
             # P1 | y=822 | x=407  → Yes
-            'Text8': 'X' if self.any_taxes_withheld else '',
+            'Text8': ' ' + 'X' if self.any_taxes_withheld else '',
             # P1 | y=822 | x=450  → No
-            'Text9': '' if self.any_taxes_withheld else 'X',
+            'Text9': ' ' + '' if self.any_taxes_withheld else 'X',
 
             # Item 5 – No. of Sheet/s Attached
             # P1 | y=827 | x=522
-            'Text10': str(self.no_of_sheets) if self.no_of_sheets else '',
+            'Text10': '  ' + str(self.no_of_sheets) if self.no_of_sheets else '',
 
             # ==============================================================
             # PAGE 1 – PART I: BACKGROUND INFORMATION
@@ -445,45 +596,45 @@ class Bir1601EQ(models.Model):
             # Item 6 – Taxpayer Identification Number (TIN)
             # P1 | y=793 | x=233
             
-            'Text11': self._format_tin_for_pdf(self.tin),
+            'Text11': '  ' + '   '.join(self._format_tin_for_pdf(self.tin)),
 
             # Item 7 – RDO Code
             # P1 | y=792 | x=548
-            'Text12': self.rdo_code or '',
+            'Text12': '   ' + '    '.join((self.rdo_code) if self.rdo_code else ''),
 
             # Item 8 – Withholding Agent's Name
             # P1 | y=763 | x=18
-            'Text13': self.withholding_agent_name or '',
+            'Text13': ' ' + (self.withholding_agent_name or ''),
 
             # Item 9 – Registered Address (line 1: street)
             # P1 | y=737 | x=18
-            'Text14': self.registered_address or '',
+            'Text14': ' ' + (self.registered_address or ''),
 
             # Item 9 – Registered Address (line 2: city/state)
             # P1 | y=719 | x=18
-            'Text15': (self.company_id.city or '') + (
+            'Text15': ' ' + (self.company_id.city or '') + (
                 f', {self.company_id.state_id.name}' if self.company_id.state_id else ''
             ),
 
             # Item 9A – ZIP Code
             # P1 | y=719 | x=533
-            'Text16': self.zip_code or '',
+            'Text16': ' ' + (self.zip_code or ''),
 
             # Item 10 – Contact Number
             # P1 | y=702 | x=104
-            'Text17': self.contact_number or '',
+            'Text17': ' ' + (self.contact_number or ''),
 
             # Item 11 – Category of Withholding Agent: Private (enter 'X')
             # P1 | y=699 | x=446
-            'Text19': 'X' if self.category == 'private' else '',
+            'Text19': ' ' + 'X' if self.category == 'private' else '',
 
             # Item 11 – Category of Withholding Agent: Government (enter 'X')
             # P1 | y=698 | x=520
-            'Text20': 'X' if self.category == 'government' else '',
+            'Text20': ' ' + 'X' if self.category == 'government' else '',
 
             # Item 12 – Email Address
             # P1 | y=685 | x=104
-            'Text18': self.email or '',
+            'Text18': ' ' + (self.email or ''),
 
             # ==============================================================
             # PAGE 1 – PART II: COMPUTATION OF TAX
@@ -491,56 +642,56 @@ class Bir1601EQ(models.Model):
 
             # Item 19 – Total Taxes Withheld for the Quarter (Sum of Items 13–18)
             # P1 | y=536 | x=392
-            'Text45': self._fmt_amt(self.total_tax_withheld),
+            'Text45': self._fmt_box_amt(self.total_tax_withheld),
 
             # Item 20 – Less: Remittances Made – 1st Month of the Quarter
             # P1 | y=518 | x=391
-            'Text46': self._fmt_amt(self.remittance_1st_month),
+            'Text46': self._fmt_box_amt(self.remittance_1st_month),
 
             # Item 21 – 2nd Month of the Quarter
             # P1 | y=501 | x=392
-            'Text47': self._fmt_amt(self.remittance_2nd_month),
+            'Text47': self._fmt_box_amt(self.remittance_2nd_month),
 
             # Item 22 – Tax Remitted in Return Previously Filed (amended return)
             # P1 | y=484 | x=390
-            'Text48': self._fmt_amt(self.tax_remitted_prev),
+            'Text48': self._fmt_box_amt(self.tax_remitted_prev),
 
             # Item 23 – Over-remittance from Previous Quarter
             # P1 | y=466 | x=392
-            'Text49': self._fmt_amt(self.over_remittance_prev),
+            'Text49': self._fmt_box_amt(self.over_remittance_prev),
 
             # Item 24 – Other Payments Made
             # P1 | y=449 | x=390
-            'Text50': self._fmt_amt(self.other_payments),
+            'Text50': self._fmt_box_amt(self.other_payments),
 
             # Item 25 – Total Remittances Made (Sum of Items 20–24)
             # P1 | y=431 | x=390
-            'Text51': self._fmt_amt(self.total_remittances),
+            'Text51': self._fmt_box_amt(self.total_remittances),
 
             # Item 26 – Tax Still Due/(Over-remittance) (Item 19 Less Item 25)
             # P1 | y=414 | x=392
-            'Text52': self._fmt_amt(self.tax_still_due),
+            'Text52': self._fmt_box_amt(self.tax_still_due),
 
             # Item 27 – Surcharge
             # P1 | y=396 | x=392
-            'Text53': self._fmt_amt(self.surcharge),
+            'Text53': self._fmt_box_amt(self.surcharge),
 
             # Item 28 – Interest
             # P1 | y=380 | x=392
-            'Text54': self._fmt_amt(self.interest),
+            'Text54': self._fmt_box_amt(self.interest),
 
             # Item 29 – Compromise
             # P1 | y=361 | x=391
-            'Text55': self._fmt_amt(self.compromise),
+            'Text55': self._fmt_box_amt(self.compromise),
 
             # Item 30 – Total Penalties (Sum of Items 27–29)
             # P1 | y=345 | x=392
-            'Text56': self._fmt_amt(self.total_penalties),
+            'Text56': self._fmt_box_amt(self.total_penalties),
 
             # Item 31 – TOTAL AMOUNT STILL DUE/(Over-remittance)
             # P1 | y=328 | x=392
-            'Text57': self._fmt_amt(self.total_amount_due),
-
+            'Text57': self._fmt_box_amt(self.total_amount_due),
+            
             # Over-remittance options (enter 'X' to mark one)
             # P1 | y=305 | x=192  → To be Refunded
             'Text58': 'X' if self.over_remittance_option == 'refund' else '',
@@ -585,7 +736,7 @@ class Bir1601EQ(models.Model):
             # P1 | y=163 | x=276  → Date
             'Text69': '',
             # P1 | y=163 | x=390  → Amount
-            'Text74': self._fmt_amt(self.payment_cash),
+            'Text74': self._fmt_box_payment(self.payment_cash),
 
             # Item 33 – Check
             # P1 | y=146 | x=118  → Drawee Bank/Agency
@@ -595,7 +746,7 @@ class Bir1601EQ(models.Model):
             # P1 | y=146 | x=277  → Date
             'Text72': '',
             # P1 | y=146 | x=390  → Amount
-            'Text75': self._fmt_amt(self.payment_check),
+            'Text75': self._fmt_box_payment(self.payment_check),
 
             # Item 34 – Tax Debit Memo
             # P1 | y=128 | x=190  → Number
@@ -603,7 +754,7 @@ class Bir1601EQ(models.Model):
             # P1 | y=128 | x=276  → Date
             'Text73': '',
             # P1 | y=128 | x=390  → Amount
-            'Text76': self._fmt_amt(self.payment_tax_debit),
+            'Text76': self._fmt_box_payment(self.payment_tax_debit),
 
             # Item 35 – Others (specify below)
             # P1 | y=100 | x=18   → Specify text
@@ -615,7 +766,7 @@ class Bir1601EQ(models.Model):
             # P1 | y=100 | x=276  → Date
             'Text78': '',
             # P1 | y=100 | x=390  → Amount
-            'Text77': self._fmt_amt(self.payment_others),
+            'Text77': self._fmt_box_payment(self.payment_others),
         }
 
         # ==================================================================
@@ -625,10 +776,10 @@ class Bir1601EQ(models.Model):
         for i, (atc_k, base_k, rate_k, tax_k) in enumerate(ATC_ROWS):
             line = self.line_ids[i] if i < len(self.line_ids) else None
             if line:
-                field_map[atc_k]  = line.atc or ''                          # ATC code
-                field_map[base_k] = self._fmt_amt(line.tax_base)             # Tax Base
+                field_map[atc_k] = self._fmt_atc(line.atc)                     # ATC code
+                field_map[base_k] = self._fmt_box_tax_base(line.tax_base)       # Tax Base
                 field_map[rate_k] = f'{line.tax_rate}%' if line.tax_rate else ''  # Tax Rate
-                field_map[tax_k]  = self._fmt_amt(line.tax_withheld)         # Tax Withheld
+                field_map[tax_k]  = self._fmt_box_amt(line.tax_withheld)   # Tax Withheld
             else:
                 field_map[atc_k]  = ''
                 field_map[base_k] = ''
@@ -636,6 +787,7 @@ class Bir1601EQ(models.Model):
                 field_map[tax_k]  = ''
 
         return field_map
+
 
     # ========================================================
     # GENERATE PDF
@@ -646,7 +798,7 @@ class Bir1601EQ(models.Model):
         and return a download action.
 
         Place the template PDF at:
-            <your_module>/static/pdf/1601EQ.pdf
+            <your_module>/static/src/pdf/1601eq.pdf
         """
         self.ensure_one()
 
@@ -667,45 +819,72 @@ class Bir1601EQ(models.Model):
         writer = PdfWriter()
         writer.append(reader)
 
-        # Apply letter spacing on key background info fields
+        # 1. Custom character spacing definition for header fields
         SPACED_FIELDS = {
-            # PDF Field | (Tc spacing, font size) | Form label
             'Text11': ('10 Tc', 9.2),   # Item 6  – TIN
-            'Text1':  ('9 Tc', 9.2),   # Item 1  – Year
-            'Text12': ('4 Tc', 9.2),   # Item 7  – RDO Code
-            'Text13': ('3 Tc', 9.2),   # Item 8  – Withholding Agent Name
-            'Text14': ('3 Tc', 9.2),   # Item 9  – Registered Address line 1
-            'Text15': ('3 Tc', 9.2),   # Item 9  – Registered Address line 2
-            'Text17': ('3 Tc', 9.2),   # Item 10 – Contact Number
-            'Text18': ('3 Tc', 9.2),   # Item 12 – Email Address
-            'Text39': ('10 Tc', 9.2),   # Item 13–18 – Tax Withheld columns (need spacing to fit amounts properly)
-            'Text45': ('10 Tc', 9.2),   # Item 19 – Total Taxes Withheld (needs spacing to fit amount properly)
-            'Text52': ('10 Tc', 9.2),   # Item 26 – Tax Still Due/(Over-remittance) (needs spacing to fit amount properly)
-            'Text57': ('10 Tc', 9.2),   # Item 31 – Total Amount Still Due/(Over-remittance) (needs spacing to fit amount properly)
+            'Text10': ('9 Tc', 9.2),    # Item 5  – No. of Sheets
+            'Text1':  ('9 Tc', 9.2),    # Item 1  – Year
+            'Text12': ('12 Tc', 9.2),   # Item 7  – RDO Code
+            'Text13': ('0 Tc', 9.2),    # Item 8  – Withholding Agent Name
+            'Text14': ('0 Tc', 9.2),    # Item 9  – Registered Address line 1
+            'Text15': ('0 Tc', 9.2),    # Item 9  – Registered Address line 2
+            'Text17': ('3 Tc', 9.2),    # Item 10 – Contact Number
+            'Text18': ('3 Tc', 9.2),    # Item 12 – Email Address
         }
 
+        # 2. Right-aligned fields range (Text21 hanggang Text57)
+        RIGHT_ALIGN_FIELDS = [f'Text{i}' for i in range(21, 58)] + ['Text74', 'Text75', 'Text76', 'Text77']
+
+
+        Y_OFFSETS = {
+            'Text1': -3,    # Year - ibaba ng 2 points
+            'Text11': -3,   # TIN - ibaba ng 1 point
+            'Text12': -3,   # RDO - ibaba ng 1 point
+            'Text10': -3,   # No. of Sheets - ibaba ng 1 point
+            'Text13': 0,   # Withholding Agent Name - no adjustment
+            'Text14': 0,   # Address line 1 - no adjustment
+            'Text15': 0,   # Address line 2 - no adjustment
+            'Text17': 0,   # Contact Number - no adjustment
+            'Text18': 0,   # Email - no adjustment
+            **{f'Text{i}': -3 for i in range(21, 45)},   # Text21-44: -2
+            **{f'Text{i}': -3 for i in range(45, 59)},   # Text45-58: -1
+            **{f'Text{i}': -2 for i in [74, 75, 76, 77]}, # Payment fields: -2
+        }
+
+        # 3. Single Pass Loop: Apply /DA, Right Align, Remove Borders, and Adjust Y
         for page in writer.pages:
             if '/Annots' in page:
                 for annot in page['/Annots']:
                     obj = annot.get_object()
                     if obj.get('/Subtype') == '/Widget':
                         name = str(obj.get('/T', ''))
+
+                        # 1. Set Right Alignment (/Q 2)
+                        if name in RIGHT_ALIGN_FIELDS:
+                            obj[NameObject('/Q')] = NumberObject(2)
+
+                        # 2. Set /DA: priority ang SPACED_FIELDS bago ang default 0 Tc
                         if name in SPACED_FIELDS:
                             tc, fs = SPACED_FIELDS[name]
                             new_da = f'.2666667 .2666667 .2666667 rg\n{tc}\n/F0 {fs} Tf\n'
                             obj[NameObject('/DA')] = create_string_object(new_da)
+                        elif name in RIGHT_ALIGN_FIELDS:
+                            new_da = '.2666667 .2666667 .2666667 rg\n0 Tc\n/F0 9.2 Tf\n'
+                            obj[NameObject('/DA')] = create_string_object(new_da)
 
-        # Remove borders and make backgrounds transparent
-        for page in writer.pages:
-            if '/Annots' in page:
-                for annot in page['/Annots']:
-                    obj = annot.get_object()
-                    if obj.get('/Subtype') == '/Widget':
-                        # Set border width to 0
+                        # 3. Adjust Y position
+                        if name in Y_OFFSETS and '/Rect' in obj:
+                            rect = obj['/Rect']
+                            y_offset = Y_OFFSETS[name]
+                            if y_offset != 0 and len(rect) >= 4:
+                                # Adjust the Y position (rect[1] is bottom, rect[3] is top)
+                                rect[1] = NumberObject(rect[1].get_object() + y_offset)
+                                rect[3] = NumberObject(rect[3].get_object() + y_offset)
+
+                        # 4. Remove borders and background fill colors
                         obj[NameObject('/BS')] = DictionaryObject({
                             NameObject('/W'): NumberObject(0)
                         })
-                        # Remove /BC (border color) and /BG (background color)
                         if '/MK' in obj:
                             mk = obj['/MK'].get_object()
                             new_mk = DictionaryObject()
@@ -714,10 +893,11 @@ class Bir1601EQ(models.Model):
                                     new_mk[NameObject(k)] = v
                             obj[NameObject('/MK')] = new_mk
 
-        # Fill fields after border removal
+        # 4. Fill field values across pages
         for page in writer.pages:
             writer.update_page_form_field_values(page, field_map)
 
+        # 5. Output buffer & attachment creation
         buf = BytesIO()
         writer.write(buf)
         pdf_bytes = buf.getvalue()
